@@ -1,6 +1,6 @@
 <div align="center">
 
-<h1>NTL — Natile Typed Language</h1>
+<h1>NTL — Native Typed Language</h1>
 
 <p>A fast, expressive scripting language with bytecode compilation, a TUI editor, and a rich standard library.<br>This is the first official release.</p>
 
