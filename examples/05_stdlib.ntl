@@ -1,0 +1,28 @@
+use io
+use crypto
+use utils
+
+fn main() {
+  val hash = crypto.sha256("hello world")
+  io.log("SHA256: " + hash)
+
+  val uuid = crypto.randomUUID()
+  io.log("UUID: " + uuid)
+
+  val now = utils.now()
+  io.log("timestamp: " + now)
+
+  val words = ["banana", "apple", "cherry", "date"]
+  val sorted = utils.sortBy(words)
+  io.log("sorted: " + JSON.stringify(sorted))
+
+  val chunked = utils.chunk(words, 2)
+  io.log("chunked: " + JSON.stringify(chunked))
+
+  val upper = words.map(fn(w) { return w.toUpperCase() })
+  io.log("upper: " + JSON.stringify(upper))
+
+  val obj = { a: 1, b: 2, c: 3, d: 4 }
+  val picked = utils.pick(obj, "a", "c")
+  io.log("picked: " + JSON.stringify(picked))
+}

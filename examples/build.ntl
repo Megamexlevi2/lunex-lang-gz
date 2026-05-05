@@ -1,0 +1,13 @@
+use build
+
+let exe = build.executable({
+    name: "myapp",
+    root: "src/main.ntl",
+    version: "1.0.0",
+})
+
+exe.target(build.hostTarget())
+
+exe.optimize("release")
+
+exe.install()

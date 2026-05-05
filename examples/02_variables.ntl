@@ -1,0 +1,27 @@
+use io
+
+val pi = 3.14159
+var counter = 0
+
+fn increment() {
+  counter += 1
+}
+
+fn main() {
+  increment()
+  increment()
+  increment()
+  io.log("counter: " + counter)
+
+  val person = {
+    name: "Alice",
+    age: 30,
+    greet: fn() {
+      return "Hi, I'm " + this.name
+    }
+  }
+
+  io.log(person.greet())
+  io.log("age: " + person.age)
+  io.log("pi: " + pi)
+}

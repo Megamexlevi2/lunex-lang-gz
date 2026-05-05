@@ -1,0 +1,38 @@
+use crypto
+use io
+
+io.log(io.bold("=== NTL Crypto Demo ===\n"))
+
+io.log("SHA-256:", crypto.sha256("hello world"))
+io.log("MD5:    ", crypto.md5("hello world"))
+io.log("HMAC:   ", crypto.hmacSha256("secret-key", "message to sign"))
+
+io.log("\n" + io.bold("AES-GCM Encryption:"))
+val plaintext = "secret data: { userId: 42, role: 'admin' }"
+val key = "my-32-char-encryption-key-here!!"
+val encrypted = crypto.encryptAES(plaintext, key)
+val decrypted = crypto.decryptAES(encrypted, key)
+io.log("Original: ", plaintext)
+io.log("Encrypted:", encrypted)
+io.log("Decrypted:", decrypted)
+io.log("Match:    ", decrypted === plaintext ? io.green("yes") : io.red("no"))
+
+io.log("\n" + io.bold("JWT:"))
+val payload = { userId: 42, role: "admin", iat: 1700000000 }
+val token = crypto.signJWT(payload, "jwt-secret-key", { expiresIn: 3600 })
+io.log("Token:", token.substring(0, 60) + "...")
+val verified = crypto.verifyJWT(token, "jwt-secret-key")
+io.log("Verified payload:", JSON.stringify(verified))
+
+io.log("\n" + io.bold("Password Hashing:"))
+val password = "P@ssw0rd!123"
+val hash = crypto.hashPassword(password)
+io.log("Hash:  ", hash)
+io.log("Valid: ", crypto.verifyPassword(password, hash) ? io.green("yes") : io.red("no"))
+io.log("Wrong: ", crypto.verifyPassword("wrongpass", hash) ? io.red("yes") : io.green("no"))
+
+io.log("\n" + io.bold("Random Values:"))
+io.log("UUID:        ", crypto.randomUUID())
+io.log("Token (32):  ", crypto.token(32))
+io.log("Base64:      ", crypto.base64Encode("Hello, NTL!"))
+io.log("Decoded:     ", crypto.base64Decode(crypto.base64Encode("Hello, NTL!")))

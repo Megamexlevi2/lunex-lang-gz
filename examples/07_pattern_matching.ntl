@@ -1,0 +1,35 @@
+use io
+
+fn describe(x) {
+  match x {
+    case null  => "nothing"
+    case true  => "yes"
+    case false => "no"
+    case 0     => "zero"
+    case 1     => "one"
+    default    => "something: " + ("" + x)
+  }
+}
+
+fn shapeArea(kind, a, b) {
+  match kind {
+    case "circle"    => "circle, area = " + ("" + (3.14159 * a * a))
+    case "rectangle" => "rectangle, area = " + ("" + (a * b))
+    case "square"    => "square, area = " + ("" + (a * a))
+    default          => "unknown shape"
+  }
+}
+
+fn main() {
+  io.log(describe(null))
+  io.log(describe(true))
+  io.log(describe(false))
+  io.log(describe(0))
+  io.log(describe(1))
+  io.log(describe(42))
+  io.log(describe("hello"))
+
+  io.log(shapeArea("circle", 5, 0))
+  io.log(shapeArea("rectangle", 10, 3))
+  io.log(shapeArea("square", 4, 0))
+}

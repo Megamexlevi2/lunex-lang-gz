@@ -1,0 +1,5 @@
+use io
+
+io.banner("NTL v5.0.0", "cyan")
+io.log(io.green("Hello from NTL!"))
+io.log("Today is a great day to write some code.")

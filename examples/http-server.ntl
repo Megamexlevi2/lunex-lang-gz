@@ -1,0 +1,55 @@
+use http
+use io
+use env
+
+val port = env.getNumber("PORT", 3000)
+
+val users = [
+  { id: 1, name: "Alice", role: "admin" },
+  { id: 2, name: "Bob",   role: "user"  },
+  { id: 3, name: "Carol", role: "user"  }
+]
+
+val server = http.createServer(fn(req, res) {
+  if req.method === "GET" and req.path === "/" {
+    http.json(res, { message: "NTL HTTP Server", version: "1.0.0" })
+    return
+  }
+
+  if req.method === "GET" and req.path === "/users" {
+    http.json(res, { users: users, total: users.length })
+    return
+  }
+
+  if req.method === "GET" and req.path.startsWith("/users/") {
+    val id = Number(req.path.replace("/users/", ""))
+    val user = users.find(fn(u) { return u.id === id })
+    if user === undefined {
+      http.json(res, { error: "user not found" }, 404)
+    } else {
+      http.json(res, user)
+    }
+    return
+  }
+
+  if req.method === "POST" and req.path === "/users" {
+    val body = typeof req.body === "string" ? JSON.parse(req.body) : req.body
+    if body === null or body.name === undefined {
+      http.json(res, { error: "name is required" }, 400)
+      return
+    }
+    val newUser = { id: users.length + 1, name: body.name, role: body.role !== undefined ? body.role : "user" }
+    users.push(newUser)
+    http.json(res, newUser, 201)
+    return
+  }
+
+  http.json(res, { error: "not found" }, 404)
+})
+
+http.listen(server, port, "0.0.0.0", fn() {
+  io.log(io.green("server running on port " + port))
+  io.log("  GET  /users")
+  io.log("  GET  /users/:id")
+  io.log("  POST /users")
+})

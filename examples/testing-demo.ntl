@@ -1,0 +1,85 @@
+use test
+use utils
+
+fn add(a, b) { return a + b }
+fn multiply(a, b) { return a * b }
+fn divide(a, b) {
+  if b === 0 { throw "division by zero" }
+  return a / b
+}
+fn capitalize(s) {
+  if s.length === 0 { return s }
+  return s[0].toUpperCase() + s.substring(1).toLowerCase()
+}
+
+test.describe("math functions", fn() {
+  test.it("adds two numbers", fn() {
+    test.expect(add(1, 2)).toBe(3)
+    test.expect(add(-1, 1)).toBe(0)
+    test.expect(add(0, 0)).toBe(0)
+  })
+
+  test.it("multiplies two numbers", fn() {
+    test.expect(multiply(3, 4)).toBe(12)
+    test.expect(multiply(-2, 5)).toBe(-10)
+    test.expect(multiply(0, 99)).toBe(0)
+  })
+
+  test.it("divides correctly", fn() {
+    test.expect(divide(10, 2)).toBe(5)
+    test.expect(divide(7, 2)).toBe(3.5)
+  })
+
+  test.it("throws on division by zero", fn() {
+    test.expect(fn() { divide(5, 0) }).toThrow()
+  })
+
+  test.skip("pending complex math tests", fn() {
+    test.expect(true).toBe(false)
+  })
+})
+
+test.describe("string utilities", fn() {
+  test.it("capitalizes strings", fn() {
+    test.expect(capitalize("hello")).toBe("Hello")
+    test.expect(capitalize("WORLD")).toBe("World")
+    test.expect(capitalize("nTL")).toBe("Ntl")
+  })
+
+  test.it("handles empty strings", fn() {
+    test.expect(capitalize("")).toBe("")
+  })
+})
+
+test.describe("utils module", fn() {
+  test.it("chunks arrays", fn() {
+    val chunks = utils.chunk([1,2,3,4,5], 2)
+    test.expect(chunks.length).toBe(3)
+    test.expect(chunks[0]).toEqual([1,2])
+    test.expect(chunks[2]).toEqual([5])
+  })
+
+  test.it("gets unique values", fn() {
+    val u = utils.uniq([1,1,2,3,3,3,4])
+    test.expect(u).toEqual([1,2,3,4])
+  })
+
+  test.it("groups by key", fn() {
+    val data = [
+      { type: "fruit", name: "apple" },
+      { type: "veg",   name: "carrot" },
+      { type: "fruit", name: "banana" }
+    ]
+    val grouped = utils.groupBy(data, "type")
+    test.expect(grouped.fruit.length).toBe(2)
+    test.expect(grouped.veg.length).toBe(1)
+  })
+
+  test.it("clamps numbers", fn() {
+    test.expect(utils.clamp(5, 0, 10)).toBe(5)
+    test.expect(utils.clamp(-5, 0, 10)).toBe(0)
+    test.expect(utils.clamp(15, 0, 10)).toBe(10)
+  })
+})
+
+test.run()

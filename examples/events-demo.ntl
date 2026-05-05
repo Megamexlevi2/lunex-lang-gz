@@ -1,0 +1,39 @@
+use events
+use io
+use utils
+
+io.log(io.bold("=== NTL Events Demo ===\n"))
+
+val emitter = events.create()
+
+emitter.on("login", fn(user) {
+  io.log(io.green("USER LOGIN:"), user.name, "at", user.email)
+})
+
+emitter.on("login", fn(user) {
+  io.log(io.cyan("AUDIT:"), "login event recorded for", user.id)
+})
+
+emitter.once("startup", fn() {
+  io.log(io.yellow("SYSTEM:"), "first startup event fired")
+})
+
+emitter.on("error", fn(err) {
+  io.log(io.red("ERROR:"), err.message, "(code:", err.code + ")")
+})
+
+io.log("Registered handlers:", emitter.names().join(", "))
+io.log("Login handlers count:", emitter.count("login"))
+
+emitter.emit("startup")
+emitter.emit("startup")
+
+emitter.emit("login", { id: "u1", name: "Alice", email: "alice@example.com" })
+emitter.emit("login", { id: "u2", name: "Bob",   email: "bob@example.com" })
+emitter.emit("error", { message: "connection refused", code: 503 })
+
+io.log(io.dim("\nRemoving first login handler..."))
+emitter.off("login")
+io.log("Login handlers after off:", emitter.count("login"))
+
+emitter.emit("login", { id: "u3", name: "Carol", email: "carol@example.com" })

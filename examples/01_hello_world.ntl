@@ -1,0 +1,13 @@
+use io
+
+fn main() {
+  io.log("Hello, World!")
+
+  let name = "NTL"
+  io.log("Hello, " + name + "!")
+
+  let names = ["Alice", "Bob", "Charlie"]
+  each n in names {
+    io.log("Hello, " + n + "!")
+  }
+}

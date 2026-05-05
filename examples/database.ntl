@@ -1,0 +1,50 @@
+use db
+use io
+
+val users = db.table("users")
+users.define({
+  id:        { type: "string",  default: "$uuid" },
+  name:      { type: "string",  required: true },
+  email:     { type: "string",  required: true, unique: true },
+  role:      { type: "string",  default: "user" },
+  createdAt: { type: "number",  default: "$now" }
+})
+
+val products = db.table("products")
+products.define({
+  id:       { type: "string",  default: "$uuid" },
+  name:     { type: "string",  required: true },
+  price:    { type: "number",  required: true },
+  stock:    { type: "number",  default: 0 },
+  ownerId:  { type: "string",  required: true }
+})
+
+val alice = users.insert({ name: "Alice", email: "alice@example.com", role: "admin" })
+val bob   = users.insert({ name: "Bob",   email: "bob@example.com" })
+val carol = users.insert({ name: "Carol", email: "carol@example.com" })
+
+products.insert({ name: "NTL Book",     price: 29.99, stock: 100, ownerId: alice.id })
+products.insert({ name: "NTL Course",   price: 49.99, stock: 50,  ownerId: alice.id })
+products.insert({ name: "NTL T-Shirt",  price: 19.99, stock: 200, ownerId: bob.id })
+
+io.log(io.bold("All Users:"))
+io.table(users.find(), ["id", "name", "email", "role"])
+
+io.log(io.bold("\nAdmin Users:"))
+io.table(users.find({ role: "admin" }), ["name", "email"])
+
+io.log(io.bold("\nProducts by Alice:"))
+io.table(products.find({ ownerId: alice.id }), ["name", "price", "stock"])
+
+users.update({ email: "bob@example.com" }, { role: "moderator" })
+io.log(io.green("\nUpdated Bob to moderator"))
+
+val updatedBob = users.findOne({ email: "bob@example.com" })
+io.log("Bob's new role:", updatedBob.role)
+
+io.log("\nTotal users:", users.count())
+io.log("Total products:", products.count())
+
+val expensive = products.find({}, { sort: "price", order: "desc" })
+io.log(io.bold("\nProducts (most expensive first):"))
+io.table(expensive, ["name", "price"])

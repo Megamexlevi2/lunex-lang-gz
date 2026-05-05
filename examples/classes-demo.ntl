@@ -1,0 +1,82 @@
+use io
+
+class Shape {
+  constructor(color) {
+    this.color = color !== undefined ? color : "black"
+    this.typeName = "Shape"
+  }
+
+  area() {
+    return 0
+  }
+
+  describe() {
+    return this.color + " " + this.typeName + " with area " + this.area().toFixed(2)
+  }
+}
+
+class Circle extends Shape {
+  constructor(radius, color) {
+    super(color)
+    this.radius = radius
+    this.typeName = "Circle"
+  }
+
+  area() {
+    return Math.PI * this.radius * this.radius
+  }
+
+  circumference() {
+    return 2 * Math.PI * this.radius
+  }
+}
+
+class Rectangle extends Shape {
+  constructor(width, height, color) {
+    super(color)
+    this.width = width
+    this.height = height
+    this.typeName = "Rectangle"
+  }
+
+  area() {
+    return this.width * this.height
+  }
+
+  perimeter() {
+    return 2 * (this.width + this.height)
+  }
+}
+
+class Triangle extends Shape {
+  constructor(base, height, color) {
+    super(color)
+    this.base = base
+    this.height = height
+    this.typeName = "Triangle"
+  }
+
+  area() {
+    return 0.5 * this.base * this.height
+  }
+}
+
+val shapes = [
+  new Circle(5, "red"),
+  new Rectangle(4, 6, "blue"),
+  new Triangle(8, 3, "green"),
+  new Circle(10, "purple")
+]
+
+io.log(io.bold("Shapes:\n"))
+each shape in shapes {
+  io.log(" ", io.cyan(shape.describe()))
+}
+
+val totalArea = shapes.reduce(fn(sum, s) { return sum + s.area() }, 0)
+io.log("\n" + io.bold("Total area: ") + io.yellow(totalArea.toFixed(2)))
+
+val largest = shapes.reduce(fn(max, s) {
+  return s.area() > max.area() ? s : max
+}, shapes[0])
+io.log(io.bold("Largest:    ") + io.green(largest.describe()))

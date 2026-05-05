@@ -1,0 +1,24 @@
+use io
+
+fn delay(ms) {
+  sleep(ms)
+}
+
+fn fetchData(url) {
+  return "data from " + url
+}
+
+fn main() {
+  val result = fetchData("https://api.example.com/data")
+  io.log(result)
+
+  val tasks = ["task1", "task2", "task3"]
+
+  each task in tasks {
+    io.log("processing: " + task)
+    delay(10)
+    io.log("done: " + task)
+  }
+
+  io.log("all tasks complete")
+}

@@ -1,0 +1,48 @@
+use io
+  use utils
+
+  fn processItems(items, handler) {
+    var results = []
+    each item in items {
+      val result = handler(item)
+      results.push(result)
+    }
+    return results
+  }
+
+  fn withRetry(fn, maxAttempts) {
+    var attempts = 0
+    var lastError = null
+    while attempts < maxAttempts {
+      try {
+        return fn()
+      } catch e {
+        lastError = e
+        attempts += 1
+        io.log("attempt " + attempts + " failed: " + e)
+      }
+    }
+    throw "max attempts reached: " + lastError
+  }
+
+  fn pipeline(value, fns) {
+    return fns.reduce(fn(acc, f) { return f(acc) }, value)
+  }
+
+  fn main() {
+    val tasks = ["task1", "task2", "task3"]
+
+    val results = processItems(tasks, fn(task) {
+      io.log("processing: " + task)
+      return task + "_done"
+    })
+    io.log("results: " + JSON.stringify(results))
+
+    val value = pipeline(5,
+      [fn(x) { return x * 2 },
+       fn(x) { return x + 3 },
+       fn(x) { return x * x }]
+    )
+    io.log("pipeline result: " + value)
+  }
+  

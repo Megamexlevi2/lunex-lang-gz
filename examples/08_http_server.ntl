@@ -1,0 +1,26 @@
+use io
+use http
+use logger
+
+fn main() {
+  val appLog = logger.create("server")
+
+  val server = http.createServer()
+
+  server.get("/", fn(req, res) {
+    res.json({ message: "Hello from NTL!", version: "5.0.0" })
+  })
+
+  server.get("/health", fn(req, res) {
+    res.json({ status: "ok", uptime: 0 })
+  })
+
+  server.post("/echo", fn(req, res) {
+    val body = req.json()
+    res.json(body)
+  })
+
+  server.listen(3000, fn() {
+    appLog.info("server running on port 3000")
+  })
+}

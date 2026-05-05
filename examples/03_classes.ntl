@@ -1,0 +1,43 @@
+use io
+
+class Animal {
+  constructor(name, sound) {
+    this.name = name
+    this.sound = sound
+  }
+
+  speak() {
+    return this.name + " says " + this.sound
+  }
+
+  toString() {
+    return "Animal(" + this.name + ")"
+  }
+}
+
+class Dog extends Animal {
+  constructor(name) {
+    super(name, "Woof")
+    this.tricks = []
+  }
+
+  learn(trick) {
+    this.tricks.push(trick)
+  }
+
+  perform() {
+    if this.tricks.length === 0 {
+      return this.name + " knows no tricks"
+    }
+    return this.name + " can: " + this.tricks.join(", ")
+  }
+}
+
+fn main() {
+  val dog = new Dog("Rex")
+  io.log(dog.speak())
+  dog.learn("sit")
+  dog.learn("shake")
+  io.log(dog.perform())
+  io.log(dog.toString())
+}
