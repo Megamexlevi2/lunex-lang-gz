@@ -1,0 +1,21 @@
+use os
+  use io
+
+  io.log("=== spawn background process ===")
+  val proc = os.spawn("sleep 2")
+  io.log("spawned PID:", proc.pid)
+
+  io.log("doing other work while process runs...")
+
+  val code = proc.wait()
+  io.log("process exited with code:", code)
+
+  io.log("")
+  io.log("=== spawn with kill ===")
+  val server = os.spawn("sleep 60")
+  io.log("started long-running process PID:", server.pid)
+  server.kill()
+  io.log("killed")
+
+  io.success("Done")
+  

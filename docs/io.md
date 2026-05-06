@@ -20,12 +20,12 @@ io.log("Hello", "World")       // Hello World
 io.log(42, true, [1, 2])       // 42 true [1, 2]
 ```
 
-### `io.print(...args)`
+### `io.io.log(...args)`
 Print without a trailing newline.
 
 ```ntl
-io.print("Name: ")
-io.print("Alice")
+io.io.log("Name: ")
+io.io.log("Alice")
 ```
 
 ### `io.println(...args)`

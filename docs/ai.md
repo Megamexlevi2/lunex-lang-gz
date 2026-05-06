@@ -101,7 +101,7 @@ Stream a response token by token.
 
 ```ntl
 ai.stream("Write a haiku about rain.", fn(token, done) {
-  io.print(token)
+  io.io.log(token)
   if done {
     io.newline()
   }

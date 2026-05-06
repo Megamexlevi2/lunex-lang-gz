@@ -135,7 +135,7 @@ ntl run myapp.nax
 A vim/nano-style TUI editor with NTL syntax highlighting and autocomplete.
 
 ```bash
-naxer hello.ntl
+./ntl edit hello.ntl
 ```
 
 | Mode | Keys |
@@ -170,22 +170,8 @@ naxer hello.ntl
 Full module docs in the [`docs/`](docs/) folder:
 [`ai`](docs/ai.md) · [`commands`](docs/commands.md) · [`crypto`](docs/crypto.md) · [`db`](docs/db.md) · [`env`](docs/env.md) · [`fs`](docs/fs.md) · [`http`](docs/http.md) · [`io`](docs/io.md) · [`language`](docs/language.md) · [`mail`](docs/mail.md) · [`test`](docs/test.md) · [`utils`](docs/utils.md) · [`validate`](docs/validate.md) · [`ws`](docs/ws.md)
 
----
-
-## Building from Source
-
-Requires Go 1.21+.
-
-```bash
-make all          # build ntl + naxer
-make install-all  # install to ~/.local/bin
-make test         # run smoke tests
-```
-
----
-
 ## License
 
-Apache 2.0 — see [LICENSE](LICENSE) for details.
+ — see [LICENSE](LICENSE) for details.
 
 Copyright 2026 David Dev (Megamexlevi2). All rights reserved.
