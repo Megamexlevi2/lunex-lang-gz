@@ -175,3 +175,5 @@ Full module docs in the [`docs/`](docs/) folder:
  — see [LICENSE](LICENSE) for details.
 
 Copyright 2026 David Dev (Megamexlevi2). All rights reserved.
+
+<meta name="google-site-verification" content="6_Rdqy8ickl3iCcd1XLwY5keaV-mM2VTi05MSrwnstM" />
