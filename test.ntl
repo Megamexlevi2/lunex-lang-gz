@@ -1,0 +1,27 @@
+use crypto
+
+fn main() {
+    log("CRYPTO MODULE TEST")
+    log("")
+
+    val sha = crypto.sha256("hello")
+    log("sha256: " + sha)
+
+    val md = crypto.md5("hello")
+    log("md5: " + md)
+
+    val u = crypto.uuid()
+    log("uuid: " + String(u))
+
+    val hex = crypto.randomHex(16)
+    log("randomHex: " + String(hex))
+
+    val b64enc = crypto.base64Encode("hello")
+    log("base64Encode: " + b64enc)
+
+    val b64dec = crypto.base64Decode(b64enc)
+    log("base64Decode: " + b64dec)
+
+    log("")
+    log("All functions executed")
+}
