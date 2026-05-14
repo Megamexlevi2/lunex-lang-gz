@@ -167,10 +167,9 @@
   ### 4.1 Variables
 
   ```ntl
-  var  x = 10         // mutable, block-scoped
-  let  y = "hello"    // mutable, block-scoped (alias for var)
-  val  z = true       // immutable binding (alias for const)
-  const PI = 3.14159  // immutable binding
+  var x = 10         // mutable binding
+  val y = "hello"    // immutable binding
+  val PI = 3.14159   // immutable binding
   ```
 
   ### 4.2 Data Types
@@ -236,25 +235,25 @@
   ```ntl
   // if / elif / else
   if x > 0 {
-      print("positive")
+      io.log("positive")
   } elif x == 0 {
-      print("zero")
+      io.log("zero")
   } else {
-      print("negative")
+      io.log("negative")
   }
 
   // unless (negated if)
-  unless x > 100 { print("in range") }
+  unless x > 100 { io.log("in range") }
 
   // while
   while condition { }
 
   // for ... in (range / array)
-  for i in 0..10 { print(i) }
-  for item in list { print(item) }
+  each i in 0..10 { io.log(i) }
+  each item in list { io.log(item) }
 
   // for ... of (key-value)
-  for key, value of obj { print(key, value) }
+  for key, value of obj { io.log(key, value) }
 
   // loop (infinite)
   loop {
@@ -262,10 +261,10 @@
   }
 
   // each (functional)
-  [1, 2, 3].each(fn(x) { print(x) })
+  [1, 2, 3].each(fn(x) { io.log(x) })
 
   // repeat N times
-  repeat 5 { print("hello") }
+  repeat 5 { io.log("hello") }
 
   // do ... while
   do { } while condition
@@ -274,7 +273,7 @@
   guard x > 0 else { return }
 
   // defer
-  defer print("cleanup")
+  defer io.log("cleanup")
   ```
 
   ### 4.5 Functions
@@ -286,7 +285,7 @@
   }
 
   // Arrow / anonymous
-  var double = fn(x) => x * 2
+  var double = fn(x) { return x * 2 }
   var greet = fn(name) { return "Hello, " + name }
 
   // Default parameters
@@ -294,7 +293,7 @@
 
   // Rest parameters
   fn sum(...nums) {
-      return nums.reduce(fn(acc, n) => acc + n, 0)
+      return nums.reduce(fn(acc, n) { return acc + n }, 0)
   }
 
   // Closures
@@ -319,7 +318,7 @@
       }
 
       fn speak() {
-          print(this.name + " says " + this.sound)
+          io.log(this.name + " says " + this.sound)
       }
 
       static fn create(name) {
@@ -332,7 +331,7 @@
 
       override fn speak() {
           super.speak()
-          print("(tail wagging)")
+          io.log("(tail wagging)")
       }
   }
 
@@ -379,19 +378,19 @@
 
   ```ntl
   match value {
-      case 0 => print("zero")
-      case 1..10 => print("small")
-      case "hello" => print("greeting")
-      case [a, b] => print("two-element array")
-      case { name } => print("object with name: " + name)
-      default => print("no match")
+      case 0 => io.log("zero")
+      case 1..10 => io.log("small")
+      case "hello" => io.log("greeting")
+      case [a, b] => io.log("two-element array")
+      case { name } => io.log("object with name: " + name)
+      default => io.log("no match")
   }
 
   // when guards
   match x {
-      case n when n > 0 => print("positive")
-      case n when n < 0 => print("negative")
-      default => print("zero")
+      case n when n > 0 => io.log("positive")
+      case n when n < 0 => io.log("negative")
+      default => io.log("zero")
   }
   ```
 
@@ -402,9 +401,9 @@
   try {
       var data = JSON.parse(bad)
   } catch err {
-      print("Error:", err)
+      io.log("Error:", err)
   } finally {
-      print("Done")
+      io.log("Done")
   }
 
   // raise / throw
@@ -476,7 +475,7 @@
   ```ntl
   use "io"
 
-  io.print("Hello")          // print to stdout (newline)
+  io.io.log("Hello")          // print to stdout (newline)
   io.write("no newline")     // write without newline
   var line = io.readline()   // read a line from stdin
   var line = io.prompt("Name: ")  // print prompt then read
@@ -563,7 +562,7 @@
 
   // Watch (file watcher)
   var watcher = fs.watch("file.txt", fn(event) {
-      print(event.type, event.path)
+      io.log(event.type, event.path)
   })
   watcher.stop()
   ```
@@ -583,7 +582,7 @@
   var res = await http.get("https://api.example.com/data")
   // res: { status, headers, body, json(), text() }
 
-  print(res.status)         // 200
+  io.log(res.status)         // 200
   var data = res.json()     // parsed JSON object
   var text = res.text()     // raw string
 
@@ -655,7 +654,7 @@
   server.static("/public", "./static")
 
   // Start
-  server.listen(3000, fn() { print("Running on :3000") })
+  server.listen(3000, fn() { io.log("Running on :3000") })
 
   // Request object
   // req.method, req.url, req.path, req.query, req.params,
@@ -818,19 +817,19 @@
   var server = ws.server({ port: 8080 })
 
   server.onConnect(fn(conn) {
-      print("Client connected")
+      io.log("Client connected")
 
       conn.onMessage(fn(msg) {
-          print("Received:", msg)
+          io.log("Received:", msg)
           conn.send("Echo: " + msg)
       })
 
       conn.onClose(fn() {
-          print("Client disconnected")
+          io.log("Client disconnected")
       })
   })
 
-  server.onError(fn(err) { print("Error:", err) })
+  server.onError(fn(err) { io.log("Error:", err) })
   server.start()
 
   // Broadcast to all clients
@@ -840,7 +839,7 @@
   var client = ws.connect("ws://localhost:8080")
 
   client.onMessage(fn(msg) {
-      print("Server says:", msg)
+      io.log("Server says:", msg)
   })
 
   client.send("Hello server")
@@ -898,7 +897,7 @@
 
   // Single chat completion
   var reply = await client.chat("What is the capital of France?")
-  print(reply)
+  io.log(reply)
 
   // Multi-turn conversation
   var response = await client.chat([
@@ -1165,7 +1164,7 @@
   var proc = os.spawn("python3 server.py")
   var code = proc.wait()       // wait for exit
   proc.kill()                  // kill process
-  print(proc.pid)
+  io.log(proc.pid)
 
   // Environment
   os.getenv("PATH")
@@ -1459,7 +1458,7 @@
 
   // Pub/Sub
   var sub = client.subscribe("channel")
-  sub.onMessage(fn(msg) { print("Received:", msg) })
+  sub.onMessage(fn(msg) { io.log("Received:", msg) })
   client.publish("channel", "hello!")
   sub.unsubscribe()
 
@@ -1664,7 +1663,7 @@
 
   // Consume messages
   var consumer = ch.consume("my-queue", fn(delivery) {
-      print("Received:", delivery.body)
+      io.log("Received:", delivery.body)
       delivery.ack()          // acknowledge
       // delivery.nack()      // negative ack (requeue)
       // delivery.reject()    // reject (no requeue)
@@ -1676,7 +1675,7 @@
 
   ch.close()
   conn.close()
-  print(conn.isClosed())    // bool
+  io.log(conn.isClosed())    // bool
   ```
 
   ### 9.2 `graphql` — GraphQL
@@ -1928,7 +1927,7 @@
   These are always available without `use`:
 
   ```ntl
-  print(...)              // print to stdout
+  io.log(...)              // print to stdout
   typeOf(value)           // "string" | "number" | "boolean" | "array" | "object" | "function" | "null" | "undefined"
   isString(v)
   isNumber(v)
@@ -1942,9 +1941,3 @@
   fromJSON(str)           // parse JSON string
   deepClone(value)        // deep copy
   deepEqual(a, b)         // structural equality
-  ```
-
-  ---
-
-  *NTL v2.0 — Built with Go. For source, issues, and examples see the project repository.*
-  

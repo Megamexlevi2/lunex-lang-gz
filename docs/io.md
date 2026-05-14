@@ -182,7 +182,7 @@ io.newline(3)    // three blank lines
 Render an inline progress bar.
 
 ```ntl
-for i in range(0, 100) {
+each i in range(0, 100) {
   io.progress(i, 100)
   sleep(10)
 }

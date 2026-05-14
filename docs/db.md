@@ -183,7 +183,7 @@ fn addUser(name, email) {
 
 fn listUsers() {
   val all = users.all()
-  for u in all {
+  each u in all {
     io.log(io.cyan(u.name), gray(u.email))
   }
 }

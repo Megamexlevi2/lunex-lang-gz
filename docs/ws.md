@@ -136,7 +136,7 @@ server.on("connect", fn(client) {
       rooms[data.room].push(client.id)
     } else if data.type == "message" {
       val room = rooms[client.room] ?? []
-      for id in room {
+      each id in room {
         server.sendTo(id, { type: "message", from: client.id, text: data.text })
       }
     }

@@ -32,7 +32,7 @@ Read file and return an array of lines.
 
 ```ntl
 val lines = fs.readLines("data.csv")
-for line in lines {
+each line in lines {
   io.log(line)
 }
 ```
@@ -109,7 +109,7 @@ List entries in a directory (names only).
 
 ```ntl
 val files = fs.list(".")
-for f in files {
+each f in files {
   io.log(f)
 }
 ```
@@ -119,7 +119,7 @@ List entries with full metadata objects.
 
 ```ntl
 val entries = fs.listFull(".")
-for e in entries {
+each e in entries {
   io.log(e.name, e.size, e.isDir)
 }
 ```

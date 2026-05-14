@@ -164,3 +164,39 @@
   ntl add github.com/user/mymodule@v1.0.0
   ```
   
+---
+
+## Built-in modules reference
+
+| Module | Import | Description |
+|---|---|---|
+| `ntl:ai` | `use ai` | OpenAI / LLM API client |
+| `ntl:alloc` | `use alloc` | Low-level memory buffers and binary I/O |
+| `ntl:crypto` | `use crypto` | Hashing, HMAC, AES, RSA, UUID |
+| `ntl:csv` | `use csv` | CSV parsing and serialization |
+| `ntl:db` | `use db` | SQLite / embedded database |
+| `ntl:env` | `use env` | Environment variables |
+| `ntl:excel` | `use excel` | Excel (.xlsx) read/write |
+| `ntl:fs` | `use fs` | File system operations |
+| `ntl:graphql` | `use graphql` | GraphQL schema and executor |
+| `ntl:http` | `use http` | HTTP server and client |
+| `ntl:io` | `use io` | Console I/O and logging |
+| `ntl:jwt` | `use jwt` | JSON Web Token sign/verify |
+| `ntl:mail` | `use mail` | SMTP email sending |
+| `ntl:markdown` | `use markdown` | Markdown to HTML |
+| `ntl:mustache` | `use mustache` | Mustache template rendering |
+| `ntl:mysql` | `use mysql` | MySQL/MariaDB client |
+| `ntl:oauth2` | `use oauth2` | OAuth 2.0 (Google, GitHub, custom) |
+| `ntl:os` | `use os` | OS process, args, signals |
+| `ntl:pdf` | `use pdf` | PDF document generation |
+| `ntl:postgres` | `use postgres` | PostgreSQL client |
+| `ntl:rabbitmq` | `use rabbitmq` | RabbitMQ / AMQP message queue |
+| `ntl:redis` | `use redis` | Redis client |
+| `ntl:stripe` | `use stripe` | Stripe payments |
+| `ntl:test` | `use test` | Unit testing |
+| `ntl:toml` | `use toml` | TOML parsing and serialization |
+| `ntl:utils` | `use utils` | Math, string, array utilities |
+| `ntl:validate` | `use validate` | Input validation |
+| `ntl:ws` | `use ws` | WebSocket server |
+| `ntl:xml` | `use xml` | XML parsing and building |
+| `ntl:yaml` | `use yaml` | YAML parsing and serialization |

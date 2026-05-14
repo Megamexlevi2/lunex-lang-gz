@@ -27,7 +27,7 @@ val result = validate.check({
 })
 
 if !result.ok {
-  for err in result.errors {
+  each err in result.errors {
     io.error(err)
   }
 }

@@ -110,11 +110,11 @@ repeat 5 {
 ### for / range
 
 ```ntl
-for i in range(10) {
+each i in range(10) {
   io.log(i)
 }
 
-for i in range(2, 20, 2) {
+each i in range(2, 20, 2) {
   io.log(i)
 }
 ```

@@ -1,58 +1,102 @@
 # NTL Command Reference
 
-NTL v2.0 — a fast, expressive scripting language with bytecode compilation.
+NTL — Native Typed Language. Compiled pipeline uses embedded TCC as the sole native backend.
 
 ## Running Code
 
 ```
-ntl <file.ntl>             Run an NTL source file directly
+ntl <file.ntl>             Run an NTL source file (TCC native if available, else interpreted)
 ntl run <file>             Run .ntl, .nc, or .nax file
-ntl repl                   Start interactive REPL
 ```
 
-## Building Bytecode
+## Building Bytecode (default)
+
+`ntl build` without a `--target` flag compiles to `.nc` bytecode. Bytecode files run via the
+fast VM + JIT pipeline and are portable across platforms.
 
 ```
-ntl build <file.ntl>       Compile source to .nc bytecode
-ntl build <file.ntl> -o output.nc
+ntl build app.ntl                       Compile to app.nc (default)
+ntl build app.ntl -o output.nc          Explicit output path
+ntl build                               Read build.ntl config and build all targets
 ```
 
-The `.nc` format is NTL Compiled bytecode. It is a binary format that is scrambled
-and cannot be read as plain text. It runs with `ntl run` exactly like source.
+## Building Native Binaries (`--target`)
 
-Example:
+Passing `--target` compiles to a native binary via the embedded TCC backend (host) or a
+system cross-compiler (non-host targets).
+
 ```
-ntl build hello.ntl          # produces hello.nc
-ntl run hello.nc             # runs the compiled file
+ntl build app.ntl --target linux/amd64          Host binary (uses embedded TCC)
+ntl build app.ntl --target linux/arm64          Cross-compile (requires gcc-aarch64-linux-gnu or clang)
+ntl build app.ntl --target windows/amd64 -o app.exe
+ntl build app.ntl --target android/arm64        (requires Android NDK)
+ntl build app.ntl --target darwin/arm64         (requires clang on macOS or cross-clang)
 ```
 
-## Packing Archives
+### How the compilation pipeline works
+
+```
+.ntl source
+  -> Lexer -> Parser -> AST
+  -> Bytecode (.nc)
+  -> NTIR (NTL Intermediate Representation)
+  -> ENFS optimizer (up to 12-pass extreme IR optimization)
+  -> C backend (NTL C code generator)
+  -> main.c
+  -> Embedded TCC (Tiny C Compiler) — no external tools for host builds
+  -> Native binary: ELF (Linux), PE (Windows), Mach-O (macOS)
+```
+
+TCC is the **only** native compilation backend. The custom amd64/arm64 machine code generator
+has been removed. TCC handles all host-platform builds automatically with no setup. For
+cross-compilation, install a system cross-compiler (see `ntl runtimes` for setup instructions).
+
+## Building Bytecode Archives
 
 ```
 ntl pack <directory>         Pack all .nc files into a .nax archive
 ntl pack <directory> -o output.nax
 ```
 
-The `.nax` format is a NTL Archive. It bundles multiple `.nc` files into a single
-distributable binary package. The archive is fully scrambled and appears as binary
-machine code — the source code cannot be extracted.
+## ENFS — Extreme Native Fast System
 
-The entry point is determined automatically (looks for `main.nc` or `index.nc`,
-falls back to the first file).
+ENFS is NTL's built-in IR optimizer. It runs automatically before every pipeline — both
+compiled and interpreted. You never need to invoke it manually.
 
-Example:
+Optimization passes:
+
+- **Constant folding** — arithmetic on literals is resolved at compile time
+- **Dead code elimination** — unreachable instructions and unused values are removed
+- **Common subexpression elimination** — repeated computations are computed once
+- **Block merging** — chains of single-successor blocks are collapsed
+- **Redundant load elimination** — loads after stores to the same variable are removed
+- **Strength reduction** — multiply-by-power-of-two becomes a shift
+- **Tail call conversion** — recursive tail calls are marked for optimization
+- **Phi elimination** — single-source phi nodes are folded
+- **Global value numbering** — equivalent values across a function are unified
+- **Function inlining** — small functions are inlined at call sites
+- **Dead function elimination** — unreachable functions are removed before codegen
+
+## Interpreted / Bytecode Execution
+
+When running `.nc` files or falling back from TCC, NTL uses its fast interpreted pipeline:
+
 ```
-ntl build main.ntl -o dist/main.nc
-ntl build utils.ntl -o dist/utils.nc
-ntl pack dist -o app.nax
-ntl run app.nax
+.nc bytecode
+  -> NTIR instruction dispatch (no tree-walking, no line-by-line execution)
+  -> ENFS optimizer
+  -> Ultra-aggressive JIT (threshold=0, immediate native promotion)
+  -> Native amd64/arm64 machine code
 ```
+
+The JIT hot threshold is 0: every function is promoted to native machine code on its very
+first call. No warm-up. Significantly faster than Node.js V8 for CPU-bound workloads.
 
 ## Project Management
 
 ```
 ntl init [name]              Initialize a new project (creates ntl.mod)
-ntl install                  Install packages from ntl.mod
+ntl install                  Install packages listed in ntl.mod
 ntl install [pkg]            Install a specific package
 ntl add <pkg>                Add and install a package (updates ntl.mod)
 ntl remove <pkg>             Remove an installed package
@@ -62,38 +106,42 @@ ntl list                     List installed packages
 ## Code Quality
 
 ```
-ntl check <file.ntl>         Check for syntax/parse errors without running
-ntl fmt <file.ntl>           Format NTL source code in-place
-ntl dis <file.nc>            Show bytecode module info (non-destructive)
+ntl check app.ntl            Check for syntax/parse errors without running
+ntl fmt app.ntl              Format NTL source code in-place
+ntl dis app.nc               Disassemble bytecode module
+ntl see_errors app.ntl       Deep static analysis — list every error/warning
 ```
 
 ## Version
 
 ```
-ntl version                  Show version
+ntl version
 ntl --version
 ntl -v
 ```
 
 ## File Types
 
-| Extension | Description                                    |
-|-----------|------------------------------------------------|
-| `.ntl`    | NTL source code (human readable)               |
-| `.nc`     | NTL Compiled — bytecode archive (binary)       |
-| `.nax`    | NTL Archive — bundled bytecode (binary)        |
-| `ntl.mod` | Project manifest (package dependencies)        |
+| Extension | Description                                            |
+|-----------|--------------------------------------------------------|
+| `.ntl`    | NTL source code (human readable)                       |
+| `.nc`     | NTL Compiled — bytecode (fast VM + JIT pipeline)       |
+| `.nax`    | NTL Archive — bundled bytecode                         |
+| `ntl.mod` | Project manifest (package dependencies)                |
+
+Native binaries produced by `ntl build --target` have no extension on Linux/macOS and `.exe`
+on Windows. They run standalone with no NTL runtime required.
 
 ## The naxer Editor
 
-`naxer` is NTL's built-in terminal editor.
+`naxer` (or `ntl edit`) is NTL's built-in terminal editor with NTL syntax highlighting.
 
 ```
-naxer                        Open editor (new file)
-naxer <file>                 Open a file in the editor
+ntl edit                     Open editor (new file)
+ntl edit <file>              Open a file in the editor
 ```
 
-### naxer Key Bindings
+### Key Bindings
 
 **Normal mode:**
 
@@ -136,7 +184,8 @@ naxer <file>                 Open a file in the editor
 
 ## Stdlib Modules
 
-Use with `use <module>` at the top of your file.
+Use with `use <module>` at the top of your file. All modules work in both compiled and
+interpreted mode.
 
 | Module     | Description                              |
 |------------|------------------------------------------|
