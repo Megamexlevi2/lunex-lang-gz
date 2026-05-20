@@ -184,8 +184,7 @@ ntl edit <file>              Open a file in the editor
 
 ## Stdlib Modules
 
-Use with `use <module>` at the top of your file. All modules work in both compiled and
-interpreted mode.
+Import with `val mod = @import("std.module")` at the top of your file. All modules work in both compiled and interpreted mode.
 
 | Module     | Description                              |
 |------------|------------------------------------------|

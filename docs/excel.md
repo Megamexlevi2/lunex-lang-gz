@@ -5,7 +5,7 @@ Read, write, and create Excel (.xlsx) spreadsheets.
 ## Import
 
 ```ntl
-use excel
+val excel = @import("std.excel")
 ```
 
 ## Top-level

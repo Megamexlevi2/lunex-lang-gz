@@ -5,7 +5,7 @@ MySQL/MariaDB database client.
 ## Import
 
 ```ntl
-use mysql
+val mysql = @import("std.mysql")
 ```
 
 ## Connection
@@ -88,9 +88,9 @@ Closes the connection pool.
 ## Example
 
 ```ntl
-use mysql
-use env
-use io
+val mysql = @import("std.mysql")
+val env = @import("std.env")
+val io = @import("std.io")
 
 val db = mysql.connect({
   host: env.DB_HOST,

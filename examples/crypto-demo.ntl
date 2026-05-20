@@ -1,6 +1,5 @@
-use crypto
-use io
-
+val crypto = @import("std.crypto")
+val io = @import("std.io")
 io.log(io.bold("=== NTL Crypto Demo ===\n"))
 
 io.log("SHA-256:", crypto.sha256("hello world"))

@@ -5,7 +5,7 @@ GraphQL schema builder and executor for building APIs.
 ## Import
 
 ```ntl
-use graphql
+val graphql = @import("std.graphql")
 ```
 
 ## `graphql.buildSchema(options)`
@@ -57,8 +57,8 @@ Like `execute` but always returns raw JSON as a string.
 Use with `ntl:http` to expose a `/graphql` endpoint:
 
 ```ntl
-use graphql
-use http
+val graphql = @import("std.graphql")
+val http = @import("std.http")
 
 val schema = graphql.buildSchema({
   query: {

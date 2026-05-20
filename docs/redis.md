@@ -5,7 +5,7 @@ Redis client for caching, pub/sub, queues, and key-value storage.
 ## Import
 
 ```ntl
-use redis
+val redis = @import("std.redis")
 ```
 
 ## Connection
@@ -71,7 +71,7 @@ The URL format is `redis://[:password@]host[:port][/db]`.
 ## Example
 
 ```ntl
-use redis
+val redis = @import("std.redis")
 
 val r = redis.connect("redis://localhost:6379")
 

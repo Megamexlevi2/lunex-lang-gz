@@ -5,7 +5,7 @@ The `utils` module provides general-purpose helpers: type checks, deep operation
 ## Import
 
 ```ntl
-use utils
+val utils = @import("std.utils")
 ```
 
 ---
@@ -217,8 +217,8 @@ utils.round(3.14159, 2)    // 3.14
 ## Example
 
 ```ntl
-use utils
-use io
+val utils = @import("std.utils")
+val io = @import("std.io")
 
 fn main() {
   val data = [5, 2, 8, 1, 9, 3]

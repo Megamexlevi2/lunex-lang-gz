@@ -1,27 +1,19 @@
-use crypto
+val io = @import("std.io")
+val utils = @import("std.utils")
 
 fn main() {
-    log("CRYPTO MODULE TEST")
-    log("")
+  var start = utils.now()
 
-    val sha = crypto.sha256("hello")
-    log("sha256: " + sha)
+  var count = 0
+  var i = 0
 
-    val md = crypto.md5("hello")
-    log("md5: " + md)
+  while i < 50000000 {
+    count = count + i
+    i = i + 1
+  }
 
-    val u = crypto.uuid()
-    log("uuid: " + String(u))
+  var end = utils.now()
 
-    val hex = crypto.randomHex(16)
-    log("randomHex: " + String(hex))
-
-    val b64enc = crypto.base64Encode("hello")
-    log("base64Encode: " + b64enc)
-
-    val b64dec = crypto.base64Decode(b64enc)
-    log("base64Decode: " + b64dec)
-
-    log("")
-    log("All functions executed")
+  io.log("RESULT:", count)
+  io.log("TIME(ms):", end - start)
 }

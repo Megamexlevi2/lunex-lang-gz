@@ -5,7 +5,7 @@ The `mail` module provides SMTP email sending with support for HTML, attachments
 ## Import
 
 ```ntl
-use mail
+val mail = @import("std.mail")
 ```
 
 ---
@@ -133,7 +133,7 @@ Send multiple emails efficiently.
 
 ```ntl
 val emails = users.map(fn(u) {
-  return {
+  {
     to: u.email,
     subject: "Your weekly report",
     text: "Hi " + u.name + ", here is your report...",
@@ -148,9 +148,9 @@ mail.sendMany(emails)
 ## Example: Registration Email
 
 ```ntl
-use mail
-use env
-use io
+val mail = @import("std.mail")
+val env = @import("std.env")
+val io = @import("std.io")
 
 env.load()
 
@@ -168,7 +168,7 @@ fn sendWelcome(name, email, code) {
     <p>Verify your email: <a href="https://myapp.com/verify?code={{code}}">Click here</a></p>
   `, { name: name, code: code })
 
-  return mail.send({
+  mail.send({
     to:      email,
     subject: "Welcome to MyApp",
     html:    html,

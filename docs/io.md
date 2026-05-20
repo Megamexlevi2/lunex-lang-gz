@@ -5,7 +5,7 @@ The `io` module provides all console input/output functions, colors, spinners, p
 ## Import
 
 ```ntl
-use io
+val io = @import("std.io")
 ```
 
 ---
@@ -155,7 +155,7 @@ io.json({ key: "value", list: [1, 2, 3] })
 Print text inside a box border.
 
 ```ntl
-io.banner("NTL v2.0")
+io.banner("NTL v0.4.0")
 ```
 
 ### `io.hr([width], [char])`
@@ -219,7 +219,7 @@ if io.isTerminal() {
 ## Example: Full Script
 
 ```ntl
-use io
+val io = @import("std.io")
 
 fn greet(name) {
   io.log(io.cyan("Hello,"), io.bold(name) + "!")

@@ -1,26 +1,16 @@
-use io
-use http
-use logger
+val io   = @import("std.io")
+val http = @import("std.http")
 
 fn main() {
-  val appLog = logger.create("server")
-
-  val server = http.createServer()
-
-  server.get("/", fn(req, res) {
-    res.json({ message: "Hello from NTL!", version: "5.0.0" })
+  val server = http.createServer(fn(req, res) {
+    if req.url == "/" {
+      res.send("Hello from NTL 0.4.0!")
+    } else if req.url == "/ping" {
+      res.json({ status: "ok", version: "0.4.0" })
+    } else {
+      res.status(404).send("Not found")
+    }
   })
-
-  server.get("/health", fn(req, res) {
-    res.json({ status: "ok", uptime: 0 })
-  })
-
-  server.post("/echo", fn(req, res) {
-    val body = req.json()
-    res.json(body)
-  })
-
-  server.listen(3000, fn() {
-    appLog.info("server running on port 3000")
-  })
+  io.log("Listening on :3000")
+  server.listen(3000)
 }

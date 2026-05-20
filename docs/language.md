@@ -1,18 +1,25 @@
-# NTL Language Reference
+# NTL — Language Reference
 
-NTL v2.0 — a fast, expressive scripting language.
+NTL is a fast, statically-scoped scripting language. It is NOT a copy of JavaScript.
+
+Key differences:
+- No `return` — the last expression in a function is its result automatically.
+- No `class` — use `val Name = struct { ... }` for named types.
+- No `use` — use `val mod = @import("std.module")` to import modules.
+- All code should run inside functions.
+- Modules are explicit — nothing is imported by default.
 
 ## Quick Start
 
 ```ntl
-use io
+val io = @import("std.io")
 
 fn main() {
-  io.log("Hello, world!")
+  io.log("Hello, NTL!")
 }
 ```
 
-Run with: `ntl hello.ntl` or `ntl run hello.ntl`
+Run: `ntl hello.ntl` or `ntl run hello.ntl`
 
 ## Variables
 
@@ -141,7 +148,7 @@ while true {
 
 ```ntl
 fn process(x) {
-  guard x != null else { return }
+  guard x != null else { io.log("null input") }
   io.log(x)
 }
 ```
@@ -152,43 +159,46 @@ fn process(x) {
 fn readFile(path) {
   val f = fs.open(path)
   defer f.close()
-  return f.read()
+  f.read()
 }
 ```
 
 ## Functions
 
+The last expression in a function body is automatically its result.
+There is **no** `return` keyword.
+
 ```ntl
 fn add(a, b) {
-  return a + b
+  a + b
 }
 
 fn greet(name) {
-  return "Hello, " + name + "!"
+  "Hello, " + name + "!"
 }
 
-val double = fn(x) { return x * 2 }
+val double = fn(x) { x * 2 }
 
 fn sum(...nums) {
   var total = 0
   each n in nums { total += n }
-  return total
+  total
 }
 ```
 
 ### Arrow-style
 
 ```ntl
-val square = fn(x) { return x * x }
-val doubled = [1, 2, 3].map(fn(x) { return x * 2 })
+val square = fn(x) { x * x }
+val doubled = [1, 2, 3].map(fn(x) { x * 2 })
 ```
 
 ### Pipeline
 
 ```ntl
 val result = [1, 2, 3]
-  |> fn(arr) { return arr.map(fn(x) { return x * 2 }) }
-  |> fn(arr) { return arr.filter(fn(x) { return x > 2 }) }
+  |> fn(arr) { arr.map(fn(x) { x * 2 }) }
+  |> fn(arr) { arr.filter(fn(x) { x > 2 }) }
 ```
 
 ## Objects
@@ -198,7 +208,7 @@ val person = {
   name: "Alice",
   age: 30,
   greet: fn() {
-    return "Hi, I am " + this.name
+    "Hi, I am " + this.name
   }
 }
 
@@ -216,12 +226,12 @@ arr.push(6)
 arr.pop()
 arr.length
 
-arr.map(fn(x) { return x * 2 })
-arr.filter(fn(x) { return x > 2 })
-arr.reduce(fn(acc, x) { return acc + x }, 0)
-arr.find(fn(x) { return x > 3 })
-arr.every(fn(x) { return x > 0 })
-arr.some(fn(x) { return x > 4 })
+arr.map(fn(x) { x * 2 })
+arr.filter(fn(x) { x > 2 })
+arr.reduce(fn(acc, x) { acc + x }, 0)
+arr.find(fn(x) { x > 3 })
+arr.every(fn(x) { x > 0 })
+arr.some(fn(x) { x > 4 })
 arr.includes(3)
 arr.slice(1, 3)
 arr.join(", ")
@@ -230,34 +240,32 @@ arr.sort()
 arr.forEach(fn(x) { io.log(x) })
 ```
 
-## Classes
+## Structs
+
+NTL has no `class` keyword. Use `struct { ... }` to create a named type with methods.
 
 ```ntl
-class Animal {
-  constructor(name, sound) {
-    this.name = name
-    this.sound = sound
+val Animal = struct {
+  fn new(name, sound) {
+    { name: name, sound: sound }
   }
-
-  speak() {
-    return this.name + " says " + this.sound
+  fn speak(self) {
+    self.name + " says " + self.sound
   }
 }
 
-class Dog extends Animal {
-  constructor(name) {
-    super(name, "woof")
-    this.tricks = []
+val Dog = struct {
+  fn new(name) {
+    { name: name, sound: "woof", tricks: [] }
   }
-
-  learn(trick) {
-    this.tricks.push(trick)
+  fn learn(self, trick) {
+    self.tricks.push(trick)
   }
 }
 
-val dog = new Dog("Rex")
-io.log(dog.speak())
-dog.learn("sit")
+val dog = Dog.new("Rex")
+io.log(Animal.speak(dog))
+Dog.learn(dog, "sit")
 ```
 
 ## Match
@@ -296,41 +304,41 @@ val result = try? riskyOperation()
 
 ## Modules
 
-### Stdlib (built-in)
+Use `@import("std.module")` to load any standard library module.
 
 ```ntl
-use io
-use fs
-use http
-use crypto
-use db
-use env
-use utils
-use validate
-use events
-use cache
-use logger
-use queue
-use ws
-use mail
-use ai
-use test
-use type
+val io       = @import("std.io")
+val fs       = @import("std.fs")
+val http     = @import("std.http")
+val crypto   = @import("std.crypto")
+val db       = @import("std.db")
+val env      = @import("std.env")
+val validate = @import("std.validate")
+val events   = @import("std.events")
+val cache    = @import("std.cache")
+val logger   = @import("std.logger")
+val queue    = @import("std.queue")
+val ws       = @import("std.ws")
+val mail     = @import("std.mail")
+val ai       = @import("std.ai")
+val test     = @import("std.test")
+val alloc    = @import("std.alloc")
 ```
 
-### Local files
+### Removed — do NOT use these
 
-```ntl
-use "./utils"
-use "./models/user"
+```
+use std/io       ← old syntax, causes an error
+use "./utils"    ← old syntax, causes an error
 ```
 
-### Packages (GitHub or registry)
+### Removed keywords table
 
-```ntl
-use "github.com/user/package"
-use "colors"
-```
+| Removed  | Reason                      | Replacement                                 |
+|----------|-----------------------------|---------------------------------------------|
+| `return` | Not needed                  | Last expression is the function result      |
+| `class`  | No OO classes in NTL        | `val Name = struct { fn new() { ... } }`    |
+| `use`    | Replaced by `@import`       | `val mod = @import("std.module")`           |
 
 ## Concurrency
 

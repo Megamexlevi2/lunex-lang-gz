@@ -5,7 +5,7 @@ Low-level memory buffer module. Gives direct control over raw byte regions, shar
 ## Import
 
 ```ntl
-use alloc
+val alloc = @import("std.alloc")
 ```
 
 ## Buffer

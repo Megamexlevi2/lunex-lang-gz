@@ -1,6 +1,5 @@
-use io
-use xml
-
+val io = @import("std.io")
+val xml = @import("std.xml")
   val src = `
   <catalog>
     <book id="1" genre="fiction">

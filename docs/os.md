@@ -5,7 +5,7 @@
   ## Import
 
   ```ntl
-  use os
+  val os = @import("std.os")
   ```
 
   ---
@@ -17,8 +17,8 @@
   Run a command and wait for it to finish. Returns `{ stdout, stderr, code, ok }`.
 
   ```ntl
-  use os
-  use io
+  val os = @import("std.os")
+  val io = @import("std.io")
 
   val result = os.exec("git status")
   io.log(result.stdout)
@@ -46,8 +46,8 @@
   Start a process in the background without waiting. Returns `{ pid, wait(), kill() }`.
 
   ```ntl
-  use os
-  use io
+  val os = @import("std.os")
+  val io = @import("std.io")
 
   val proc = os.spawn("python3 server.py")
   io.log("started PID", proc.pid)
@@ -141,8 +141,8 @@
   Machine hostname.
 
   ```ntl
-  use os
-  use io
+  val os = @import("std.os")
+  val io = @import("std.io")
 
   io.log(os.platform(), os.arch(), os.cpus() + " CPUs")
   ```
@@ -251,8 +251,8 @@
   ### Run a build script and log output
 
   ```ntl
-  use os
-  use io
+  val os = @import("std.os")
+  val io = @import("std.io")
 
   val r = os.exec("go build ./...", { cwd: os.getcwd() })
   if r.ok {
@@ -267,8 +267,8 @@
   ### Walk directory and list all .ntl files
 
   ```ntl
-  use os
-  use io
+  val os = @import("std.os")
+  val io = @import("std.io")
 
   val files = os.glob("**/*.ntl")
   io.log("Found " + files.length + " NTL files:")
@@ -278,8 +278,8 @@
   ### Spawn a background process
 
   ```ntl
-  use os
-  use io
+  val os = @import("std.os")
+  val io = @import("std.io")
 
   val server = os.spawn("node server.js", { cwd: "./backend" })
   io.log("Server PID:", server.pid)

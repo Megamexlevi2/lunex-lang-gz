@@ -5,7 +5,7 @@ Stripe payments integration — payment intents, customers, products, subscripti
 ## Import
 
 ```ntl
-use stripe
+val stripe = @import("std.stripe")
 ```
 
 ## Initialization
@@ -128,9 +128,9 @@ Returns `{ id, amount, status }`.
 Verifies and parses a Stripe webhook payload. Returns `{ type, data }`.
 
 ```ntl
-use http
-use stripe
-use env
+val http = @import("std.http")
+val stripe = @import("std.stripe")
+val env = @import("std.env")
 
 stripe.init(env.STRIPE_SECRET_KEY)
 

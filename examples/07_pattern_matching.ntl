@@ -1,35 +1,29 @@
-use io
+val io = @import("std.io")
 
 fn describe(x) {
   match x {
-    case null  => "nothing"
-    case true  => "yes"
-    case false => "no"
-    case 0     => "zero"
-    case 1     => "one"
-    default    => "something: " + ("" + x)
+    0        => "zero"
+    1        => "one"
+    2..10    => "small (" + x + ")"
+    _        => "large (" + x + ")"
   }
 }
 
-fn shapeArea(kind, a, b) {
-  match kind {
-    case "circle"    => "circle, area = " + ("" + (3.14159 * a * a))
-    case "rectangle" => "rectangle, area = " + ("" + (a * b))
-    case "square"    => "square, area = " + ("" + (a * a))
-    default          => "unknown shape"
+fn tagName(tag) {
+  match tag {
+    "h1"    => "Heading 1"
+    "h2"    => "Heading 2"
+    "p"     => "Paragraph"
+    "span"  => "Span"
+    _       => "Unknown <" + tag + ">"
   }
 }
 
 fn main() {
-  io.log(describe(null))
-  io.log(describe(true))
-  io.log(describe(false))
-  io.log(describe(0))
-  io.log(describe(1))
-  io.log(describe(42))
-  io.log(describe("hello"))
-
-  io.log(shapeArea("circle", 5, 0))
-  io.log(shapeArea("rectangle", 10, 3))
-  io.log(shapeArea("square", 4, 0))
+  each n in [0, 1, 5, 99] {
+    io.log(describe(n))
+  }
+  each t in ["h1", "p", "div"] {
+    io.log(tagName(t))
+  }
 }

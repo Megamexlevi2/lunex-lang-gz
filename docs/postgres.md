@@ -5,7 +5,7 @@ PostgreSQL client with connection pooling, parameterized queries, transactions, 
 ## Import
 
 ```ntl
-use postgres
+val postgres = @import("std.postgres")
 ```
 
 ## Connection
@@ -97,9 +97,9 @@ Closes the connection pool and releases all resources.
 ## Example
 
 ```ntl
-use postgres
-use env
-use io
+val postgres = @import("std.postgres")
+val env = @import("std.env")
+val io = @import("std.io")
 
 val db = postgres.connect(env.DATABASE_URL)
 

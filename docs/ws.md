@@ -5,7 +5,7 @@ The `ws` module provides a WebSocket server and client for real-time bidirection
 ## Import
 
 ```ntl
-use ws
+val ws = @import("std.ws")
 ```
 
 ---
@@ -117,8 +117,8 @@ client.close(1000, "Done")
 ## Chat Room Example
 
 ```ntl
-use ws
-use io
+val ws = @import("std.ws")
+val io = @import("std.io")
 
 val server = ws.server({ port: 8080 })
 val rooms = {}

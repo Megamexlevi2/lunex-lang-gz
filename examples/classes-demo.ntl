@@ -1,82 +1,55 @@
-use io
+// NTL 0.4.0 — structs replace classes
+val io = @import("std.io")
 
-class Shape {
-  constructor(color) {
-    this.color = color !== undefined ? color : "black"
-    this.typeName = "Shape"
+fn Shape(color) {
+  val self = struct {
+    color = color
+    fn area()      { 0.0 }
+    fn perimeter() { 0.0 }
+    fn describe() {
+      "Shape color=" + self.color +
+      " area=" + self.area() +
+      " perimeter=" + self.perimeter()
+    }
   }
-
-  area() {
-    return 0
-  }
-
-  describe() {
-    return this.color + " " + this.typeName + " with area " + this.area().toFixed(2)
-  }
+  self
 }
 
-class Circle extends Shape {
-  constructor(radius, color) {
-    super(color)
-    this.radius = radius
-    this.typeName = "Circle"
+fn Circle(color, radius) {
+  val PI = 3.14159265358979
+  val self = struct {
+    color  = color
+    radius = radius
+    fn area()      { PI * self.radius * self.radius }
+    fn perimeter() { 2.0 * PI * self.radius }
+    fn describe()  {
+      "Circle r=" + self.radius + " area=" + self.area()
+    }
   }
-
-  area() {
-    return Math.PI * this.radius * this.radius
-  }
-
-  circumference() {
-    return 2 * Math.PI * this.radius
-  }
+  self
 }
 
-class Rectangle extends Shape {
-  constructor(width, height, color) {
-    super(color)
-    this.width = width
-    this.height = height
-    this.typeName = "Rectangle"
+fn Rectangle(color, w, h) {
+  val self = struct {
+    color  = color
+    width  = w
+    height = h
+    fn area()      { self.width * self.height }
+    fn perimeter() { 2 * (self.width + self.height) }
+    fn describe() {
+      "Rectangle " + self.width + "x" + self.height +
+      " area=" + self.area()
+    }
   }
-
-  area() {
-    return this.width * this.height
-  }
-
-  perimeter() {
-    return 2 * (this.width + this.height)
-  }
+  self
 }
 
-class Triangle extends Shape {
-  constructor(base, height, color) {
-    super(color)
-    this.base = base
-    this.height = height
-    this.typeName = "Triangle"
-  }
-
-  area() {
-    return 0.5 * this.base * this.height
+fn main() {
+  val shapes = [
+    Circle("red",  5),
+    Rectangle("blue", 4, 6),
+  ]
+  each s in shapes {
+    io.log(s.describe())
   }
 }
-
-val shapes = [
-  new Circle(5, "red"),
-  new Rectangle(4, 6, "blue"),
-  new Triangle(8, 3, "green"),
-  new Circle(10, "purple")
-]
-
-io.log(io.bold("Shapes:\n"))
-each shape in shapes {
-  io.log(" ", io.cyan(shape.describe()))
-}
-
-val totalArea = shapes.reduce(fn(sum, s) { return sum + s.area() }, 0)
-io.log("\n" + io.bold("Total area: ") + io.yellow(totalArea.toFixed(2)))
-
-val largest = shapes.reduce(fn(max, s) {
-  return s.area() > max.area() ? s : max
-}, shapes[0])
-io.log(io.bold("Largest:    ") + io.green(largest.describe()))

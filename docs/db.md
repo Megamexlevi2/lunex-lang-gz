@@ -5,7 +5,7 @@ The `db` module provides a lightweight in-memory key-value store with support fo
 ## Import
 
 ```ntl
-use db
+val db = @import("std.db")
 ```
 
 ---
@@ -172,8 +172,8 @@ db.load("data.json")
 ## Example: Simple User Store
 
 ```ntl
-use db
-use io
+val db = @import("std.db")
+val io = @import("std.io")
 
 val users = db.table("users")
 

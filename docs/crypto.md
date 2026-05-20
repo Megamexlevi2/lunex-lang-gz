@@ -5,7 +5,7 @@ The `crypto` module provides hashing, encoding, JWT handling, random generation,
 ## Import
 
 ```ntl
-use crypto
+val crypto = @import("std.crypto")
 ```
 
 ---
@@ -113,7 +113,6 @@ Verify and decode a JWT. Returns the payload, or `null` if invalid/expired.
 val payload = crypto.jwtVerify(token, "my-secret-key")
 if payload == null {
   io.error("Invalid or expired token")
-  return
 }
 io.log("User ID:", payload.userId)
 ```
@@ -169,21 +168,21 @@ if ok {
 ## Example: Auth Service
 
 ```ntl
-use crypto
-use io
+val crypto = @import("std.crypto")
+val io = @import("std.io")
 
 val SECRET = "super-secret-key"
 
 fn createToken(userId, role) {
-  return crypto.jwtSign({ userId: userId, role: role }, SECRET, { expiresIn: "1h" })
+  crypto.jwtSign({ userId: userId, role: role }, SECRET, { expiresIn: "1h" })
 }
 
 fn verifyToken(token) {
   val payload = crypto.jwtVerify(token, SECRET)
   if payload == null {
-    return null
+    null
   }
-  return payload
+  payload
 }
 
 fn main() {

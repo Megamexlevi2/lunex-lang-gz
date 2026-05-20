@@ -5,7 +5,7 @@ OAuth 2.0 authorization code flow — Google, GitHub, and custom providers.
 ## Import
 
 ```ntl
-use oauth2
+val oauth2 = @import("std.oauth2")
 ```
 
 ## Built-in providers
@@ -94,9 +94,9 @@ io.log(user.email)
 ## Example
 
 ```ntl
-use oauth2
-use http
-use env
+val oauth2 = @import("std.oauth2")
+val http = @import("std.http")
+val env = @import("std.env")
 
 val gauth = oauth2.google({
   clientId: env.GOOGLE_CLIENT_ID,

@@ -1,43 +1,53 @@
-use io
+// NTL 0.4.0 — structs replace classes
+val io = @import("std.io")
 
-class Animal {
-  constructor(name, sound) {
-    this.name = name
-    this.sound = sound
-  }
+fn Animal(name, sound) {
+  val self = struct {
+    name  = name
+    sound = sound
 
-  speak() {
-    return this.name + " says " + this.sound
-  }
+    fn speak() {
+      self.name + " says " + self.sound
+    }
 
-  toString() {
-    return "Animal(" + this.name + ")"
+    fn toString() {
+      "Animal(" + self.name + ")"
+    }
   }
+  self
 }
 
-class Dog extends Animal {
-  constructor(name) {
-    super(name, "Woof")
-    this.tricks = []
-  }
+fn Dog(name) {
+  val base   = Animal(name, "Woof")
+  val tricks = []
 
-  learn(trick) {
-    this.tricks.push(trick)
-  }
+  val self = struct {
+    name   = base.name
+    sound  = base.sound
+    tricks = tricks
 
-  perform() {
-    if this.tricks.length === 0 {
-      return this.name + " knows no tricks"
+    fn speak()    { base.speak() }
+    fn toString() { base.toString() }
+
+    fn learn(trick) {
+      self.tricks.push(trick)
     }
-    return this.name + " can: " + this.tricks.join(", ")
+
+    fn perform() {
+      if self.tricks.length == 0 {
+        self.name + " knows no tricks"
+      } else {
+        self.name + " can: " + self.tricks.join(", ")
+      }
+    }
   }
+  self
 }
 
 fn main() {
-  val dog = new Dog("Rex")
+  val dog = Dog("Rex")
   io.log(dog.speak())
   dog.learn("sit")
   dog.learn("shake")
   io.log(dog.perform())
-  io.log(dog.toString())
 }

@@ -1,27 +1,20 @@
-use io
-
-val pi = 3.14159
-var counter = 0
-
-fn increment() {
-  counter += 1
-}
+val io  = @import("std.io")
+val math = @import("std.math")
 
 fn main() {
-  increment()
-  increment()
-  increment()
-  io.log("counter: " + counter)
+  val name   = "Alice"
+  val age    = 30
+  val height = 1.75
+  val active = true
 
-  val person = {
-    name: "Alice",
-    age: 30,
-    greet: fn() {
-      return "Hi, I'm " + this.name
-    }
-  }
+  io.log("Name:   " + name)
+  io.log("Age:    " + age)
+  io.log("Height: " + height)
+  io.log("Active: " + active)
 
-  io.log(person.greet())
-  io.log("age: " + person.age)
-  io.log("pi: " + pi)
+  val square = fn(x) { x * x }
+  io.log("5^2 = " + square(5))
+
+  val pi = math.PI
+  io.log("PI = " + pi)
 }

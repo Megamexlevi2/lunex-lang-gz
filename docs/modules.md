@@ -53,11 +53,11 @@
 
   ```ntl
   fn greet(name) {
-    return "Hello, " + name + "!"
+    "Hello, " + name + "!"
   }
 
   fn add(a, b) {
-    return a + b
+    a + b
   }
 
   val __module__ = {
@@ -74,7 +74,7 @@
   The imported name is the last segment of the install path:
 
   ```ntl
-  use "mymodule"
+  val mymodule = @import("mymodule")
   io.log(mymodule.greet("World"))
   io.log(mymodule.add(1, 2))
   ```
@@ -82,8 +82,8 @@
   For subfolders:
 
   ```ntl
-  use "http"
-  use "xml"
+  val http = @import("std.http")
+  val xml = @import("std.xml")
   ```
 
   (installed from `github.com/user/repo/http` and `github.com/user/repo/xml`)
@@ -93,11 +93,11 @@
   Modules can use native modules or other installed modules:
 
   ```ntl
-  use native
+  val http = @import("std.http")
 
   fn fetch(url) {
-    val res = native.http.get(url, {})
-    return JSON.parse(res.body)
+    val res = http.get(url)
+    JSON.parse(res.body)
   }
 
   val __module__ = { fetch: fetch }
@@ -114,7 +114,7 @@
 
   fn readConfig(path) {
     val raw = fs.readFile(path)
-    return JSON.parse(raw)
+    JSON.parse(raw)
   }
 
   val __module__ = { readConfig: readConfig }
@@ -170,33 +170,33 @@
 
 | Module | Import | Description |
 |---|---|---|
-| `ntl:ai` | `use ai` | OpenAI / LLM API client |
-| `ntl:alloc` | `use alloc` | Low-level memory buffers and binary I/O |
-| `ntl:crypto` | `use crypto` | Hashing, HMAC, AES, RSA, UUID |
-| `ntl:csv` | `use csv` | CSV parsing and serialization |
-| `ntl:db` | `use db` | SQLite / embedded database |
-| `ntl:env` | `use env` | Environment variables |
-| `ntl:excel` | `use excel` | Excel (.xlsx) read/write |
-| `ntl:fs` | `use fs` | File system operations |
-| `ntl:graphql` | `use graphql` | GraphQL schema and executor |
-| `ntl:http` | `use http` | HTTP server and client |
-| `ntl:io` | `use io` | Console I/O and logging |
-| `ntl:jwt` | `use jwt` | JSON Web Token sign/verify |
-| `ntl:mail` | `use mail` | SMTP email sending |
-| `ntl:markdown` | `use markdown` | Markdown to HTML |
-| `ntl:mustache` | `use mustache` | Mustache template rendering |
-| `ntl:mysql` | `use mysql` | MySQL/MariaDB client |
-| `ntl:oauth2` | `use oauth2` | OAuth 2.0 (Google, GitHub, custom) |
-| `ntl:os` | `use os` | OS process, args, signals |
-| `ntl:pdf` | `use pdf` | PDF document generation |
-| `ntl:postgres` | `use postgres` | PostgreSQL client |
-| `ntl:rabbitmq` | `use rabbitmq` | RabbitMQ / AMQP message queue |
-| `ntl:redis` | `use redis` | Redis client |
-| `ntl:stripe` | `use stripe` | Stripe payments |
-| `ntl:test` | `use test` | Unit testing |
-| `ntl:toml` | `use toml` | TOML parsing and serialization |
-| `ntl:utils` | `use utils` | Math, string, array utilities |
-| `ntl:validate` | `use validate` | Input validation |
-| `ntl:ws` | `use ws` | WebSocket server |
-| `ntl:xml` | `use xml` | XML parsing and building |
-| `ntl:yaml` | `use yaml` | YAML parsing and serialization |
+| `ntl:ai` | `@import("std.ai")` | OpenAI / LLM API client |
+| `ntl:alloc` | `@import("std.alloc")` | Low-level memory buffers and binary I/O |
+| `ntl:crypto` | `@import("std.crypto")` | Hashing, HMAC, AES, RSA, UUID |
+| `ntl:csv` | `@import("std.csv")` | CSV parsing and serialization |
+| `ntl:db` | `@import("std.db")` | SQLite / embedded database |
+| `ntl:env` | `@import("std.env")` | Environment variables |
+| `ntl:excel` | `@import("std.excel")` | Excel (.xlsx) read/write |
+| `ntl:fs` | `@import("std.fs")` | File system operations |
+| `ntl:graphql` | `@import("std.graphql")` | GraphQL schema and executor |
+| `ntl:http` | `@import("std.http")` | HTTP server and client |
+| `ntl:io` | `@import("std.io")` | Console I/O and logging |
+| `ntl:jwt` | `@import("std.jwt")` | JSON Web Token sign/verify |
+| `ntl:mail` | `@import("std.mail")` | SMTP email sending |
+| `ntl:markdown` | `@import("std.markdown")` | Markdown to HTML |
+| `ntl:mustache` | `@import("std.mustache")` | Mustache template rendering |
+| `ntl:mysql` | `@import("std.mysql")` | MySQL/MariaDB client |
+| `ntl:oauth2` | `@import("std.oauth2")` | OAuth 2.0 (Google, GitHub, custom) |
+| `ntl:os` | `@import("std.os")` | OS process, args, signals |
+| `ntl:pdf` | `@import("std.pdf")` | PDF document generation |
+| `ntl:postgres` | `@import("std.postgres")` | PostgreSQL client |
+| `ntl:rabbitmq` | `@import("std.rabbitmq")` | RabbitMQ / AMQP message queue |
+| `ntl:redis` | `@import("std.redis")` | Redis client |
+| `ntl:stripe` | `@import("std.stripe")` | Stripe payments |
+| `ntl:test` | `@import("std.test")` | Unit testing |
+| `ntl:toml` | `@import("std.toml")` | TOML parsing and serialization |
+| `ntl:utils` | `@import("std.utils")` | Math, string, array utilities |
+| `ntl:validate` | `@import("std.validate")` | Input validation |
+| `ntl:ws` | `@import("std.ws")` | WebSocket server |
+| `ntl:xml` | `@import("std.xml")` | XML parsing and building |
+| `ntl:yaml` | `@import("std.yaml")` | YAML parsing and serialization |

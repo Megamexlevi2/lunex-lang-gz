@@ -5,7 +5,7 @@ Generate PDF documents from NTL code.
 ## Import
 
 ```ntl
-use pdf
+val pdf = @import("std.pdf")
 ```
 
 ## `pdf.create(options?)`

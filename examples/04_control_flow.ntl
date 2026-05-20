@@ -1,28 +1,40 @@
-use io
+val io = @import("std.io")
+
+fn classify(n) {
+  if n < 0 {
+    "negative"
+  } else if n == 0 {
+    "zero"
+  } else if n < 10 {
+    "small"
+  } else {
+    "large"
+  }
+}
 
 fn fizzbuzz(n) {
-  if n % 15 === 0 { return "FizzBuzz" }
-  if n % 3 === 0 { return "Fizz" }
-  if n % 5 === 0 { return "Buzz" }
-  return "" + n
+  val result = []
+  val i = 1
+  while i <= n {
+    if i % 15 == 0 {
+      result.push("FizzBuzz")
+    } else if i % 3 == 0 {
+      result.push("Fizz")
+    } else if i % 5 == 0 {
+      result.push("Buzz")
+    } else {
+      result.push(i)
+    }
+    i = i + 1
+  }
+  result
 }
 
 fn main() {
-  val numbers = range(10)
-
-  val evens = numbers.filter(fn(n) { return n % 2 === 0 })
-  val odds  = numbers.filter(fn(n) { return n % 2 !== 0 })
-
-  io.log("evens: " + JSON.stringify(evens))
-  io.log("odds: " + JSON.stringify(odds))
-
-  var sum = 0
-  each n in numbers {
-    sum += n
+  each n in [-5, 0, 3, 42] {
+    io.log(n + " is " + classify(n))
   }
-  io.log("sum: " + sum)
 
-  each i in range(1, 16) {
-    io.log(fizzbuzz(i))
-  }
+  val fb = fizzbuzz(20)
+  io.log(fb.join(", "))
 }

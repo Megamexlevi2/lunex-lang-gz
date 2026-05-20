@@ -5,7 +5,7 @@ The `fs` module provides file and directory operations: reading, writing, listin
 ## Import
 
 ```ntl
-use fs
+val fs = @import("std.fs")
 ```
 
 ---
@@ -208,16 +208,16 @@ val abs = fs.abs("./config.json")
 ## Example: Config File Manager
 
 ```ntl
-use fs
-use io
+val fs = @import("std.fs")
+val io = @import("std.io")
 
 fn loadConfig(path) {
   if !fs.exists(path) {
     val defaults = { theme: "dark", lang: "en" }
     fs.writeJSON(path, defaults)
-    return defaults
+    defaults
   }
-  return fs.readJSON(path)
+  fs.readJSON(path)
 }
 
 fn main() {

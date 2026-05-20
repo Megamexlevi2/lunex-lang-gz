@@ -5,7 +5,7 @@ The `validate` module provides schema-based validation for objects, strings, num
 ## Import
 
 ```ntl
-use validate
+val validate = @import("std.validate")
 ```
 
 ---
@@ -149,9 +149,9 @@ fn createUser(data) {
 ## Example: API Request Validation
 
 ```ntl
-use validate
-use http
-use io
+val validate = @import("std.validate")
+val http = @import("std.http")
+val io = @import("std.io")
 
 val loginSchema = {
   username: { type: "string", required: true, minLen: 3 },
@@ -164,7 +164,6 @@ app.post("/login", fn(req, res) {
   val result = validate.check(loginSchema, req.body)
   if !result.ok {
     res.status(400).json({ errors: result.errors })
-    return
   }
   res.json({ token: "abc123" })
 })

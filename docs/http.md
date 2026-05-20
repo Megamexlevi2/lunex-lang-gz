@@ -5,7 +5,7 @@ The `http` module provides an HTTP client for making requests and an HTTP server
 ## Import
 
 ```ntl
-use http
+val http = @import("std.http")
 ```
 
 ---
@@ -157,8 +157,8 @@ app.use(http.static("public")) // Serve static files
 ## Example: REST API
 
 ```ntl
-use http
-use io
+val http = @import("std.http")
+val io = @import("std.io")
 
 val users = [
   { id: 1, name: "Alice" },
@@ -176,7 +176,6 @@ app.get("/users/:id", fn(req, res) {
   val user = users.find(fn(u) { u.id == id })
   if user == null {
     res.status(404).json({ error: "Not found" })
-    return
   }
   res.json(user)
 })

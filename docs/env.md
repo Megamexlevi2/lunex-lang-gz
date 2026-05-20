@@ -5,7 +5,7 @@ The `env` module provides access to OS environment variables, `.env` file loadin
 ## Import
 
 ```ntl
-use env
+val env = @import("std.env")
 ```
 
 ---
@@ -112,8 +112,8 @@ DEBUG=true
 ## Example
 
 ```ntl
-use env
-use io
+val env = @import("std.env")
+val io = @import("std.io")
 
 env.load()
 

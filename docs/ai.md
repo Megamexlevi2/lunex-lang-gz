@@ -5,7 +5,7 @@ The `ai` module provides a unified interface for interacting with large language
 ## Import
 
 ```ntl
-use ai
+val ai = @import("std.ai")
 ```
 
 ---
@@ -141,9 +141,9 @@ io.log(desc)
 ## Example: CLI Assistant
 
 ```ntl
-use ai
-use io
-use env
+val ai = @import("std.ai")
+val io = @import("std.io")
+val env = @import("std.env")
 
 env.load()
 
@@ -161,7 +161,7 @@ fn ask(question) {
   history.push({ role: "user", content: question })
   val reply = ai.chat(history)
   history.push({ role: "assistant", content: reply })
-  return reply
+  reply
 }
 
 fn main() {

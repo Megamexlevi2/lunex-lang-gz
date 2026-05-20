@@ -1,4 +1,4 @@
-use os
+val os = @import("std.os")
   use io
 
   io.log("=== spawn background process ===")

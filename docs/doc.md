@@ -1,6 +1,6 @@
-# NTL Language — Complete Reference
+# NTL lang — Language Reference
 
-  > **NTL v2.0** — A modern, dynamically-typed scripting language built on Go, designed for rapid development with a batteries-included standard library.
+  > **NTL v0.4.0** — A modern, dynamically-typed scripting language built on Go, designed for rapid development with a batteries-included standard library.
 
   ---
 
@@ -15,7 +15,7 @@
      - [Operators](#43-operators)
      - [Control Flow](#44-control-flow)
      - [Functions](#45-functions)
-     - [Classes](#46-classes)
+     - [Structs (No Classes)](#46-structs-no-classes)
      - [Pattern Matching](#47-pattern-matching)
      - [Error Handling](#48-error-handling)
      - [Async / Concurrency](#49-async--concurrency)
@@ -76,14 +76,15 @@
   **Architecture summary**
 
   ```
-  Source (.ntl)
-      │
-      ├── Lexer  →  Tokens
-      ├── Parser →  AST
-      └── Interpreter (tree-walking) + JIT Profiler
-                │
-                ├── Bytecode Compiler → .nc (single file) / .nax (archive)
-                └── VM (bytecode runner)
+  NTL Source (.ntl)
+        │
+    Lexer → Parser → AST
+        │
+    NTLIR + ENFS optimizer (up to 12-pass)
+        │
+    Bytecode (.nc)
+        │  (Go writes → Zig reads via pipe)
+    NTL VM  →  JIT Profiler  →  Native machine code (x86_64 / AArch64)
   ```
 
   The runtime uses a single `Value` type (tagged union) with the following tags:
@@ -281,7 +282,7 @@
   ```ntl
   // Named function
   fn add(a, b) {
-      return a + b
+      a + b
   }
 
   // Arrow / anonymous
@@ -293,88 +294,64 @@
 
   // Rest parameters
   fn sum(...nums) {
-      return nums.reduce(fn(acc, n) { return acc + n }, 0)
+      nums.reduce(fn(acc, n) { return acc + n }, 0)
   }
 
   // Closures
   fn counter() {
       var n = 0
-      return fn() { n += 1; return n }
+      fn() { n += 1; return n }
   }
 
   // Immediately invoked
   var result = fn(x) { return x * x }(5)
   ```
 
-  ### 4.6 Classes
+  ### 4.6 Structs (No Classes)
+
+  NTL has **no** `class` keyword. Use constructor functions with `struct { ... }` to define named types with methods.
 
   ```ntl
-  class Animal {
-      var name
-      var sound = "..."
-
-      fn init(name) {
-          this.name = name
+  fn Animal(name, sound) {
+      val self = struct {
+          name  = name
+          sound = sound
+          fn speak() {
+              self.name + " says " + self.sound
+          }
       }
+      self
+  }
 
-      fn speak() {
-          io.log(this.name + " says " + this.sound)
+  fn Dog(name) {
+      val base   = Animal(name, "woof")
+      val tricks = []
+      val self = struct {
+          name   = base.name
+          sound  = base.sound
+          tricks = tricks
+          fn speak()      { base.speak() }
+          fn learn(trick) { self.tricks.push(trick) }
+          fn perform() {
+              if self.tricks.length == 0 {
+                  self.name + " knows no tricks"
+              } else {
+                  self.name + " can: " + self.tricks.join(", ")
+              }
+          }
       }
-
-      static fn create(name) {
-          return new Animal(name)
-      }
+      self
   }
 
-  class Dog extends Animal {
-      var sound = "woof"
-
-      override fn speak() {
-          super.speak()
-          io.log("(tail wagging)")
-      }
-  }
-
-  var d = new Dog("Rex")
-  d.speak()
-
-  // Abstract classes
-  abstract class Shape {
-      abstract fn area()
-  }
-
-  // Access modifiers
-  class Account {
-      private var balance = 0
-      public fn deposit(n) { this.balance += n }
-      readonly var id = genUUID()
-  }
-
-  // Interfaces and traits
-  interface Serializable {
-      fn serialize()
-      fn deserialize(data)
-  }
-
-  trait Timestamped {
-      var createdAt = now()
-  }
-
-  class User implements Serializable, Timestamped {
-      fn serialize() { return toJSON(this) }
-      fn deserialize(data) { return fromJSON(data) }
-  }
-
-  // Property accessors
-  class Temperature {
-      private var _celsius = 0
-      get celsius() { return this._celsius }
-      set celsius(v) { this._celsius = v }
-      get fahrenheit() { return this._celsius * 9/5 + 32 }
-  }
+  val d = Dog("Rex")
+  io.log(d.speak())
+  d.learn("sit")
+  io.log(d.perform())
   ```
 
-  ### 4.7 Pattern Matching
+  > **Removed:** `class`, `constructor`, `extends`, `super`, `abstract`, `interface`, `trait`, `implements`, `new`. Use the struct pattern above instead.
+
+    ### 4.7 Pattern Matching
 
   ```ntl
   match value {
@@ -420,7 +397,7 @@
   // Async functions
   async fn fetchUser(id) {
       var res = await http.get("https://api.example.com/users/" + id)
-      return res.json()
+      res.json()
   }
 
   // Await
@@ -442,24 +419,16 @@
   ### 4.10 Modules
 
   ```ntl
-  // Import stdlib module
-  use "http"
-  use "fs"
-  use "crypto" as crypt
+  // Import standard library modules
+  val http     = @import("std.http")
+  val fs       = @import("std.fs")
+  val crypto   = @import("std.crypto")
+  val io       = @import("std.io")
+  val env      = @import("std.env")
 
-  // Import user module
-  use "./utils"
-  use "./models/user" as UserModel
-
-  // Import from package (installed via ntl add)
-  use "discordntl"
-
-  // Selective imports
-  use { readFile, writeFile } from "fs"
-
-  // Export
-  export fn helper() { }
-  export var config = { }
+  // Import third-party packages (installed via ntl add)
+  val discord = @import("discordntl")
+  val github  = @import("ntl-github")
   ```
 
   ---
@@ -473,7 +442,7 @@
   Provides terminal I/O, colored output, and progress bars.
 
   ```ntl
-  use "io"
+  val io = @import("std.io")
 
   io.io.log("Hello")          // print to stdout (newline)
   io.write("no newline")     // write without newline
@@ -521,7 +490,7 @@
   Full file system access: read, write, directory operations, and metadata.
 
   ```ntl
-  use "fs"
+  val fs = @import("std.fs")
 
   // Read / Write
   var content = fs.readFile("file.txt")          // string or null
@@ -576,7 +545,7 @@
   #### Client
 
   ```ntl
-  use "http"
+  val http = @import("std.http")
 
   // GET
   var res = await http.get("https://api.example.com/data")
@@ -609,7 +578,7 @@
   #### Server
 
   ```ntl
-  use "http"
+  val http = @import("std.http")
 
   var server = http.server()
 
@@ -668,7 +637,7 @@
   Hashing, HMAC, symmetric encryption, and key generation.
 
   ```ntl
-  use "crypto"
+  val crypto = @import("std.crypto")
 
   // Hashing
   crypto.hash("sha256", "data")       // hex string
@@ -714,7 +683,7 @@
   A full SQL-inspired in-memory database engine with collections, indexes, transactions, and aggregations.
 
   ```ntl
-  use "db"
+  val db = @import("std.db")
 
   // Open / create a named database
   var database = db.open("mydb")
@@ -793,7 +762,7 @@
   ### 5.6 `env` — Environment Variables
 
   ```ntl
-  use "env"
+  val env = @import("std.env")
 
   var value = env.get("DATABASE_URL")            // string or undefined
   var value = env.get("PORT", "3000")            // with default
@@ -811,7 +780,7 @@
   WebSocket client and server (no external library dependency — pure Go implementation).
 
   ```ntl
-  use "ws"
+  val ws = @import("std.ws")
 
   // Server
   var server = ws.server({ port: 8080 })
@@ -851,7 +820,7 @@
   ### 5.8 `mail` — SMTP Email
 
   ```ntl
-  use "mail"
+  val mail = @import("std.mail")
 
   var mailer = mail.create({
       host: "smtp.gmail.com",
@@ -884,7 +853,7 @@
   Connect to OpenAI, Anthropic, Ollama, or any OpenAI-compatible API.
 
   ```ntl
-  use "ai"
+  val ai = @import("std.ai")
 
   // Create a client
   var client = ai.create({
@@ -933,7 +902,7 @@
   A comprehensive functional utility library for arrays, objects, strings, numbers, and functions.
 
   ```ntl
-  use "utils"
+  val utils = @import("std.utils")
 
   // ── Time ──────────────────────────────────────────────
   utils.sleep(1000)               // sleep N milliseconds
@@ -1073,7 +1042,7 @@
   Provides regex-based validators and a composable schema validation system.
 
   ```ntl
-  use "validate"
+  val validate = @import("std.validate")
 
   // Basic validators (return bool)
   validate.isEmail("user@example.com")       // true
@@ -1148,7 +1117,7 @@
   Process management, environment, file system metadata, and path helpers.
 
   ```ntl
-  use "os"
+  val os = @import("std.os")
 
   // Process execution (synchronous)
   var result = os.exec("ls -la /tmp")
@@ -1226,7 +1195,7 @@
   ### 5.13 `xml` — XML Parsing and Generation
 
   ```ntl
-  use "xml"
+  val xml = @import("std.xml")
 
   // Parse XML string to object
   var doc = xml.parse('<root><user id="1"><name>Alice</name></user></root>')
@@ -1257,7 +1226,7 @@
   ### 6.1 `csv` — CSV Parsing
 
   ```ntl
-  use "csv"
+  val csv = @import("std.csv")
 
   // Parse CSV string
   var rows = csv.parse("name,age\nAlice,30\nBob,25")
@@ -1280,7 +1249,7 @@
   ### 6.2 `yaml` — YAML Parsing
 
   ```ntl
-  use "yaml"
+  val yaml = @import("std.yaml")
 
   var obj = yaml.parse("name: Alice\nage: 30")
   var str = yaml.stringify({ name: "Alice", age: 30 })
@@ -1292,7 +1261,7 @@
   ### 6.3 `toml` — TOML Parsing
 
   ```ntl
-  use "toml"
+  val toml = @import("std.toml")
 
   var obj = toml.parse('[database]\nhost = "localhost"')
   var str = toml.stringify({ database: { host: "localhost" } })
@@ -1306,7 +1275,7 @@
   Converts Markdown to HTML using Goldmark (supports tables, strikethrough, autolinks, task lists).
 
   ```ntl
-  use "markdown"
+  val markdown = @import("std.markdown")
 
   var html = markdown.toHTML("# Hello\n\nThis is **bold**.")
   var html = markdown.readFile("README.md")      // parse and return HTML
@@ -1318,7 +1287,7 @@
   Logic-less templates following the Mustache spec.
 
   ```ntl
-  use "mustache"
+  val mustache = @import("std.mustache")
 
   var html = mustache.render("Hello, {{name}}!", { name: "Alice" })
 
@@ -1338,7 +1307,7 @@
   Persistent connection pool backed by [pgx/v5](https://github.com/jackc/pgx).
 
   ```ntl
-  use "postgres"
+  val postgres = @import("std.postgres")
 
   var db = await postgres.connect("postgresql://user:pass@localhost:5432/mydb")
   // or
@@ -1382,7 +1351,7 @@
   Backed by [go-sql-driver/mysql](https://github.com/go-sql-driver/mysql).
 
   ```ntl
-  use "mysql"
+  val mysql = @import("std.mysql")
 
   var db = await mysql.connect("user:pass@tcp(localhost:3306)/mydb")
   // or connection object
@@ -1411,7 +1380,7 @@
   Backed by [go-redis/v9](https://github.com/redis/go-redis).
 
   ```ntl
-  use "redis"
+  val redis = @import("std.redis")
 
   var client = redis.connect({ host: "localhost", port: 6379, db: 0 })
   // or URL
@@ -1477,7 +1446,7 @@
   Backed by [golang-jwt/jwt/v5](https://github.com/golang-jwt/jwt).
 
   ```ntl
-  use "jwt"
+  val jwt = @import("std.jwt")
 
   // Sign
   var token = jwt.sign({ userId: 123, role: "admin" }, "secret", {
@@ -1508,7 +1477,7 @@
   Backed by [golang.org/x/oauth2](https://pkg.go.dev/golang.org/x/oauth2).
 
   ```ntl
-  use "oauth2"
+  val oauth2 = @import("std.oauth2")
 
   // Google
   var google = oauth2.google({
@@ -1555,7 +1524,7 @@
   Backed by [stripe-go/v76](https://github.com/stripe/stripe-go).
 
   ```ntl
-  use "stripe"
+  val stripe = @import("std.stripe")
 
   var client = stripe.create(env.get("STRIPE_SECRET_KEY"))
 
@@ -1637,7 +1606,7 @@
   Backed by [amqp091-go](https://github.com/rabbitmq/amqp091-go).
 
   ```ntl
-  use "rabbitmq"
+  val rabbitmq = @import("std.rabbitmq")
 
   var conn = await rabbitmq.connect("amqp://guest:guest@localhost:5672/")
 
@@ -1683,7 +1652,7 @@
   Backed by [graphql-go/graphql](https://github.com/graphql-go/graphql).
 
   ```ntl
-  use "graphql"
+  val graphql = @import("std.graphql")
 
   // Build schema from NTL functions
   var schema = graphql.buildSchema({
@@ -1694,7 +1663,7 @@
       mutation: {
           createUser: fn(args) {
               var data = fromJSON(args.input)
-              return users.insert(data)
+              users.insert(data)
           }
       }
   })
@@ -1704,7 +1673,7 @@
   // result: { data: { hello: "Hello, NTL" }, errors: [] }
 
   // Integrate with HTTP server
-  use "http"
+  val http = @import("std.http")
   var server = http.server()
 
   server.post("/graphql", fn(req, res) {
@@ -1725,7 +1694,7 @@
   Backed by [excelize/v2](https://github.com/xuri/excelize).
 
   ```ntl
-  use "excel"
+  val excel = @import("std.excel")
 
   // Create new workbook
   var wb = excel.create()
@@ -1774,7 +1743,7 @@
   Backed by [jung-kurt/gofpdf](https://github.com/jung-kurt/gofpdf).
 
   ```ntl
-  use "pdf"
+  val pdf = @import("std.pdf")
 
   var doc = pdf.create({
       orientation: "portrait",    // "portrait" | "landscape"

@@ -1,28 +1,17 @@
-use io
-use crypto
-use utils
+val io   = @import("std.io")
+val math = @import("std.math")
+val str  = @import("std.string")
 
 fn main() {
-  val hash = crypto.sha256("hello world")
-  io.log("SHA256: " + hash)
+  io.log("sqrt(2) = " + math.sqrt(2))
+  io.log("floor(3.7) = " + math.floor(3.7))
+  io.log("abs(-5) = " + math.abs(-5))
 
-  val uuid = crypto.randomUUID()
-  io.log("UUID: " + uuid)
+  val s = "Hello, NTL!"
+  io.log(str.toUpper(s))
+  io.log(str.toLower(s))
+  io.log(str.replace(s, "NTL", "World"))
 
-  val now = utils.now()
-  io.log("timestamp: " + now)
-
-  val words = ["banana", "apple", "cherry", "date"]
-  val sorted = utils.sortBy(words)
-  io.log("sorted: " + JSON.stringify(sorted))
-
-  val chunked = utils.chunk(words, 2)
-  io.log("chunked: " + JSON.stringify(chunked))
-
-  val upper = words.map(fn(w) { return w.toUpperCase() })
-  io.log("upper: " + JSON.stringify(upper))
-
-  val obj = { a: 1, b: 2, c: 3, d: 4 }
-  val picked = utils.pick(obj, "a", "c")
-  io.log("picked: " + JSON.stringify(picked))
+  val parts = str.split("a,b,c", ",")
+  io.log(parts.join(" | "))
 }

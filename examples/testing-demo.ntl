@@ -1,15 +1,14 @@
-use test
-use utils
-
-fn add(a, b) { return a + b }
-fn multiply(a, b) { return a * b }
+val test = @import("std.test")
+val utils = @import("std.utils")
+fn add(a, b) { a + b }
+fn multiply(a, b) { a * b }
 fn divide(a, b) {
   if b === 0 { throw "division by zero" }
-  return a / b
+  a / b
 }
 fn capitalize(s) {
-  if s.length === 0 { return s }
-  return s[0].toUpperCase() + s.substring(1).toLowerCase()
+  if s.length === 0 { s }
+  s[0].toUpperCase() + s.substring(1).toLowerCase()
 }
 
 test.describe("math functions", fn() {

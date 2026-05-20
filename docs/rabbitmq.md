@@ -5,7 +5,7 @@ RabbitMQ / AMQP 0-9-1 message queue client.
 ## Import
 
 ```ntl
-use rabbitmq
+val rabbitmq = @import("std.rabbitmq")
 ```
 
 ## Connection
@@ -87,7 +87,7 @@ val consumer = ch.consume("tasks", fn(msg) {
 ## Example
 
 ```ntl
-use rabbitmq
+val rabbitmq = @import("std.rabbitmq")
 
 val conn = rabbitmq.connect("amqp://localhost")
 val ch = conn.createChannel()

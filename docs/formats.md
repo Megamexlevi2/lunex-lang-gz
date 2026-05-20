@@ -7,7 +7,7 @@ Data format parsers and serializers. Each format is available as its own module.
 ## ntl:csv
 
 ```ntl
-use csv
+val csv = @import("std.csv")
 ```
 
 ### `csv.parse(text, options?)`
@@ -55,7 +55,7 @@ csv.writeFile("output.csv", rows)
 ## ntl:yaml
 
 ```ntl
-use yaml
+val yaml = @import("std.yaml")
 ```
 
 ### `yaml.parse(text)`
@@ -83,7 +83,7 @@ Serializes a value and writes it to a YAML file.
 ## ntl:toml
 
 ```ntl
-use toml
+val toml = @import("std.toml")
 ```
 
 ### `toml.parse(text)`
@@ -112,7 +112,7 @@ Serializes a value and writes it to a TOML file.
 ## ntl:markdown
 
 ```ntl
-use markdown
+val markdown = @import("std.markdown")
 ```
 
 ### `markdown.toHTML(text, options?)`
@@ -141,7 +141,7 @@ Reads a Markdown file and returns it as HTML.
 ## ntl:mustache
 
 ```ntl
-use mustache
+val mustache = @import("std.mustache")
 ```
 
 ### `mustache.render(template, data)`

@@ -5,7 +5,7 @@ The `test` module provides a lightweight testing framework with assertions, suit
 ## Import
 
 ```ntl
-use test
+val test = @import("std.test")
 ```
 
 ---
@@ -189,12 +189,12 @@ io.log(stats.passed, "/", stats.total)
 ## Example: Testing a Function
 
 ```ntl
-use test
+val test = @import("std.test")
 
 fn add(a, b) { return a + b }
 fn divide(a, b) {
   if b == 0 { throw "division by zero" }
-  return a / b
+  a / b
 }
 
 test.suite("Math Functions", fn() {

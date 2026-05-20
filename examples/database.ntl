@@ -1,6 +1,5 @@
-use db
-use io
-
+val db = @import("std.db")
+val io = @import("std.io")
 val users = db.table("users")
 users.define({
   id:        { type: "string",  default: "$uuid" },

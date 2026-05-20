@@ -5,7 +5,7 @@ JSON Web Token signing, verification, and decoding.
 ## Import
 
 ```ntl
-use jwt
+val jwt = @import("std.jwt")
 ```
 
 ## `jwt.sign(payload, secret, options?)`
@@ -73,15 +73,14 @@ val newToken = jwt.refresh(oldToken, "mysecret", { expiresIn: 3600 })
 ## Example
 
 ```ntl
-use jwt
-use http
-use env
+val jwt = @import("std.jwt")
+val http = @import("std.http")
+val env = @import("std.env")
 
 http.get("/protected", fn(req, res) {
   val token = req.headers["authorization"]?.replace("Bearer ", "")
   if !token {
     res.status(401).send("unauthorized")
-    return
   }
   val user = jwt.verify(token, env.JWT_SECRET)
   res.json({ userId: user.userId })

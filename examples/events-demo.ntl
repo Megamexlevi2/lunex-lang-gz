@@ -1,7 +1,6 @@
-use events
-use io
-use utils
-
+val events = @import("std.events")
+val io = @import("std.io")
+val utils = @import("std.utils")
 io.log(io.bold("=== NTL Events Demo ===\n"))
 
 val emitter = events.create()

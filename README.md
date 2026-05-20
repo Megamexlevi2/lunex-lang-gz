@@ -1,14 +1,14 @@
-<div align="center">
+# NTL lang
 
-# NTL — Native Typed Language
+<p align="center">
+  <img src="icon.svg" width="140">
+</p>
 
-A modern typed programming language focused on performance, simplicity, and developer experience.
+**Created by David Dev · GitHub: https://github.com/Megamexlevi2 · (c) David Dev 2026**
 
-NTL compiles source code into portable `.nc` bytecode and includes a built-in terminal editor, package manager, formatter, and standard library.
+---
 
-```bash
-ntl build file.ntl
-```
+## Install
 
 </div>
 
@@ -47,247 +47,415 @@ install.sh
 
 </div>
 
----
-
-# Quick Start
+# source
 
 ```bash
-ntl build hello.ntl
-ntl run hello.nc
-
-ntl hello.ntl
-
-ntl pack ./dist -o app.nax
-ntl run app.nax
-
-ntl edit hello.ntl
+git clone https://github.com/Megamexlevi2/ntl-lang-gz
+cd ntl
+./build.sh
 ```
+
+`build.sh` installs Go and Zig automatically if they are not already present (Linux, macOS, Android/Termux, BSD).
+The result is a single binary: `./ntl`.
 
 ---
 
-# Example
+## Usage
+
+```bash
+./ntl run file.ntl              # run a source file
+./ntl run file.nc               # run compiled bytecode
+./ntl build file.ntl            # compile to bytecode (.nc)
+./ntl build file.ntl -o file.nc # compile with explicit output path
+```
+
+## Language Notes
+
+- **No `return`** — the last expression in a function body is its result automatically.
+- **No `class`** — use constructor functions + `struct { ... }` for named types.
+- A `main()` function is required as the program entry point.
+
+
+---
+
+## Hello World
 
 ```ntl
-use io
+val io = @import("std.io")
 
-fn greet(name) {
-  return "Hello, " + name + "!"
+fn main() {
+  io.log("Hello, world!")
+}
+```
+
+---
+
+## Variables
+
+```ntl
+val name  = "Alice"      // immutable
+var count = 0            // mutable
+count += 1
+```
+
+---
+
+## Types
+
+NTL is dynamically typed. Runtime types: `string`, `number`, `boolean`, `array`, `object`, `function`, `null`.
+
+```ntl
+typeof "hello"   // "string"
+typeof 42        // "number"
+typeof true      // "boolean"
+typeof [1, 2]    // "array"
+typeof {}        // "object"
+typeof null      // "null"
+```
+
+---
+
+## Operators
+
+```ntl
++  -  *  /  %  **        arithmetic
+==  !=  <  >  <=  >=     comparison
+===  !==                 strict equality
+and  or  not             logical
+?:                       ternary
+??                       nullish coalescing
+|>                       pipeline
+```
+
+---
+
+## Control Flow
+
+```ntl
+if x > 0 {
+  io.log("positive")
+} else if x < 0 {
+  io.log("negative")
+} else {
+  io.log("zero")
 }
 
-class Counter {
-  constructor(start) {
-    this.value = start
-  }
+unless x == 0 {
+  io.log("not zero")
+}
+```
 
-  inc() {
-    this.value += 1
-  }
+---
 
-  get() {
-    return this.value
-  }
+## Loops
+
+```ntl
+// range
+each i in range(10) {
+  io.log(i)
 }
 
-val c = new Counter(0)
+each i in range(2, 20, 2) {
+  io.log(i)
+}
 
+// iterate array
+each item in items {
+  io.log(item)
+}
+
+// while
+var i = 0
+while i < 10 {
+  i += 1
+}
+
+// infinite loop
+loop {
+  if done { break }
+}
+
+// repeat N times
 repeat 5 {
-  c.inc()
-}
-
-io.log(greet("world"), c.get())
-
-match c.get() {
-  case 5 => io.log("five!")
-  default => io.log("other")
+  io.log("hello")
 }
 ```
 
-Full language reference:
+---
 
-```text
-docs/language.md
+## Functions
+
+```ntl
+fn add(a, b) {
+  a + b
+}
+
+// variadic
+fn sum(...nums) {
+  var total = 0
+  each n in nums { total += n }
+  total
+}
+
+// first-class / closures
+val double = fn(x) { x * 2 }
+
+// pipeline
+val result = [1, 2, 3]
+  |> fn(arr) { arr.map(fn(x) { x * 2 }) }
+  |> fn(arr) { arr.filter(fn(x) { x > 2 }) }
 ```
 
 ---
 
-# CLI Reference
+## Objects
 
-| Command | Description |
-|---|---|
-| `ntl run <file>` | Run `.ntl`, `.nc`, or `.nax` files |
-| `ntl <file.ntl>` | Shortcut for running a source file |
-| `ntl -e "<code>"` | Execute inline code |
-| `ntl build <file.ntl>` | Compile source into `.nc` bytecode |
-| `ntl build` | Execute the `build.ntl` project script |
-| `ntl pack <dir> [-o out.nax]` | Create a distributable archive |
-| `ntl fmt <file.ntl>` | Format source code |
-| `ntl check <file.ntl>` | Run type-checking and linting |
-| `ntl dis <file.nc>` | Disassemble bytecode |
-| `ntl edit [file]` | Open the terminal editor |
-| `ntl init [name]` | Create a new project |
-| `ntl add <pkg>[@ver]` | Install a package |
-| `ntl remove <pkg>` | Remove a package |
-| `ntl list` | List installed packages |
-| `ntl cache clear` | Clear bytecode cache |
-| `ntl version` | Show current version |
+```ntl
+val person = {
+  name: "Alice",
+  age: 30,
+  greet: fn() {
+    "Hi, I am " + this.name
+  }
+}
 
----
-
-# File Formats
-
-| Extension | Description |
-|---|---|
-| `.ntl` | NTL source code |
-| `.nc` | Compiled bytecode |
-| `.nax` | Packaged application archive |
-| `ntl.mod` | Project manifest |
-
----
-
-# Execution Pipeline
-
-```text
-test.ntl
-   ↓
-Lexer / Parser
-   ↓
-AST
-   ↓
-Bytecode (.nc)
-   ↓
-ntl run test.nc
+io.log(person.name)
+io.log(person["age"])
+person.age = 31
 ```
 
 ---
 
-# Packaging Applications
+## Arrays
+
+```ntl
+val arr = [1, 2, 3, 4, 5]
+
+arr.push(6)
+arr.pop()
+arr.length
+
+arr.map(fn(x) { x * 2 })
+arr.filter(fn(x) { x > 2 })
+arr.reduce(fn(acc, x) { acc + x }, 0)
+arr.find(fn(x) { x > 3 })
+arr.includes(3)
+arr.slice(1, 3)
+arr.join(", ")
+arr.reverse()
+arr.sort()
+arr.forEach(fn(x) { io.log(x) })
+```
+
+---
+
+## Structs (Replacing Classes)
+
+
+```ntl
+fn Animal(name, sound) {
+  val self = struct {
+    name  = name
+    sound = sound
+    fn speak() {
+      self.name + " says " + self.sound
+    }
+  }
+  self
+}
+
+fn Dog(name) {
+  val base   = Animal(name, "woof")
+  val tricks = []
+  val self = struct {
+    name   = base.name
+    sound  = base.sound
+    tricks = tricks
+    fn speak()       { base.speak() }
+    fn learn(trick)  { self.tricks.push(trick) }
+    fn perform() {
+      if self.tricks.length == 0 {
+        self.name + " knows no tricks"
+      } else {
+        self.name + " can: " + self.tricks.join(", ")
+      }
+    }
+  }
+  self
+}
+
+val dog = Dog("Rex")
+io.log(dog.speak())
+dog.learn("sit")
+io.log(dog.perform())
+```
+
+---
+
+## Match
+
+```ntl
+fn describe(x) {
+  match x {
+    case null  => "nothing"
+    case true  => "yes"
+    case false => "no"
+    case 0     => "zero"
+    default    => "something else"
+  }
+}
+```
+
+---
+
+## Error Handling
+
+```ntl
+try {
+  val result = riskyOperation()
+} catch err {
+  io.log("error:", err)
+} finally {
+  io.log("always runs")
+}
+
+throw "something went wrong"
+
+// safe call — returns null on error instead of throwing
+val result = try? riskyOperation()
+```
+
+---
+
+## Template Strings
+
+```ntl
+val msg = `Hello, ${name}! You are ${age} years old.`
+```
+
+---
+
+## Destructuring
+
+```ntl
+val { name, age } = person
+val [first, second, ...rest] = items
+```
+
+---
+
+## Spread
+
+```ntl
+val merged   = { ...obj1, ...obj2 }
+val combined = [...arr1, ...arr2]
+```
+
+---
+
+## Optional Chaining & Nullish
+
+```ntl
+val value = maybeNull ?? "default"
+val name  = user?.profile?.name ?? "anonymous"
+val len   = arr?.length ?? 0
+```
+
+---
+
+## Concurrency
+
+```ntl
+spawn myFunction()
+
+val ch = channel()
+
+spawn fn() {
+  ch.send(42)
+}()
+
+val value = ch.recv()
+```
+
+---
+
+## Modules
+
+### Built-in stdlib
+
+```ntl
+val io       = @import("std.io")
+val fs       = @import("std.fs")
+val http     = @import("std.http")
+val crypto   = @import("std.crypto")
+val db       = @import("std.db")
+val env      = @import("std.env")
+val events   = @import("std.events")
+val cache    = @import("std.cache")
+val logger   = @import("std.logger")
+val queue    = @import("std.queue")
+val validate = @import("std.validate")
+val ws       = @import("std.ws")
+val mail     = @import("std.mail")
+val ai       = @import("std.ai")
+val utils    = @import("std.utils")
+val test     = @import("std.test")
+```
+
+### Packages (installed via `ntl add`)
+
+```ntl
+val discord = @import("discordntl")
+val github  = @import("ntl-github")
+```
+
+---
+
+## Stdlib Overview
+
+| Module     | Import                           | Description                                   | Docs                                         |
+|------------|----------------------------------|-----------------------------------------------|----------------------------------------------|
+| `io`       | `@import("std.io")`      | Console output, colors, tables                | [docs/io.md](docs/io.md)                     |
+| `fs`       | `@import("std.fs")`      | File system read/write                        | [docs/fs.md](docs/fs.md)                     |
+| `http`     | `@import("std.http")`    | HTTP client and server                        | [docs/http.md](docs/http.md)                 |
+| `crypto`   | `@import("std.crypto")`  | Hashing, HMAC, AES-GCM, bcrypt                | [docs/crypto.md](docs/crypto.md)             |
+| `db`       | `@import("std.db")`      | In-memory database with schema                | [docs/db.md](docs/db.md)                     |
+| `env`      | `@import("std.env")`     | Environment variables, .env loading           | [docs/env.md](docs/env.md)                   |
+| `validate` | `@import("std.validate")`| Schema validation and format checking         | [docs/validate.md](docs/validate.md)         |
+| `ws`       | `@import("std.ws")`      | WebSocket server and client                   | [docs/ws.md](docs/ws.md)                     |
+| `mail`     | `@import("std.mail")`    | SMTP email with HTML                          | [docs/mail.md](docs/mail.md)                 |
+| `ai`       | `@import("std.ai")`      | AI/LLM client (OpenAI-compatible)             | [docs/ai.md](docs/ai.md)                     |
+| `utils`    | `@import("std.utils")`   | Array, string, math utilities                 | [docs/utils.md](docs/utils.md)               |
+| `test`     | `@import("std.test")`    | Unit testing framework                        | [docs/test.md](docs/test.md)                 |
+| `xml`      | `@import("std.xml")`     | XML parse / build                             | [docs/xml.md](docs/xml.md)                   |
+| `os`       | `@import("std.os")`      | Process, signals, platform info               | [docs/os.md](docs/os.md)                     |
+| `redis`    | `@import("std.redis")`   | Redis client                                  | [docs/redis.md](docs/redis.md)               |
+| `postgres` | `@import("std.postgres")`| PostgreSQL client                             | [docs/postgres.md](docs/postgres.md)         |
+| `mysql`    | `@import("std.mysql")`   | MySQL client                                  | [docs/mysql.md](docs/mysql.md)               |
+| `jwt`      | `@import("std.jwt")`     | JSON Web Tokens                               | [docs/jwt.md](docs/jwt.md)                   |
+| `stripe`   | `@import("std.stripe")`  | Stripe payments                               | [docs/stripe.md](docs/stripe.md)             |
+| `oauth2`   | `@import("std.oauth2")`  | OAuth2 flows                                  | [docs/oauth2.md](docs/oauth2.md)             |
+| `graphql`  | `@import("std.graphql")` | GraphQL client                                | [docs/graphql.md](docs/graphql.md)           |
+| `rabbitmq` | `@import("std.rabbitmq")`| RabbitMQ client                               | [docs/rabbitmq.md](docs/rabbitmq.md)         |
+| `excel`    | `@import("std.excel")`   | Excel file read/write                         | [docs/excel.md](docs/excel.md)               |
+| `pdf`      | `@import("std.pdf")`     | PDF generation                                | [docs/pdf.md](docs/pdf.md)                   |
+| `alloc`    | `@import("std.alloc")`   | Manual memory allocation                      | [docs/alloc.md](docs/alloc.md)               |
+
+---
+
+## Build Options
 
 ```bash
-ntl build src/main.ntl -o dist/main.nc
-ntl build src/utils.ntl -o dist/utils.nc
-
-ntl pack dist -o myapp.nax
-
-ntl run myapp.nax
+./build.sh              # build for current platform
+./build.sh cross        # cross-compile for all platforms
+./build.sh test         # run tests
+./build.sh clean        # remove artifacts
 ```
 
----
+### Requirements
 
-# Compiler Optimizations
+Go 1.25+ and Zig 0.17 (installed automatically by `build.sh`).
 
-Before execution, the compiler applies several optimization passes through ENFS (Extreme Native Fast System):
+## License
 
-- Constant folding
-- Dead code elimination
-- Function inlining
-- Tail call conversion
-- Strength reduction
-- Block merging
-- Common subexpression elimination
-- Global value numbering
-
----
-
-# naxer — Terminal Editor
-
-`naxer` is the built-in terminal editor for NTL.
-
-It includes:
-
-- Syntax highlighting
-- Autocomplete
-- Vim/nano-style controls
-- Fast terminal-based editing
-
-Open the editor with:
-
-```bash
-ntl edit hello.ntl
-```
-
-## Editor Modes
-
-| Mode | Keys |
-|---|---|
-| Normal | `i` insert · `d` delete line · `w/b` move words · `:w` save · `:q` quit |
-| Insert | `Tab` autocomplete · `Esc` return to normal mode |
-| Command | `:wq` save and quit · `:e` open file |
-
----
-
-# Standard Library
-
-| Module | Description |
-|---|---|
-| `io` | Logging, printing, colors, tables |
-| `fs` | File system utilities |
-| `http` | HTTP client and server |
-| `crypto` | Hashing, AES, HMAC, JWT |
-| `db` | In-memory database |
-| `env` | Environment variables |
-| `events` | EventEmitter implementation |
-| `cache` | TTL cache |
-| `logger` | Structured logging |
-| `queue` | Task queues |
-| `validate` | Schema validation |
-| `ws` | WebSocket support |
-| `mail` | SMTP email |
-| `ai` | AI / LLM client |
-| `alloc` | Binary and memory utilities |
-| `excel` | Excel `.xlsx` support |
-| `formats` | CSV, YAML, TOML, Markdown |
-| `graphql` | GraphQL tools |
-| `jwt` | Token signing and verification |
-| `mysql` | MySQL and MariaDB client |
-| `oauth2` | OAuth 2.0 authentication |
-| `pdf` | PDF generation |
-| `rabbitmq` | RabbitMQ / AMQP |
-| `redis` | Redis client |
-| `stripe` | Stripe integration |
-| `utils` | Utility helpers |
-| `test` | Unit testing |
-
----
-
-# Documentation
-
-Module documentation is available inside the `docs/` folder.
-
-```text
-ai
-alloc
-commands
-crypto
-db
-env
-excel
-formats
-fs
-graphql
-http
-io
-jwt
-language
-mail
-mysql
-oauth2
-os
-pdf
-rabbitmq
-redis
-stripe
-test
-utils
-validate
-ws
-xml
-```
-
----
-
-# License
-
-See `LICENSE` for details.
-
-Copyright © 2026 David Dev (Megamexlevi2).
-All rights reserved.
+(c) David Dev 2026. See `License` file.
