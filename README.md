@@ -6,13 +6,11 @@
 
 **Created by David Dev · GitHub: https://github.com/Megamexlevi2 · (c) David Dev 2026**
 
----
+# more comprehensive documentation 
 
-## Install
-
-</div>
-
----
+<a href="https://megamexlevi2.github.io/ntl-lang-gz/docs/index.html" target="_blank" style="padding:12px 20px;background:#111;color:#fff;text-decoration:none;border-radius:10px;display:inline-block;font-weight:bold;">
+  Open Documentation
+</a>
 
 # Installation
 
@@ -47,11 +45,9 @@ install.sh
 
 </div>
 
-# source
+# Source Code
 
-```bash
-https://megamexlevi2.github.io/ntl-lang-gz/source/index.html
-```
+[Open Source Page](https://megamexlevi2.github.io/ntl-lang-gz/source/index.html)
 The result is a single binary: `./ntl`.
 
 ---
