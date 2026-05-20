@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NTL GZ — Documentation</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="root">
+<div class="site-shell">
+
+    <header class="topbar">
+      <a class="brand" href="../index.html">
+        <span class="brand-mark">NTL</span>
+        <span class="brand-text"><strong>NTL GZ</strong><span>documentation site</span></span>
+      </a>
+      <nav class="top-links">
+        <a class="active" href="../index.html">Home</a>
+        <a class="" href="../docs/index.html">Docs</a>
+        <a class="" href="../download/index.html">Download</a>
+        <a class="" href="../playground/index.html">Playground</a>
+      </nav>
+      <div class="actions">
+        <button class="hamburger" type="button" aria-label="Open menu" aria-expanded="false">☰</button>
+      </div>
+    </header>
+    <aside class="drawer" aria-hidden="true">
+      <div class="drawer-panel">
+        <div class="drawer-head">
+          <div>
+            <div class="drawer-title">Menu</div>
+            <div class="drawer-subtitle">Quick jump links</div>
+          </div>
+          <button class="drawer-close" type="button" aria-label="Close menu">×</button>
+        </div>
+        <a href="../index.html">Home</a>
+        <a href="../docs/index.html">Docs</a>
+        <a href="../download/index.html">Download</a>
+        <a href="../playground/index.html">Playground</a>
+        <div class="drawer-group">
+          <a href="../source/index.html">Source archive</a>
+          <a href="../credits/index.html">Credits</a>
+        </div>
+      </div>
+    </aside>
+    
+
+<main class="page">
+  <section class="hero">
+    <div class="panel hero-main">
+      <div class="kicker">Built with a practical toolchain, not empty hype</div>
+      <h1>NTL GZ</h1>
+      <p class="lead">
+        NTL officially started on Termux before expanding into Linux and other desktop platforms. That origin still influences the project today, especially in the way the runtime is designed around portability, low-level control, and practical tooling that works well even in lightweight environments.
+Linux support is now mature and stable, while Windows support has reached a solid and usable state, though some parts of the ecosystem are still being refined as the platform layer continues to evolve.
+      </p>
+      <div class="hero-actions">
+        <a class="btn primary" href="docs/index.html">Read the docs</a>
+        <a class="btn" href="download/index.html">Download installers</a>
+        <a class="btn" href="source/index.html">Get the source</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><strong>Linux first</strong><span>Strong support for Linux and portable builds.</span></div>
+        <div class="stat"><strong>Mobile roots</strong><span>The project started with Termux in mind.</span></div>
+        <div class="stat"><strong>Human docs</strong><span>Clear examples, not just polished marketing text.</span></div>
+      </div>
+    </div>
+    <aside class="panel hero-side">
+      <div class="side-card">
+        <h3>Quick start</h3>
+        <p>Open the docs and jump straight into the Starting section. The command examples are kept close to the page, so nothing feels hidden.</p>
+      </div>
+      <div class="side-code">
+        <pre><code>val io = @import("std.io")
+
+fn main() {
+  io.log("Hello from NTL")
+}</code></pre>
+      </div>
+      <div class="side-card">
+        <h3>A small note</h3>
+        <p>NTL is still a living project, and that is okay. The site says that plainly instead of pretending everything is frozen.</p>
+      </div>
+    </aside>
+  </section>
+
+  <section class="section panel">
+    <h2>What this site gives you</h2>
+    <div class="grid-3">
+      <div class="card"><h3>Installers</h3><p>Direct links to the official release assets for Linux, macOS, Android, and Windows.</p></div>
+      <div class="card"><h3>Real docs</h3><p>Starting, syntax, modules, architecture, I/O, HTTP, filesystem, commands, and more.</p></div>
+      <div class="card"><h3>Source archive</h3><p>The source tarball is tucked away behind the menu, the way you asked for it.</p></div>
+    </div>
+  </section>
+
+  <section class="section panel">
+    <h2>Where to go next</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Start with the language</h3>
+        <p>The docs explain the basic syntax, the execution model, and the standard modules in a way that stays practical.</p>
+      </div>
+      <div class="card">
+        <h3>Then look at the builds</h3>
+        <p>The download page lists every official asset so people can grab the right one without digging around.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+</div>
+<script src="assets/app.js"></script>
+</body>
+</html>
