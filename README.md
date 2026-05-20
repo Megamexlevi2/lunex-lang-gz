@@ -50,12 +50,8 @@ install.sh
 # source
 
 ```bash
-git clone https://github.com/Megamexlevi2/ntl-lang-gz
-cd ntl
-./build.sh
+https://megamexlevi2.github.io/ntl-lang-gz/source/index.html
 ```
-
-`build.sh` installs Go and Zig automatically if they are not already present (Linux, macOS, Android/Termux, BSD).
 The result is a single binary: `./ntl`.
 
 ---
