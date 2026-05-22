@@ -1,6 +1,10 @@
-# ntl:alloc
+# Memory Allocation Module
 
-Low-level memory buffer module. Gives direct control over raw byte regions, shared memory pools, and binary I/O. Bypasses NTL safety guarantees — reading or writing out of bounds will corrupt memory or crash the process.
+Low-level memory management and allocation utilities for fine-grained control over memory usage.
+
+**Use case:** Advanced users: optimize memory for performance-critical applications.
+
+---
 
 ## Import
 
@@ -8,101 +12,241 @@ Low-level memory buffer module. Gives direct control over raw byte regions, shar
 val alloc = @import("std.alloc")
 ```
 
-## Buffer
+---
 
-### `alloc.create(size)`
+## Available Functions
 
-Allocates a new buffer of `size` bytes (zero-initialized).
+### `buffer(size)`
 
+Executes the `buffer` operation with the given parameter (size).
+
+**Signature:**
 ```ntl
-val buf = alloc.create(1024)
+fn buffer(size)
 ```
 
-### `alloc.fromString(str)`
+### `write(offset, ...bytes)`
 
-Creates a buffer from a UTF-8 string.
+Executes the `write` operation with the given parameters (offset, ...bytes).
 
+**Signature:**
 ```ntl
-val buf = alloc.fromString("hello")
+fn write(offset, ...bytes)
 ```
 
-### `alloc.fromBytes(array)`
+### `writeString(offset, str)`
 
-Creates a buffer from an array of byte values (0–255).
+Executes the `writeString` operation with the given parameters (offset, str).
 
+**Signature:**
 ```ntl
-val buf = alloc.fromBytes([0x48, 0x65, 0x6C, 0x6C, 0x6F])
+fn writeString(offset, str)
 ```
 
-## Buffer methods
+### `readByte(offset)`
 
-All methods are on the object returned by `alloc.create`, `alloc.fromString`, or `alloc.fromBytes`.
+Executes the `readByte` operation with the given parameter (offset).
 
-| Method | Description |
-|---|---|
-| `buf.size()` | Returns the byte length of the buffer |
-| `buf.cap()` | Returns the allocated capacity |
-| `buf.readByte(index)` | Reads a single byte at `index` (0–255) |
-| `buf.writeByte(index, value)` | Writes a byte at `index`; returns `true` on success |
-| `buf.readU16LE(offset)` | Reads a 16-bit unsigned integer (little-endian) |
-| `buf.readU32LE(offset)` | Reads a 32-bit unsigned integer (little-endian) |
-| `buf.readU64LE(offset)` | Reads a 64-bit unsigned integer (little-endian) |
-| `buf.writeU16LE(offset, value)` | Writes a 16-bit unsigned integer (little-endian) |
-| `buf.writeU32LE(offset, value)` | Writes a 32-bit unsigned integer (little-endian) |
-| `buf.writeU64LE(offset, value)` | Writes a 64-bit unsigned integer (little-endian) |
-| `buf.readFloat32LE(offset)` | Reads a 32-bit float (little-endian) |
-| `buf.readFloat64LE(offset)` | Reads a 64-bit float (little-endian) |
-| `buf.writeFloat32LE(offset, value)` | Writes a 32-bit float (little-endian) |
-| `buf.writeFloat64LE(offset, value)` | Writes a 64-bit float (little-endian) |
-| `buf.toString()` | Converts the buffer to a UTF-8 string |
-| `buf.toBytes()` | Returns an array of byte values |
-| `buf.slice(start, end)` | Returns a new buffer from `start` to `end` (exclusive) |
-| `buf.copy(src, dstOffset, srcOffset, length)` | Copies `length` bytes from `src` into this buffer |
-| `buf.fill(value)` | Fills the entire buffer with `value` (0–255) |
-| `buf.close()` | Releases the buffer and marks it as closed |
-
-## Shared regions
-
-Named memory regions shared across calls within the same process.
-
-### `alloc.region(name, size)`
-
-Creates or attaches to a named shared region.
-
+**Signature:**
 ```ntl
-val region = alloc.region("mydata", 4096)
-region.writeU32LE(0, 42)
+fn readByte(offset)
 ```
 
-### `alloc.dropRegion(name)`
+### `readString(offset, length)`
 
-Releases a named shared region.
+Executes the `readString` operation with the given parameters (offset, length).
 
+**Signature:**
 ```ntl
-alloc.dropRegion("mydata")
+fn readString(offset, length)
 ```
 
-## HTTP binary transfer
+### `readBytes(offset, length)`
 
-### `alloc.fetchBinary(url)`
+Executes the `readBytes` operation with the given parameters (offset, length).
 
-Downloads a URL and returns the response body as a buffer.
-
+**Signature:**
 ```ntl
-val buf = await alloc.fetchBinary("https://example.com/data.bin")
+fn readBytes(offset, length)
 ```
 
-### `alloc.postBinary(url, buf)`
+### `fill(value)`
 
-Posts a buffer as the request body (raw bytes). Returns the response as a buffer.
+Executes the `fill` operation with the given parameter (value).
 
+**Signature:**
 ```ntl
-val res = await alloc.postBinary("https://example.com/upload", buf)
+fn fill(value)
 ```
 
-## Notes
+### `slice(start, end)`
 
-- Index bounds are checked at runtime — out-of-bounds reads return `false`, writes return `false`.
-- `close()` must be called manually; buffers are not garbage collected automatically.
-- Shared regions use reference counting; `dropRegion` decrements the ref count.
-- On Android, this module runs entirely in user-space without any kernel privilege escalation.
+Executes the `slice` operation with the given parameters (start, end).
+
+**Signature:**
+```ntl
+fn slice(start, end)
+```
+
+### `copy(src, destOffset, srcOffset, length)`
+
+Executes the `copy` operation with the given parameters (src, destOffset, srcOffset, length).
+
+**Signature:**
+```ntl
+fn copy(src, destOffset, srcOffset, length)
+```
+
+### `byteSize()`
+
+Executes the `byteSize` operation with the given no arguments.
+
+**Signature:**
+```ntl
+fn byteSize()
+```
+
+### `raw()`
+
+Executes the `raw` operation with the given no arguments.
+
+**Signature:**
+```ntl
+fn raw()
+```
+
+### `free()`
+
+Executes the `free` operation with the given no arguments.
+
+**Signature:**
+```ntl
+fn free()
+```
+
+### `arena(capacity)`
+
+Executes the `arena` operation with the given parameter (capacity).
+
+**Signature:**
+```ntl
+fn arena(capacity)
+```
+
+### `alloc(size)`
+
+Executes the `alloc` operation with the given parameter (size).
+
+**Signature:**
+```ntl
+fn alloc(size)
+```
+
+### `allocZero(size)`
+
+Executes the `allocZero` operation with the given parameter (size).
+
+**Signature:**
+```ntl
+fn allocZero(size)
+```
+
+### `reset()`
+
+Executes the `reset` operation with the given no arguments.
+
+**Signature:**
+```ntl
+fn reset()
+```
+
+### `destroy()`
+
+Executes the `destroy` operation with the given no arguments.
+
+**Signature:**
+```ntl
+fn destroy()
+```
+
+### `used()`
+
+Executes the `used` operation with the given no arguments.
+
+**Signature:**
+```ntl
+fn used()
+```
+
+### `remaining()`
+
+Executes the `remaining` operation with the given no arguments.
+
+**Signature:**
+```ntl
+fn remaining()
+```
+
+### `fromString(str)`
+
+Executes the `fromString` operation with the given parameter (str).
+
+**Signature:**
+```ntl
+fn fromString(str)
+```
+
+### `fromBytes(arr)`
+
+Executes the `fromBytes` operation with the given parameter (arr).
+
+**Signature:**
+```ntl
+fn fromBytes(arr)
+```
+
+### `pageSize()`
+
+Executes the `pageSize` operation with the given no arguments.
+
+**Signature:**
+```ntl
+fn pageSize()
+```
+
+### `alignTo(size, align)`
+
+Executes the `alignTo` operation with the given parameters (size, align).
+
+**Signature:**
+```ntl
+fn alignTo(size, align)
+```
+
+### `sizeof(val)`
+
+Executes the `sizeof` operation with the given parameter (val).
+
+**Signature:**
+```ntl
+fn sizeof(val)
+```
+
+### `concat(...bufs)`
+
+Executes the `concat` operation with the given parameter (...bufs).
+
+**Signature:**
+```ntl
+fn concat(...bufs)
+```
+
+### `stats()`
+
+Executes the `stats` operation with the given no arguments.
+
+**Signature:**
+```ntl
+fn stats()
+```
+

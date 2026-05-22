@@ -1,6 +1,10 @@
-# ntl:jwt
+# JWT Module
 
-JSON Web Token signing, verification, and decoding.
+JSON Web Token creation, verification, signing, and claims management.
+
+**Use case:** Implement token-based authentication and authorization.
+
+---
 
 ## Import
 
@@ -8,81 +12,52 @@ JSON Web Token signing, verification, and decoding.
 val jwt = @import("std.jwt")
 ```
 
-## `jwt.sign(payload, secret, options?)`
+---
 
-Creates a signed JWT string.
+## Available Functions
 
-| Parameter | Type | Description |
-|---|---|---|
-| `payload` | object | Claims to encode (any key-value pairs) |
-| `secret` | string | Signing secret |
-| `options` | object? | Optional signing options |
+### `sign(payload, secret, options)`
 
-Options:
+Executes the `sign` operation with the given parameters (payload, secret, options).
 
-| Field | Default | Description |
-|---|---|---|
-| `algorithm` | `"HS256"` | Algorithm: `"HS256"`, `"HS384"`, `"HS512"`, `"RS256"` |
-| `expiresIn` | `3600` | Expiry in seconds |
-| `issuer` | — | `iss` claim |
-| `audience` | — | `aud` claim |
-| `subject` | — | `sub` claim |
-
+**Signature:**
 ```ntl
-val token = jwt.sign({ userId: 42, role: "admin" }, "mysecret", {
-  expiresIn: 86400,
-  algorithm: "HS256"
-})
+fn sign(payload, secret, options)
 ```
 
-## `jwt.verify(token, secret, options?)`
+### `verify(token, secret)`
 
-Verifies a JWT and returns the decoded payload. Throws if the token is invalid or expired.
+Executes the `verify` operation with the given parameters (token, secret).
 
+**Signature:**
 ```ntl
-val payload = jwt.verify(token, "mysecret")
-io.log(payload.userId)
+fn verify(token, secret)
 ```
 
-## `jwt.decode(token)`
+### `decode(token)`
 
-Decodes a JWT **without** verifying the signature. Useful for reading claims from trusted internal tokens.
+Executes the `decode` operation with the given parameter (token).
 
+**Signature:**
 ```ntl
-val claims = jwt.decode(token)
+fn decode(token)
 ```
 
-## `jwt.isExpired(token)`
+### `isExpired(token)`
 
-Returns `true` if the token's `exp` claim is in the past.
+Executes the `isExpired` operation with the given parameter (token).
 
+**Signature:**
 ```ntl
-if jwt.isExpired(token) {
-  // refresh or reject
-}
+fn isExpired(token)
 ```
 
-## `jwt.refresh(token, secret, options?)`
+### `refresh(token, secret, expiresIn)`
 
-Verifies a token and issues a new one with a fresh expiry. Useful for sliding session windows.
+Executes the `refresh` operation with the given parameters (token, secret, expiresIn).
 
+**Signature:**
 ```ntl
-val newToken = jwt.refresh(oldToken, "mysecret", { expiresIn: 3600 })
+fn refresh(token, secret, expiresIn)
 ```
 
-## Example
-
-```ntl
-val jwt = @import("std.jwt")
-val http = @import("std.http")
-val env = @import("std.env")
-
-http.get("/protected", fn(req, res) {
-  val token = req.headers["authorization"]?.replace("Bearer ", "")
-  if !token {
-    res.status(401).send("unauthorized")
-  }
-  val user = jwt.verify(token, env.JWT_SECRET)
-  res.json({ userId: user.userId })
-})
-```

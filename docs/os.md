@@ -1,289 +1,297 @@
-# os
+# Operating System Module
 
-  Operating system interface: process execution, environment variables, paths, file system metadata, and system info.
+Operating system utilities including process management, signal handling, and environment information.
 
-  ## Import
+**Use case:** Interact with the operating system and manage processes.
 
-  ```ntl
-  val os = @import("std.os")
-  ```
+---
 
-  ---
+## Import
 
-  ## Process Execution
+```ntl
+val os = @import("std.os")
+```
 
-  ### os.exec(command, options?)
+---
 
-  Run a command and wait for it to finish. Returns `{ stdout, stderr, code, ok }`.
+## Available Functions
 
-  ```ntl
-  val os = @import("std.os")
-  val io = @import("std.io")
+### `_exec(command, options)`
 
-  val result = os.exec("git status")
-  io.log(result.stdout)
-  io.log("exit code:", result.code)
+Executes the `_exec` operation with the given parameters (command, options).
 
-  val result2 = os.exec("npm install", {
-    cwd:     "/my/project",
-    timeout: 30000,
-    env:     { NODE_ENV: "production" }
-  })
-  if result2.ok {
-    io.success("Installed")
-  } else {
-    io.error(result2.stderr)
-  }
-  ```
+**Signature:**
+```ntl
+fn _exec(command, options)
+```
 
-  Options:
-  - `cwd` — working directory
-  - `env` — extra environment variables (merged with current env)
-  - `timeout` — milliseconds before the process is killed
+### `_spawn(command, options)`
 
-  ### os.spawn(command, options?)
+Executes the `_spawn` operation with the given parameters (command, options).
 
-  Start a process in the background without waiting. Returns `{ pid, wait(), kill() }`.
+**Signature:**
+```ntl
+fn _spawn(command, options)
+```
 
-  ```ntl
-  val os = @import("std.os")
-  val io = @import("std.io")
+### `_getenv(key)`
 
-  val proc = os.spawn("python3 server.py")
-  io.log("started PID", proc.pid)
+Executes the `_getenv` operation with the given parameter (key).
 
-  val code = proc.wait()
-  io.log("exited with", code)
+**Signature:**
+```ntl
+fn _getenv(key)
+```
 
-  proc.kill()
-  ```
+### `_setenv(key, value)`
 
-  ---
+Executes the `_setenv` operation with the given parameters (key, value).
 
-  ## Environment Variables
+**Signature:**
+```ntl
+fn _setenv(key, value)
+```
 
-  ### os.getenv(key)
+### `_unsetenv(key)`
 
-  Get an environment variable.
+Executes the `_unsetenv` operation with the given parameter (key).
 
-  ```ntl
-  val token = os.getenv("API_TOKEN")
-  ```
+**Signature:**
+```ntl
+fn _unsetenv(key)
+```
 
-  ### os.setenv(key, value)
+### `_environ()`
 
-  Set an environment variable for the current process.
+Executes the `_environ` operation with the given no arguments.
 
-  ### os.unsetenv(key)
+**Signature:**
+```ntl
+fn _environ()
+```
 
-  Remove an environment variable.
+### `_getpid()`
 
-  ### os.environ()
+Executes the `_getpid` operation with the given no arguments.
 
-  Get all environment variables as an object.
+**Signature:**
+```ntl
+fn _getpid()
+```
 
-  ```ntl
-  val env = os.environ()
-  io.log(env["PATH"])
-  ```
+### `_getppid()`
 
-  ### os.expandEnv(str)
+Executes the `_getppid` operation with the given no arguments.
 
-  Expand `$VAR` and `${VAR}` placeholders in a string.
+**Signature:**
+```ntl
+fn _getppid()
+```
 
-  ```ntl
-  val home = os.expandEnv("$HOME/projects")
-  ```
+### `_getcwd()`
 
-  ---
+Executes the `_getcwd` operation with the given no arguments.
 
-  ## Process Info
+**Signature:**
+```ntl
+fn _getcwd()
+```
 
-  ### os.getpid()
+### `_chdir(path)`
 
-  Current process ID.
+Executes the `_chdir` operation with the given parameter (path).
 
-  ### os.getppid()
+**Signature:**
+```ntl
+fn _chdir(path)
+```
 
-  Parent process ID.
+### `_hostname()`
 
-  ### os.args()
+Executes the `_hostname` operation with the given no arguments.
 
-  Command-line arguments as an array.
+**Signature:**
+```ntl
+fn _hostname()
+```
 
-  ```ntl
-  val args = os.args()
-  io.log("running:", args[0])
-  ```
+### `_platform()`
 
-  ### os.exit(code?)
+Executes the `_platform` operation with the given no arguments.
 
-  Exit the process. Default exit code is `0`.
+**Signature:**
+```ntl
+fn _platform()
+```
 
-  ---
+### `_arch()`
 
-  ## System Info
+Executes the `_arch` operation with the given no arguments.
 
-  ### os.platform()
+**Signature:**
+```ntl
+fn _arch()
+```
 
-  Operating system name: `"linux"`, `"darwin"`, `"windows"`, etc.
+### `_cpus()`
 
-  ### os.arch()
+Executes the `_cpus` operation with the given no arguments.
 
-  CPU architecture: `"amd64"`, `"arm64"`, etc.
+**Signature:**
+```ntl
+fn _cpus()
+```
 
-  ### os.cpus()
+### `_exit(code)`
 
-  Number of logical CPUs.
+Executes the `_exit` operation with the given parameter (code).
 
-  ### os.hostname()
+**Signature:**
+```ntl
+fn _exit(code)
+```
 
-  Machine hostname.
+### `_args()`
 
-  ```ntl
-  val os = @import("std.os")
-  val io = @import("std.io")
+Executes the `_args` operation with the given no arguments.
 
-  io.log(os.platform(), os.arch(), os.cpus() + " CPUs")
-  ```
+**Signature:**
+```ntl
+fn _args()
+```
 
-  ---
+### `_stat(path)`
 
-  ## Paths
+Executes the `_stat` operation with the given parameter (path).
 
-  ### os.join(...parts)
+**Signature:**
+```ntl
+fn _stat(path)
+```
 
-  Join path segments.
+### `_exists(path)`
 
-  ```ntl
-  val p = os.join(os.homeDir, "projects", "myapp")
-  ```
+Executes the `_exists` operation with the given parameter (path).
 
-  ### os.dirname(path)
+**Signature:**
+```ntl
+fn _exists(path)
+```
 
-  Parent directory of a path.
+### `_mkdir(path, recursive)`
 
-  ### os.basename(path)
+Executes the `_mkdir` operation with the given parameters (path, recursive).
 
-  Last segment of a path.
+**Signature:**
+```ntl
+fn _mkdir(path, recursive)
+```
 
-  ### os.extname(path)
+### `_remove(path, recursive)`
 
-  File extension including the dot.
+Executes the `_remove` operation with the given parameters (path, recursive).
 
-  ### os.abs(path)
+**Signature:**
+```ntl
+fn _remove(path, recursive)
+```
 
-  Resolve a relative path to an absolute path.
+### `_rename(src, dst)`
 
-  ### os.sep
+Executes the `_rename` operation with the given parameters (src, dst).
 
-  Path separator character (`/` or `\\`).
+**Signature:**
+```ntl
+fn _rename(src, dst)
+```
 
-  ### os.homeDir
+### `_listDir(path)`
 
-  Current user's home directory.
+Executes the `_listDir` operation with the given parameter (path).
 
-  ---
+**Signature:**
+```ntl
+fn _listDir(path)
+```
 
-  ## File System Metadata
+### `_glob(pattern)`
 
-  ### os.stat(path)
+Executes the `_glob` operation with the given parameter (pattern).
 
-  Get file/directory info. Returns `null` if path does not exist.
+**Signature:**
+```ntl
+fn _glob(pattern)
+```
 
-  ```ntl
-  val info = os.stat("./myfile.txt")
-  if info !== null {
-    io.log(info.name, info.size, info.isFile, info.modTime)
-  }
-  ```
+### `_tempDir()`
 
-  Fields: `name`, `size`, `isDir`, `isFile`, `mode`, `modTime`
+Executes the `_tempDir` operation with the given no arguments.
 
-  ### os.exists(path)
+**Signature:**
+```ntl
+fn _tempDir()
+```
 
-  Returns `true` if the path exists.
+### `_tempFile(prefix)`
 
-  ### os.listDir(path?)
+Executes the `_tempFile` operation with the given parameter (prefix).
 
-  List directory contents. Default is current directory.
+**Signature:**
+```ntl
+fn _tempFile(prefix)
+```
 
-  ```ntl
-  val entries = os.listDir(".")
-  each e in entries {
-    io.log(e.name, e.isDir ? "[dir]" : e.size + " bytes")
-  }
-  ```
+### `_expandEnv(str)`
 
-  ### os.glob(pattern)
+Executes the `_expandEnv` operation with the given parameter (str).
 
-  Find paths matching a glob pattern.
+**Signature:**
+```ntl
+fn _expandEnv(str)
+```
 
-  ```ntl
-  val files = os.glob("src/**/*.ntl")
-  each f in files { io.log(f) }
-  ```
+### `_join(...parts)`
 
-  ### os.mkdir(path, recursive?)
+Executes the `_join` operation with the given parameter (...parts).
 
-  Create a directory. Pass `true` to create parent directories.
+**Signature:**
+```ntl
+fn _join(...parts)
+```
 
-  ### os.remove(path, recursive?)
+### `_dirname(path)`
 
-  Delete a file or directory. Pass `true` to remove recursively.
+Executes the `_dirname` operation with the given parameter (path).
 
-  ### os.rename(src, dst)
+**Signature:**
+```ntl
+fn _dirname(path)
+```
 
-  Rename or move a file.
+### `_basename(path)`
 
-  ### os.tempDir()
+Executes the `_basename` operation with the given parameter (path).
 
-  Path to the system temp directory.
+**Signature:**
+```ntl
+fn _basename(path)
+```
 
-  ### os.tempFile(prefix?)
+### `_extname(path)`
 
-  Create a temporary file and return its path.
+Executes the `_extname` operation with the given parameter (path).
 
-  ---
+**Signature:**
+```ntl
+fn _extname(path)
+```
 
-  ## Examples
+### `_abs(path)`
 
-  ### Run a build script and log output
+Executes the `_abs` operation with the given parameter (path).
 
-  ```ntl
-  val os = @import("std.os")
-  val io = @import("std.io")
+**Signature:**
+```ntl
+fn _abs(path)
+```
 
-  val r = os.exec("go build ./...", { cwd: os.getcwd() })
-  if r.ok {
-    io.success("Build complete")
-  } else {
-    io.error("Build failed")
-    io.error(r.stderr)
-    os.exit(1)
-  }
-  ```
-
-  ### Walk directory and list all .ntl files
-
-  ```ntl
-  val os = @import("std.os")
-  val io = @import("std.io")
-
-  val files = os.glob("**/*.ntl")
-  io.log("Found " + files.length + " NTL files:")
-  each f in files { io.log("  " + f) }
-  ```
-
-  ### Spawn a background process
-
-  ```ntl
-  val os = @import("std.os")
-  val io = @import("std.io")
-
-  val server = os.spawn("node server.js", { cwd: "./backend" })
-  io.log("Server PID:", server.pid)
-  io.log("Press Ctrl+C to stop")
-  server.wait()
-  ```
-  

@@ -1,6 +1,10 @@
-# db — In-Memory Database Module
+# Database Module
 
-The `db` module provides a lightweight in-memory key-value store with support for tables, querying, sorting, and basic persistence.
+Generic database abstractions and SQL utilities for database connectivity and queries.
+
+**Use case:** Build database query abstractions and manage connections.
+
+---
 
 ## Import
 
@@ -10,193 +14,68 @@ val db = @import("std.db")
 
 ---
 
-## Key-Value Store
+## Available Functions
 
-### `db.set(key, value)`
-Store any value under a key.
+### `create(name)`
 
+Executes the `create` operation with the given parameter (name).
+
+**Signature:**
 ```ntl
-db.set("user:1", { name: "Alice", age: 30 })
+fn create(name)
 ```
 
-### `db.get(key)`
-Retrieve a value by key. Returns `null` if not found.
+### `open(name)`
 
+Executes the `open` operation with the given parameter (name).
+
+**Signature:**
 ```ntl
-val user = db.get("user:1")
-io.log(user.name)
+fn open(name)
 ```
 
-### `db.has(key)`
-Returns `true` if the key exists.
+### `connect(name)`
 
+Executes the `connect` operation with the given parameter (name).
+
+**Signature:**
 ```ntl
-if db.has("user:1") {
-  // ...
-}
+fn connect(name)
 ```
 
-### `db.delete(key)`
-Remove a key.
+### `table(name)`
 
+Executes the `table` operation with the given parameter (name).
+
+**Signature:**
 ```ntl
-db.delete("user:1")
+fn table(name)
 ```
 
-### `db.keys()`
-Return all stored keys as an array.
+### `collection(name)`
 
+Executes the `collection` operation with the given parameter (name).
+
+**Signature:**
 ```ntl
-val keys = db.keys()
+fn collection(name)
 ```
 
-### `db.size()`
-Return the number of stored keys.
+### `drop(name)`
 
-### `db.clear()`
-Delete all keys.
+Executes the `drop` operation with the given parameter (name).
 
-### `db.all()`
-Return all key-value pairs as an object.
-
+**Signature:**
 ```ntl
-val store = db.all()
+fn drop(name)
 ```
 
----
+### `list()`
 
-## Tables
+Executes the `list` operation with the given no arguments.
 
-### `db.table(name)`
-Create or access a table (like a simple collection).
-
+**Signature:**
 ```ntl
-val users = db.table("users")
+fn list()
 ```
 
-### Table Methods
-
-#### `table.insert(record)`
-Insert a record. Auto-assigns an `id` if not provided.
-
-```ntl
-users.insert({ name: "Alice", email: "alice@example.com" })
-users.insert({ name: "Bob",   email: "bob@example.com" })
-```
-
-#### `table.find(id)` / `table.findById(id)`
-Find a record by its ID.
-
-```ntl
-val user = users.find(1)
-```
-
-#### `table.where(predicate)`
-Filter records by a predicate function.
-
-```ntl
-val admins = users.where(fn(u) { u.role == "admin" })
-```
-
-#### `table.all()`
-Return all records.
-
-```ntl
-val all = users.all()
-```
-
-#### `table.update(id, changes)`
-Update a record by ID.
-
-```ntl
-users.update(1, { name: "Alice Smith" })
-```
-
-#### `table.delete(id)` / `table.remove(id)`
-Delete a record by ID.
-
-```ntl
-users.delete(1)
-```
-
-#### `table.count()`
-Return the number of records.
-
-```ntl
-io.log(users.count(), "users")
-```
-
-#### `table.clear()`
-Remove all records from the table.
-
-#### `table.sort(key, [direction])`
-Sort records by a field. Direction is `"asc"` (default) or `"desc"`.
-
-```ntl
-val sorted = users.sort("name", "asc")
-```
-
-#### `table.first()`
-Return the first record or `null`.
-
-#### `table.last()`
-Return the last record or `null`.
-
-#### `table.limit(n)`
-Return the first `n` records.
-
-```ntl
-val top5 = users.limit(5)
-```
-
----
-
-## Persistence (optional)
-
-### `db.save(path)`
-Serialize the entire store to a JSON file.
-
-```ntl
-db.save("data.json")
-```
-
-### `db.load(path)`
-Load data from a JSON file.
-
-```ntl
-db.load("data.json")
-```
-
----
-
-## Example: Simple User Store
-
-```ntl
-val db = @import("std.db")
-val io = @import("std.io")
-
-val users = db.table("users")
-
-fn addUser(name, email) {
-  users.insert({ name: name, email: email, createdAt: now() })
-}
-
-fn listUsers() {
-  val all = users.all()
-  each u in all {
-    io.log(io.cyan(u.name), gray(u.email))
-  }
-}
-
-fn main() {
-  addUser("Alice", "alice@example.com")
-  addUser("Bob",   "bob@example.com")
-  addUser("Carol", "carol@example.com")
-
-  io.log("Total users:", users.count())
-  listUsers()
-
-  val found = users.where(fn(u) { u.name == "Alice" })
-  io.log("Found:", found[0].name)
-}
-```

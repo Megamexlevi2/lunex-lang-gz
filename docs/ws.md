@@ -1,6 +1,10 @@
-# ws — WebSocket Module
+# WebSocket Module
 
-The `ws` module provides a WebSocket server and client for real-time bidirectional communication.
+WebSocket client and server for real-time bidirectional communication.
+
+**Use case:** Build real-time applications with WebSocket support.
+
+---
 
 ## Import
 
@@ -10,145 +14,113 @@ val ws = @import("std.ws")
 
 ---
 
-## WebSocket Server
+## Available Functions
 
-### `ws.server([options])`
-Create a WebSocket server.
+### `createServer(port, options)`
 
+Executes the `createServer` operation with the given parameters (port, options).
+
+**Signature:**
 ```ntl
-val server = ws.server({ port: 8080 })
+fn createServer(port, options)
 ```
 
-#### Options
+### `on(event, handler)`
 
-| Option | Default | Description |
-|---|---|---|
-| `port` | `8080` | Port to listen on |
-| `path` | `"/"` | WebSocket endpoint path |
-| `maxSize` | `1MB` | Max message size in bytes |
+Executes the `on` operation with the given parameters (event, handler).
 
-### Server Events
-
+**Signature:**
 ```ntl
-server.on("connect", fn(client) {
-  io.log("Client connected:", client.id)
-
-  client.on("message", fn(msg) {
-    io.log("Received:", msg)
-    client.send("Echo: " + msg)
-  })
-
-  client.on("close", fn() {
-    io.log("Client disconnected:", client.id)
-  })
-})
-
-server.listen()
-io.log("WebSocket server on :8080")
+fn on(event, handler)
 ```
 
-### `server.broadcast(message)`
-Send a message to all connected clients.
+### `send(client, message)`
 
+Executes the `send` operation with the given parameters (client, message).
+
+**Signature:**
 ```ntl
-server.broadcast("Server announcement")
+fn send(client, message)
 ```
 
-### `server.clients()`
-Return a list of all connected clients.
+### `broadcast(message)`
 
+Executes the `broadcast` operation with the given parameter (message).
+
+**Signature:**
 ```ntl
-val count = server.clients().length
-io.log(count, "clients connected")
+fn broadcast(message)
 ```
 
-### `server.close()`
-Stop the server.
+### `start(callback)`
 
----
+Executes the `start` operation with the given parameter (callback).
 
-## WebSocket Client
-
-### `ws.connect(url, [options])`
-Connect to a WebSocket server.
-
+**Signature:**
 ```ntl
-val client = ws.connect("ws://localhost:8080")
+fn start(callback)
 ```
 
-### Client Methods
+### `clientCount()`
 
+Executes the `clientCount` operation with the given no arguments.
+
+**Signature:**
 ```ntl
-client.on("open", fn() {
-  io.log("Connected")
-  client.send("Hello!")
-})
-
-client.on("message", fn(data) {
-  io.log("Got:", data)
-})
-
-client.on("close", fn(code, reason) {
-  io.log("Disconnected:", code, reason)
-})
-
-client.on("error", fn(err) {
-  io.error("Error:", err)
-})
+fn clientCount()
 ```
 
-### `client.send(message)`
-Send a string or JSON-serializable message.
+### `stop()`
 
+Executes the `stop` operation with the given no arguments.
+
+**Signature:**
 ```ntl
-client.send("Hello")
-client.send({ type: "ping", ts: now() })
+fn stop()
 ```
 
-### `client.close([code], [reason])`
-Close the connection.
+### `createClient(url)`
 
+Executes the `createClient` operation with the given parameter (url).
+
+**Signature:**
 ```ntl
-client.close(1000, "Done")
+fn createClient(url)
 ```
 
----
+### `on(event, handler)`
 
-## Chat Room Example
+Executes the `on` operation with the given parameters (event, handler).
 
+**Signature:**
 ```ntl
-val ws = @import("std.ws")
-val io = @import("std.io")
-
-val server = ws.server({ port: 8080 })
-val rooms = {}
-
-server.on("connect", fn(client) {
-  client.send({ type: "welcome", id: client.id })
-
-  client.on("message", fn(msg) {
-    val data = JSON.parse(msg)
-    if data.type == "join" {
-      client.room = data.room
-      if rooms[data.room] == null {
-        rooms[data.room] = []
-      }
-      rooms[data.room].push(client.id)
-    } else if data.type == "message" {
-      val room = rooms[client.room] ?? []
-      each id in room {
-        server.sendTo(id, { type: "message", from: client.id, text: data.text })
-      }
-    }
-  })
-
-  client.on("close", fn() {
-    io.log("Client", client.id, "left")
-  })
-})
-
-fn main() {
-  server.listen()
-  io.success("Chat server running on ws://localhost:8080")
-}
+fn on(event, handler)
 ```
+
+### `connect()`
+
+Executes the `connect` operation with the given no arguments.
+
+**Signature:**
+```ntl
+fn connect()
+```
+
+### `send(message)`
+
+Executes the `send` operation with the given parameter (message).
+
+**Signature:**
+```ntl
+fn send(message)
+```
+
+### `close()`
+
+Executes the `close` operation with the given no arguments.
+
+**Signature:**
+```ntl
+fn close()
+```
+

@@ -1,6 +1,10 @@
-# ai — AI / LLM Module
+# AI Module
 
-The `ai` module provides a unified interface for interacting with large language models (OpenAI, Anthropic, Gemini, Ollama, and more).
+Interact with large language models and AI services. Provides interfaces for text completion, chat, embeddings, classification, and content generation.
+
+**Use case:** Use for natural language processing, chatbots, content analysis, and semantic search.
+
+---
 
 ## Import
 
@@ -10,171 +14,149 @@ val ai = @import("std.ai")
 
 ---
 
-## Configuration
+## Available Functions
 
-### `ai.configure(options)`
-Set the default provider and API key.
+### `complete(prompt, options)`
 
+Executes the `complete` operation with the given parameters (prompt, options).
+
+**Signature:**
 ```ntl
-ai.configure({
-  provider: "openai",
-  apiKey:   env.get("OPENAI_API_KEY"),
-  model:    "gpt-4o",
-})
+fn complete(prompt, options)
 ```
 
-#### Providers
+### `chat(messages, options)`
 
-| Provider | Models |
-|---|---|
-| `"openai"` | `gpt-4o`, `gpt-4-turbo`, `gpt-3.5-turbo` |
-| `"anthropic"` | `claude-3-5-sonnet`, `claude-3-opus`, `claude-3-haiku` |
-| `"gemini"` | `gemini-1.5-pro`, `gemini-1.5-flash` |
-| `"ollama"` | `llama3`, `mistral`, `phi3`, `gemma2` (local) |
-| `"openrouter"` | Any model via OpenRouter |
+Executes the `chat` operation with the given parameters (messages, options).
 
----
-
-## Text Completion
-
-### `ai.complete(prompt, [options])`
-Generate a text completion. Returns the response string.
-
+**Signature:**
 ```ntl
-val reply = ai.complete("Explain NTL scripting in one sentence.")
-io.log(reply)
+fn chat(messages, options)
 ```
 
-#### Options
+### `embed(text)`
 
-| Option | Default | Description |
-|---|---|---|
-| `model` | from config | Model override |
-| `temperature` | `0.7` | Randomness (0 = deterministic) |
-| `maxTokens` | `1024` | Maximum response length |
-| `system` | `null` | System prompt |
-| `stop` | `null` | Stop sequences |
+Executes the `embed` operation with the given parameter (text).
 
----
-
-## Chat
-
-### `ai.chat(messages, [options])`
-Send a multi-turn conversation.
-
+**Signature:**
 ```ntl
-val response = ai.chat([
-  { role: "system",    content: "You are a helpful assistant." },
-  { role: "user",      content: "What is 2 + 2?" },
-  { role: "assistant", content: "4" },
-  { role: "user",      content: "And 4 * 4?" },
-])
-io.log(response)    // "16"
+fn embed(text)
 ```
 
----
+### `classify(text, labels)`
 
-## Embeddings
+Executes the `classify` operation with the given parameters (text, labels).
 
-### `ai.embed(text)`
-Generate a vector embedding for text. Returns an array of floats.
-
+**Signature:**
 ```ntl
-val vec = ai.embed("The quick brown fox")
-io.log(vec.length)    // 1536 (for OpenAI ada)
+fn classify(text, labels)
 ```
 
-### `ai.similarity(vecA, vecB)`
-Compute cosine similarity between two embeddings.
+### `moderate(text)`
 
+Executes the `moderate` operation with the given parameter (text).
+
+**Signature:**
 ```ntl
-val sim = ai.similarity(vec1, vec2)
-io.log(sim)    // 0.0 to 1.0
+fn moderate(text)
 ```
 
----
+### `similarity(a, b)`
 
-## Streaming
+Executes the `similarity` operation with the given parameters (a, b).
 
-### `ai.stream(prompt, handler, [options])`
-Stream a response token by token.
-
+**Signature:**
 ```ntl
-ai.stream("Write a haiku about rain.", fn(token, done) {
-  io.io.log(token)
-  if done {
-    io.newline()
-  }
-})
+fn similarity(a, b)
 ```
 
----
+### `create(options)`
 
-## Structured Output
+Executes the `create` operation with the given parameter (options).
 
-### `ai.json(prompt, schema, [options])`
-Ask the model to produce JSON matching a schema.
-
+**Signature:**
 ```ntl
-val data = ai.json(
-  "Extract the name and age from: 'Alice is 30 years old'",
-  { name: "string", age: "number" }
-)
-io.log(data.name)    // Alice
-io.log(data.age)     // 30
+fn create(options)
 ```
 
----
+### `summarize(text, options)`
 
-## Image Analysis
+Executes the `summarize` operation with the given parameters (text, options).
 
-### `ai.vision(prompt, imageUrl, [options])`
-Analyze an image with a vision-capable model.
-
+**Signature:**
 ```ntl
-val desc = ai.vision("What is in this image?", "https://example.com/photo.jpg")
-io.log(desc)
+fn summarize(text, options)
 ```
 
----
+### `translate(text, targetLang, options)`
 
-## Example: CLI Assistant
+Executes the `translate` operation with the given parameters (text, targetLang, options).
 
+**Signature:**
 ```ntl
-val ai = @import("std.ai")
-val io = @import("std.io")
-val env = @import("std.env")
-
-env.load()
-
-ai.configure({
-  provider: "openai",
-  apiKey:   env.require("OPENAI_API_KEY"),
-  model:    "gpt-4o",
-})
-
-val history = [
-  { role: "system", content: "You are a helpful NTL programming assistant." },
-]
-
-fn ask(question) {
-  history.push({ role: "user", content: question })
-  val reply = ai.chat(history)
-  history.push({ role: "assistant", content: reply })
-  reply
-}
-
-fn main() {
-  io.banner("NTL AI Assistant")
-  io.log(io.gray("Type 'quit' to exit"))
-  io.newline()
-
-  loop {
-    val input = io.read(io.cyan("You: "))
-    if input == "quit" { break }
-    val reply = ask(input)
-    io.log(io.green("AI:"), reply)
-    io.newline()
-  }
-}
+fn translate(text, targetLang, options)
 ```
+
+### `sentiment(text)`
+
+Executes the `sentiment` operation with the given parameter (text).
+
+**Signature:**
+```ntl
+fn sentiment(text)
+```
+
+### `extract(text, schema, options)`
+
+Executes the `extract` operation with the given parameters (text, schema, options).
+
+**Signature:**
+```ntl
+fn extract(text, schema, options)
+```
+
+### `createAssistant(systemPrompt, options)`
+
+Executes the `createAssistant` operation with the given parameters (systemPrompt, options).
+
+**Signature:**
+```ntl
+fn createAssistant(systemPrompt, options)
+```
+
+### `ask(userMessage)`
+
+Executes the `ask` operation with the given parameter (userMessage).
+
+**Signature:**
+```ntl
+fn ask(userMessage)
+```
+
+### `reset()`
+
+Executes the `reset` operation with the given no arguments.
+
+**Signature:**
+```ntl
+fn reset()
+```
+
+### `getHistory()`
+
+Executes the `getHistory` operation with the given no arguments.
+
+**Signature:**
+```ntl
+fn getHistory()
+```
+
+### `findMostSimilar(query, documents)`
+
+Executes the `findMostSimilar` operation with the given parameters (query, documents).
+
+**Signature:**
+```ntl
+fn findMostSimilar(query, documents)
+```
+

@@ -1,6 +1,10 @@
-# utils — Utilities Module
+# Utilities Module
 
-The `utils` module provides general-purpose helpers: type checks, deep operations, date/time, string utilities, math helpers, and more.
+General-purpose utility functions and helpers for common operations.
+
+**Use case:** Access helper functions for common tasks.
+
+---
 
 ## Import
 
@@ -10,227 +14,644 @@ val utils = @import("std.utils")
 
 ---
 
-## Type Checking
+## Available Functions
 
+### `sleep(ms)`
+
+Executes the `sleep` operation with the given parameter (ms).
+
+**Signature:**
 ```ntl
-utils.isString(x)     // true if x is a string
-utils.isNumber(x)     // true if x is a number
-utils.isBool(x)       // true if x is a boolean
-utils.isArray(x)      // true if x is an array
-utils.isObject(x)     // true if x is an object
-utils.isFunction(x)   // true if x is a function
-utils.isNull(x)       // true if x is null
-utils.isUndefined(x)  // true if x is undefined
-utils.typeOf(x)       // returns type name as string
+fn sleep(ms)
 ```
 
----
+### `now()`
 
-## JSON
+Executes the `now` operation with the given no arguments.
 
-### `utils.toJSON(value)`
-Serialize a value to a JSON string.
-
+**Signature:**
 ```ntl
-val s = utils.toJSON({ name: "Alice", age: 30 })
-// {"name":"Alice","age":30}
+fn now()
 ```
 
-### `utils.fromJSON(str)`
-Parse a JSON string into a value.
+### `timestamp()`
 
+Executes the `timestamp` operation with the given no arguments.
+
+**Signature:**
 ```ntl
-val obj = utils.fromJSON('{"name":"Alice"}')
-io.log(obj.name)
+fn timestamp()
 ```
 
----
+### `uuid()`
 
-## Deep Operations
+Executes the `uuid` operation with the given no arguments.
 
-### `utils.deepClone(value)`
-Create a deep copy of an object or array.
-
+**Signature:**
 ```ntl
-val copy = utils.deepClone(original)
+fn uuid()
 ```
 
-### `utils.deepEqual(a, b)`
-Check if two values are deeply equal.
+### `range(start, end, step)`
 
+Executes the `range` operation with the given parameters (start, end, step).
+
+**Signature:**
 ```ntl
-if utils.deepEqual(a, b) {
-  io.log("They are equal")
-}
+fn range(start, end, step)
 ```
 
----
+### `chunk(arr, size)`
 
-## Date & Time
+Executes the `chunk` operation with the given parameters (arr, size).
 
-### `utils.now()`
-Returns the current Unix timestamp in milliseconds.
-
+**Signature:**
 ```ntl
-val ts = utils.now()
+fn chunk(arr, size)
 ```
 
-### `utils.date([timestamp])`
-Create a date object from a timestamp (or current time).
+### `flatten(arr, depth)`
 
+Executes the `flatten` operation with the given parameters (arr, depth).
+
+**Signature:**
 ```ntl
-val d = utils.date()
-io.log(d.year, d.month, d.day)
-io.log(d.format("YYYY-MM-DD"))
+fn flatten(arr, depth)
 ```
 
-### `utils.sleep(ms)`
-Pause execution for `ms` milliseconds.
+### `flatMap(arr, cb)`
 
+Executes the `flatMap` operation with the given parameters (arr, cb).
+
+**Signature:**
 ```ntl
-utils.sleep(1000)    // wait 1 second
+fn flatMap(arr, cb)
 ```
 
----
+### `zip(...arrays)`
 
-## String Utilities
+Executes the `zip` operation with the given parameter (...arrays).
 
-### `utils.trim(s)`
-Remove leading and trailing whitespace.
-
-### `utils.trimLeft(s)` / `utils.trimRight(s)`
-Trim from one side only.
-
-### `utils.pad(s, width, [char])`
-Pad a string to a given width.
-
+**Signature:**
 ```ntl
-utils.pad("42", 5, "0")    // "00042"
+fn zip(...arrays)
 ```
 
-### `utils.repeat(s, n)`
-Repeat a string `n` times.
+### `unzip(arr)`
 
+Executes the `unzip` operation with the given parameter (arr).
+
+**Signature:**
 ```ntl
-utils.repeat("ab", 3)    // "ababab"
+fn unzip(arr)
 ```
 
-### `utils.truncate(s, maxLen, [suffix])`
-Truncate a string.
+### `intersection(a, b)`
 
+Executes the `intersection` operation with the given parameters (a, b).
+
+**Signature:**
 ```ntl
-utils.truncate("Hello World", 8)       // "Hello..."
-utils.truncate("Hello World", 8, "…")  // "Hello W…"
+fn intersection(a, b)
 ```
 
-### `utils.capitalize(s)`
-Capitalize the first character.
+### `difference(a, b)`
 
+Executes the `difference` operation with the given parameters (a, b).
+
+**Signature:**
 ```ntl
-utils.capitalize("hello")    // "Hello"
+fn difference(a, b)
 ```
 
-### `utils.camelCase(s)`
-Convert to camelCase.
+### `union(...arrays)`
 
+Executes the `union` operation with the given parameter (...arrays).
+
+**Signature:**
 ```ntl
-utils.camelCase("hello-world")    // "helloWorld"
+fn union(...arrays)
 ```
 
-### `utils.snakeCase(s)`
-Convert to snake_case.
+### `uniq(arr)`
 
+Executes the `uniq` operation with the given parameter (arr).
+
+**Signature:**
 ```ntl
-utils.snakeCase("helloWorld")    // "hello_world"
+fn uniq(arr)
 ```
 
----
+### `uniqBy(arr, key)`
 
-## Array Utilities
+Executes the `uniqBy` operation with the given parameters (arr, key).
 
-### `utils.range(start, end, [step])`
-Generate a range of numbers.
-
+**Signature:**
 ```ntl
-val r = utils.range(0, 5)     // [0, 1, 2, 3, 4]
-val r2 = utils.range(0, 10, 2) // [0, 2, 4, 6, 8]
+fn uniqBy(arr, key)
 ```
 
-### `utils.shuffle(arr)`
-Randomly shuffle an array (returns a new array).
+### `groupBy(arr, key)`
 
+Executes the `groupBy` operation with the given parameters (arr, key).
+
+**Signature:**
 ```ntl
-val shuffled = utils.shuffle([1, 2, 3, 4, 5])
+fn groupBy(arr, key)
 ```
 
-### `utils.unique(arr)`
-Remove duplicates from an array.
+### `countBy(arr, key)`
 
+Executes the `countBy` operation with the given parameters (arr, key).
+
+**Signature:**
 ```ntl
-val u = utils.unique([1, 1, 2, 3, 2])    // [1, 2, 3]
+fn countBy(arr, key)
 ```
 
-### `utils.chunk(arr, size)`
-Split an array into chunks of a given size.
+### `partition(arr, predicate)`
 
+Executes the `partition` operation with the given parameters (arr, predicate).
+
+**Signature:**
 ```ntl
-val chunks = utils.chunk([1, 2, 3, 4, 5], 2)
-// [[1, 2], [3, 4], [5]]
+fn partition(arr, predicate)
 ```
 
-### `utils.flatten(arr, [depth])`
-Flatten a nested array.
+### `sortBy(arr, key, order)`
 
+Executes the `sortBy` operation with the given parameters (arr, key, order).
+
+**Signature:**
 ```ntl
-val flat = utils.flatten([[1, 2], [3, [4, 5]]])
-// [1, 2, 3, 4, 5]
+fn sortBy(arr, key, order)
 ```
 
----
+### `pick(obj, ...keys)`
 
-## Math
+Executes the `pick` operation with the given parameters (obj, ...keys).
 
-### `utils.clamp(value, min, max)`
-Clamp a value between min and max.
-
+**Signature:**
 ```ntl
-utils.clamp(15, 0, 10)    // 10
-utils.clamp(-5, 0, 10)    // 0
+fn pick(obj, ...keys)
 ```
 
-### `utils.lerp(a, b, t)`
-Linear interpolation.
+### `omit(obj, ...keys)`
 
+Executes the `omit` operation with the given parameters (obj, ...keys).
+
+**Signature:**
 ```ntl
-utils.lerp(0, 100, 0.5)    // 50
+fn omit(obj, ...keys)
 ```
 
-### `utils.round(n, [decimals])`
-Round to a number of decimal places.
+### `merge(...objects)`
 
+Executes the `merge` operation with the given parameter (...objects).
+
+**Signature:**
 ```ntl
-utils.round(3.14159, 2)    // 3.14
+fn merge(...objects)
 ```
 
----
+### `assign(...objects)`
 
-## Example
+Executes the `assign` operation with the given parameter (...objects).
 
+**Signature:**
 ```ntl
-val utils = @import("std.utils")
-val io = @import("std.io")
-
-fn main() {
-  val data = [5, 2, 8, 1, 9, 3]
-  val sorted = data.sort()
-  val top3 = sorted.slice(0, 3)
-  io.log("Top 3:", top3)
-
-  val name = "hello world"
-  io.log(utils.capitalize(name))    // Hello world
-  io.log(utils.camelCase(name))     // helloWorld
-
-  val cloned = utils.deepClone({ x: 1, y: [2, 3] })
-  io.log(utils.deepEqual(cloned, { x: 1, y: [2, 3] }))    // true
-}
+fn assign(...objects)
 ```
+
+### `keys(obj)`
+
+Executes the `keys` operation with the given parameter (obj).
+
+**Signature:**
+```ntl
+fn keys(obj)
+```
+
+### `values(obj)`
+
+Executes the `values` operation with the given parameter (obj).
+
+**Signature:**
+```ntl
+fn values(obj)
+```
+
+### `entries(obj)`
+
+Executes the `entries` operation with the given parameter (obj).
+
+**Signature:**
+```ntl
+fn entries(obj)
+```
+
+### `fromEntries(arr)`
+
+Executes the `fromEntries` operation with the given parameter (arr).
+
+**Signature:**
+```ntl
+fn fromEntries(arr)
+```
+
+### `hasKey(obj, key)`
+
+Executes the `hasKey` operation with the given parameters (obj, key).
+
+**Signature:**
+```ntl
+fn hasKey(obj, key)
+```
+
+### `invert(obj)`
+
+Executes the `invert` operation with the given parameter (obj).
+
+**Signature:**
+```ntl
+fn invert(obj)
+```
+
+### `mapValues(obj, cb)`
+
+Executes the `mapValues` operation with the given parameters (obj, cb).
+
+**Signature:**
+```ntl
+fn mapValues(obj, cb)
+```
+
+### `sum(arr)`
+
+Executes the `sum` operation with the given parameter (arr).
+
+**Signature:**
+```ntl
+fn sum(arr)
+```
+
+### `mean(arr)`
+
+Executes the `mean` operation with the given parameter (arr).
+
+**Signature:**
+```ntl
+fn mean(arr)
+```
+
+### `median(arr)`
+
+Executes the `median` operation with the given parameter (arr).
+
+**Signature:**
+```ntl
+fn median(arr)
+```
+
+### `min(...args)`
+
+Executes the `min` operation with the given parameter (...args).
+
+**Signature:**
+```ntl
+fn min(...args)
+```
+
+### `max(...args)`
+
+Executes the `max` operation with the given parameter (...args).
+
+**Signature:**
+```ntl
+fn max(...args)
+```
+
+### `clamp(n, lo, hi)`
+
+Executes the `clamp` operation with the given parameters (n, lo, hi).
+
+**Signature:**
+```ntl
+fn clamp(n, lo, hi)
+```
+
+### `lerp(a, b, t)`
+
+Executes the `lerp` operation with the given parameters (a, b, t).
+
+**Signature:**
+```ntl
+fn lerp(a, b, t)
+```
+
+### `random(lo, hi)`
+
+Executes the `random` operation with the given parameters (lo, hi).
+
+**Signature:**
+```ntl
+fn random(lo, hi)
+```
+
+### `randInt(lo, hi)`
+
+Executes the `randInt` operation with the given parameters (lo, hi).
+
+**Signature:**
+```ntl
+fn randInt(lo, hi)
+```
+
+### `shuffle(arr)`
+
+Executes the `shuffle` operation with the given parameter (arr).
+
+**Signature:**
+```ntl
+fn shuffle(arr)
+```
+
+### `sample(arr)`
+
+Executes the `sample` operation with the given parameter (arr).
+
+**Signature:**
+```ntl
+fn sample(arr)
+```
+
+### `sampleSize(arr, n)`
+
+Executes the `sampleSize` operation with the given parameters (arr, n).
+
+**Signature:**
+```ntl
+fn sampleSize(arr, n)
+```
+
+### `camelCase(s)`
+
+Executes the `camelCase` operation with the given parameter (s).
+
+**Signature:**
+```ntl
+fn camelCase(s)
+```
+
+### `snakeCase(s)`
+
+Executes the `snakeCase` operation with the given parameter (s).
+
+**Signature:**
+```ntl
+fn snakeCase(s)
+```
+
+### `kebabCase(s)`
+
+Executes the `kebabCase` operation with the given parameter (s).
+
+**Signature:**
+```ntl
+fn kebabCase(s)
+```
+
+### `titleCase(s)`
+
+Executes the `titleCase` operation with the given parameter (s).
+
+**Signature:**
+```ntl
+fn titleCase(s)
+```
+
+### `slugify(s)`
+
+Executes the `slugify` operation with the given parameter (s).
+
+**Signature:**
+```ntl
+fn slugify(s)
+```
+
+### `truncate(s, max, suffix)`
+
+Executes the `truncate` operation with the given parameters (s, max, suffix).
+
+**Signature:**
+```ntl
+fn truncate(s, max, suffix)
+```
+
+### `pad(s, n, char)`
+
+Executes the `pad` operation with the given parameters (s, n, char).
+
+**Signature:**
+```ntl
+fn pad(s, n, char)
+```
+
+### `padStart(s, n, char)`
+
+Executes the `padStart` operation with the given parameters (s, n, char).
+
+**Signature:**
+```ntl
+fn padStart(s, n, char)
+```
+
+### `padEnd(s, n, char)`
+
+Executes the `padEnd` operation with the given parameters (s, n, char).
+
+**Signature:**
+```ntl
+fn padEnd(s, n, char)
+```
+
+### `repeat(s, n)`
+
+Executes the `repeat` operation with the given parameters (s, n).
+
+**Signature:**
+```ntl
+fn repeat(s, n)
+```
+
+### `template(s, vars)`
+
+Executes the `template` operation with the given parameters (s, vars).
+
+**Signature:**
+```ntl
+fn template(s, vars)
+```
+
+### `times(n, cb)`
+
+Executes the `times` operation with the given parameters (n, cb).
+
+**Signature:**
+```ntl
+fn times(n, cb)
+```
+
+### `pipe(...cbs)`
+
+Executes the `pipe` operation with the given parameter (...cbs).
+
+**Signature:**
+```ntl
+fn pipe(...cbs)
+```
+
+### `compose(...cbs)`
+
+Executes the `compose` operation with the given parameter (...cbs).
+
+**Signature:**
+```ntl
+fn compose(...cbs)
+```
+
+### `memoize(cb)`
+
+Executes the `memoize` operation with the given parameter (cb).
+
+**Signature:**
+```ntl
+fn memoize(cb)
+```
+
+### `once(cb)`
+
+Executes the `once` operation with the given parameter (cb).
+
+**Signature:**
+```ntl
+fn once(cb)
+```
+
+### `negate(cb)`
+
+Executes the `negate` operation with the given parameter (cb).
+
+**Signature:**
+```ntl
+fn negate(cb)
+```
+
+### `formatNumber(n, decimals)`
+
+Executes the `formatNumber` operation with the given parameters (n, decimals).
+
+**Signature:**
+```ntl
+fn formatNumber(n, decimals)
+```
+
+### `formatBytes(n)`
+
+Executes the `formatBytes` operation with the given parameter (n).
+
+**Signature:**
+```ntl
+fn formatBytes(n)
+```
+
+### `toNumber(v)`
+
+Executes the `toNumber` operation with the given parameter (v).
+
+**Signature:**
+```ntl
+fn toNumber(v)
+```
+
+### `toString(v)`
+
+Executes the `toString` operation with the given parameter (v).
+
+**Signature:**
+```ntl
+fn toString(v)
+```
+
+### `toJSON(v)`
+
+Executes the `toJSON` operation with the given parameter (v).
+
+**Signature:**
+```ntl
+fn toJSON(v)
+```
+
+### `fromJSON(s)`
+
+Executes the `fromJSON` operation with the given parameter (s).
+
+**Signature:**
+```ntl
+fn fromJSON(s)
+```
+
+### `clone(v)`
+
+Executes the `clone` operation with the given parameter (v).
+
+**Signature:**
+```ntl
+fn clone(v)
+```
+
+### `equal(a, b)`
+
+Executes the `equal` operation with the given parameters (a, b).
+
+**Signature:**
+```ntl
+fn equal(a, b)
+```
+
+### `isEmpty(v)`
+
+Executes the `isEmpty` operation with the given parameter (v).
+
+**Signature:**
+```ntl
+fn isEmpty(v)
+```
+
+### `isNil(v)`
+
+Executes the `isNil` operation with the given parameter (v).
+
+**Signature:**
+```ntl
+fn isNil(v)
+```
+
+### `deepClone(v)`
+
+Executes the `deepClone` operation with the given parameter (v).
+
+**Signature:**
+```ntl
+fn deepClone(v)
+```
+
+### `deepEqual(a, b)`
+
+Executes the `deepEqual` operation with the given parameters (a, b).
+
+**Signature:**
+```ntl
+fn deepEqual(a, b)
+```
+

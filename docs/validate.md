@@ -1,6 +1,10 @@
-# validate — Validation Module
+# Validation Module
 
-The `validate` module provides schema-based validation for objects, strings, numbers, and arrays.
+Data validation schemas and validators for input validation.
+
+**Use case:** Validate user input and data structures.
+
+---
 
 ## Import
 
@@ -10,165 +14,284 @@ val validate = @import("std.validate")
 
 ---
 
-## Validating Values
+## Available Functions
 
-### `validate.check(schema, value)`
-Validate a value against a schema. Returns `{ ok: bool, errors: [...] }`.
+### `isString(v)`
 
+Executes the `isString` operation with the given parameter (v).
+
+**Signature:**
 ```ntl
-val result = validate.check({
-  name:  { type: "string", required: true, minLen: 2 },
-  age:   { type: "number", min: 0, max: 150 },
-  email: { type: "string", format: "email" },
-}, {
-  name: "Alice",
-  age: 30,
-  email: "alice@example.com",
-})
-
-if !result.ok {
-  each err in result.errors {
-    io.error(err)
-  }
-}
+fn isString(v)
 ```
 
-### `validate.assert(schema, value)`
-Like `check` but throws if validation fails.
+### `isNumber(v)`
 
+Executes the `isNumber` operation with the given parameter (v).
+
+**Signature:**
 ```ntl
-validate.assert({ name: { type: "string", required: true } }, body)
+fn isNumber(v)
 ```
 
----
+### `isBoolean(v)`
 
-## Schema Fields
+Executes the `isBoolean` operation with the given parameter (v).
 
-### Common Options
-
-| Option | Type | Description |
-|---|---|---|
-| `type` | string | `"string"`, `"number"`, `"boolean"`, `"array"`, `"object"`, `"any"` |
-| `required` | boolean | Value must be present and not null |
-| `default` | any | Default value if not provided |
-| `nullable` | boolean | Allow `null` values |
-
-### String Options
-
-| Option | Description |
-|---|---|
-| `minLen` | Minimum string length |
-| `maxLen` | Maximum string length |
-| `pattern` | Regex pattern the value must match |
-| `format` | Built-in format: `"email"`, `"url"`, `"uuid"`, `"date"`, `"phone"` |
-| `enum` | Array of allowed values |
-
+**Signature:**
 ```ntl
-{ type: "string", format: "email", required: true }
-{ type: "string", enum: ["admin", "user", "guest"] }
-{ type: "string", pattern: "^[a-z]+$", maxLen: 20 }
+fn isBoolean(v)
 ```
 
-### Number Options
+### `isArray(v)`
 
-| Option | Description |
-|---|---|
-| `min` | Minimum value |
-| `max` | Maximum value |
-| `integer` | Must be an integer |
-| `positive` | Must be positive |
+Executes the `isArray` operation with the given parameter (v).
 
-### Array Options
-
-| Option | Description |
-|---|---|
-| `minItems` | Minimum array length |
-| `maxItems` | Maximum array length |
-| `items` | Schema for each element |
-| `unique` | All items must be unique |
-
+**Signature:**
 ```ntl
-{ type: "array", items: { type: "number", positive: true }, minItems: 1 }
+fn isArray(v)
 ```
 
-### Object Options
+### `isObject(v)`
 
-| Option | Description |
-|---|---|
-| `fields` | Map of field name → schema |
-| `strict` | Reject unknown fields |
+Executes the `isObject` operation with the given parameter (v).
 
----
-
-## Built-in Validators
-
-### `validate.isEmail(s)`
-Returns `true` if `s` is a valid email address.
-
+**Signature:**
 ```ntl
-validate.isEmail("alice@example.com")    // true
+fn isObject(v)
 ```
 
-### `validate.isURL(s)`
-Returns `true` if `s` is a valid URL.
+### `isNull(v)`
 
-### `validate.isUUID(s)`
-Returns `true` if `s` is a valid UUID.
+Executes the `isNull` operation with the given parameter (v).
 
-### `validate.isPhone(s)`
-Returns `true` if `s` looks like a phone number.
-
-### `validate.isDate(s)`
-Returns `true` if `s` is a parseable date string.
-
----
-
-## Composing Schemas
-
+**Signature:**
 ```ntl
-val userSchema = {
-  id:       { type: "number", integer: true, positive: true },
-  name:     { type: "string", required: true, minLen: 1, maxLen: 100 },
-  email:    { type: "string", required: true, format: "email" },
-  role:     { type: "string", enum: ["admin", "user"], default: "user" },
-  tags:     { type: "array", items: { type: "string" } },
-  active:   { type: "boolean", default: true },
-}
-
-fn createUser(data) {
-  val result = validate.check(userSchema, data)
-  if !result.ok {
-    throw "ValidationError: " + result.errors.join(", ")
-  }
-  // ...
-}
+fn isNull(v)
 ```
 
----
+### `isDefined(v)`
 
-## Example: API Request Validation
+Executes the `isDefined` operation with the given parameter (v).
 
+**Signature:**
 ```ntl
-val validate = @import("std.validate")
-val http = @import("std.http")
-val io = @import("std.io")
-
-val loginSchema = {
-  username: { type: "string", required: true, minLen: 3 },
-  password: { type: "string", required: true, minLen: 8 },
-}
-
-val app = http.router()
-
-app.post("/login", fn(req, res) {
-  val result = validate.check(loginSchema, req.body)
-  if !result.ok {
-    res.status(400).json({ errors: result.errors })
-  }
-  res.json({ token: "abc123" })
-})
-
-fn main() {
-  http.serve(3000, app.handler())
-}
+fn isDefined(v)
 ```
+
+### `isEmail(v)`
+
+Executes the `isEmail` operation with the given parameter (v).
+
+**Signature:**
+```ntl
+fn isEmail(v)
+```
+
+### `isUrl(v)`
+
+Executes the `isUrl` operation with the given parameter (v).
+
+**Signature:**
+```ntl
+fn isUrl(v)
+```
+
+### `isPhone(v)`
+
+Executes the `isPhone` operation with the given parameter (v).
+
+**Signature:**
+```ntl
+fn isPhone(v)
+```
+
+### `isUUID(v)`
+
+Executes the `isUUID` operation with the given parameter (v).
+
+**Signature:**
+```ntl
+fn isUUID(v)
+```
+
+### `isIPv4(v)`
+
+Executes the `isIPv4` operation with the given parameter (v).
+
+**Signature:**
+```ntl
+fn isIPv4(v)
+```
+
+### `isIPv6(v)`
+
+Executes the `isIPv6` operation with the given parameter (v).
+
+**Signature:**
+```ntl
+fn isIPv6(v)
+```
+
+### `isIP(v)`
+
+Executes the `isIP` operation with the given parameter (v).
+
+**Signature:**
+```ntl
+fn isIP(v)
+```
+
+### `isAlpha(v)`
+
+Executes the `isAlpha` operation with the given parameter (v).
+
+**Signature:**
+```ntl
+fn isAlpha(v)
+```
+
+### `isAlphanumeric(v)`
+
+Executes the `isAlphanumeric` operation with the given parameter (v).
+
+**Signature:**
+```ntl
+fn isAlphanumeric(v)
+```
+
+### `isNumeric(v)`
+
+Executes the `isNumeric` operation with the given parameter (v).
+
+**Signature:**
+```ntl
+fn isNumeric(v)
+```
+
+### `isHex(v)`
+
+Executes the `isHex` operation with the given parameter (v).
+
+**Signature:**
+```ntl
+fn isHex(v)
+```
+
+### `isBase64(v)`
+
+Executes the `isBase64` operation with the given parameter (v).
+
+**Signature:**
+```ntl
+fn isBase64(v)
+```
+
+### `isJSON(v)`
+
+Executes the `isJSON` operation with the given parameter (v).
+
+**Signature:**
+```ntl
+fn isJSON(v)
+```
+
+### `isCreditCard(v)`
+
+Executes the `isCreditCard` operation with the given parameter (v).
+
+**Signature:**
+```ntl
+fn isCreditCard(v)
+```
+
+### `isSlug(v)`
+
+Executes the `isSlug` operation with the given parameter (v).
+
+**Signature:**
+```ntl
+fn isSlug(v)
+```
+
+### `isDate(v)`
+
+Executes the `isDate` operation with the given parameter (v).
+
+**Signature:**
+```ntl
+fn isDate(v)
+```
+
+### `isStrongPassword(v)`
+
+Executes the `isStrongPassword` operation with the given parameter (v).
+
+**Signature:**
+```ntl
+fn isStrongPassword(v)
+```
+
+### `test(v, pattern)`
+
+Executes the `test` operation with the given parameters (v, pattern).
+
+**Signature:**
+```ntl
+fn test(v, pattern)
+```
+
+### `schema(definition)`
+
+Executes the `schema` operation with the given parameter (definition).
+
+**Signature:**
+```ntl
+fn schema(definition)
+```
+
+### `validate(data, rules)`
+
+Executes the `validate` operation with the given parameters (data, rules).
+
+**Signature:**
+```ntl
+fn validate(data, rules)
+```
+
+### `required(v)`
+
+Executes the `required` operation with the given parameter (v).
+
+**Signature:**
+```ntl
+fn required(v)
+```
+
+### `minLength(v, n)`
+
+Executes the `minLength` operation with the given parameters (v, n).
+
+**Signature:**
+```ntl
+fn minLength(v, n)
+```
+
+### `maxLength(v, n)`
+
+Executes the `maxLength` operation with the given parameters (v, n).
+
+**Signature:**
+```ntl
+fn maxLength(v, n)
+```
+
+### `inRange(n, lo, hi)`
+
+Executes the `inRange` operation with the given parameters (n, lo, hi).
+
+**Signature:**
+```ntl
+fn inRange(n, lo, hi)
+```
+

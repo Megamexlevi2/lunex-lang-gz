@@ -1,6 +1,10 @@
-# fs — File System Module
+# File System Module
 
-The `fs` module provides file and directory operations: reading, writing, listing, copying, moving, and watching files.
+File system operations including reading, writing, deleting, and directory listing.
+
+**Use case:** Manage files and directories in your applications.
+
+---
 
 ## Import
 
@@ -10,219 +14,221 @@ val fs = @import("std.fs")
 
 ---
 
-## Reading Files
+## Available Functions
 
-### `fs.read(path)`
-Read the entire content of a file as a string.
+### `readFile(path, encoding)`
 
+Executes the `readFile` operation with the given parameters (path, encoding).
+
+**Signature:**
 ```ntl
-val content = fs.read("config.txt")
-io.log(content)
+fn readFile(path, encoding)
 ```
 
-### `fs.readBytes(path)`
-Read file as an array of bytes.
+### `writeFile(path, content, options)`
 
+Executes the `writeFile` operation with the given parameters (path, content, options).
+
+**Signature:**
 ```ntl
-val bytes = fs.readBytes("data.bin")
+fn writeFile(path, content, options)
 ```
 
-### `fs.readLines(path)`
-Read file and return an array of lines.
+### `appendFile(path, content)`
 
+Executes the `appendFile` operation with the given parameters (path, content).
+
+**Signature:**
 ```ntl
-val lines = fs.readLines("data.csv")
-each line in lines {
-  io.log(line)
-}
+fn appendFile(path, content)
 ```
 
-### `fs.readJSON(path)`
-Read and parse a JSON file.
+### `deleteFile(path)`
 
+Executes the `deleteFile` operation with the given parameter (path).
+
+**Signature:**
 ```ntl
-val config = fs.readJSON("config.json")
-io.log(config.name)
+fn deleteFile(path)
 ```
 
----
+### `exists(path)`
 
-## Writing Files
+Executes the `exists` operation with the given parameter (path).
 
-### `fs.write(path, content)`
-Write a string to a file (creates or overwrites).
-
+**Signature:**
 ```ntl
-fs.write("output.txt", "Hello, World!\n")
+fn exists(path)
 ```
 
-### `fs.append(path, content)`
-Append text to a file.
+### `stat(path)`
 
+Executes the `stat` operation with the given parameter (path).
+
+**Signature:**
 ```ntl
-fs.append("log.txt", "New entry\n")
+fn stat(path)
 ```
 
-### `fs.writeJSON(path, value)`
-Serialize a value to JSON and write to a file.
+### `mkdir(path, recursive)`
 
+Executes the `mkdir` operation with the given parameters (path, recursive).
+
+**Signature:**
 ```ntl
-fs.writeJSON("config.json", { name: "app", version: "1.0" })
+fn mkdir(path, recursive)
 ```
 
----
+### `rmdir(path, recursive)`
 
-## File Information
+Executes the `rmdir` operation with the given parameters (path, recursive).
 
-### `fs.exists(path)`
-Returns `true` if the path exists.
-
+**Signature:**
 ```ntl
-if fs.exists("config.json") {
-  val cfg = fs.readJSON("config.json")
-}
+fn rmdir(path, recursive)
 ```
 
-### `fs.isFile(path)`
-Returns `true` if the path is a regular file.
+### `list(path)`
 
-### `fs.isDir(path)`
-Returns `true` if the path is a directory.
+Executes the `list` operation with the given parameter (path).
 
-### `fs.stat(path)`
-Returns an object with file metadata.
-
+**Signature:**
 ```ntl
-val info = fs.stat("file.txt")
-io.log(info.size)     // bytes
-io.log(info.mtime)    // last modified timestamp
-io.log(info.isFile)   // boolean
-io.log(info.isDir)    // boolean
+fn list(path)
 ```
 
----
+### `listDir(path)`
 
-## Directory Operations
+Executes the `listDir` operation with the given parameter (path).
 
-### `fs.list(dir)`
-List entries in a directory (names only).
-
+**Signature:**
 ```ntl
-val files = fs.list(".")
-each f in files {
-  io.log(f)
-}
+fn listDir(path)
 ```
 
-### `fs.listFull(dir)`
-List entries with full metadata objects.
+### `copyFile(src, dest)`
 
+Executes the `copyFile` operation with the given parameters (src, dest).
+
+**Signature:**
 ```ntl
-val entries = fs.listFull(".")
-each e in entries {
-  io.log(e.name, e.size, e.isDir)
-}
+fn copyFile(src, dest)
 ```
 
-### `fs.mkdir(path)`
-Create a directory (and intermediate directories).
+### `moveFile(src, dest)`
 
+Executes the `moveFile` operation with the given parameters (src, dest).
+
+**Signature:**
 ```ntl
-fs.mkdir("build/output")
+fn moveFile(src, dest)
 ```
 
-### `fs.rmdir(path)`
-Remove an empty directory.
+### `join(...parts)`
 
+Executes the `join` operation with the given parameter (...parts).
+
+**Signature:**
 ```ntl
-fs.rmdir("tmp")
+fn join(...parts)
 ```
 
----
+### `basename(path, ext)`
 
-## File Management
+Executes the `basename` operation with the given parameters (path, ext).
 
-### `fs.copy(src, dest)`
-Copy a file.
-
+**Signature:**
 ```ntl
-fs.copy("template.txt", "output.txt")
+fn basename(path, ext)
 ```
 
-### `fs.move(src, dest)`
-Move (rename) a file.
+### `dirname(path)`
 
+Executes the `dirname` operation with the given parameter (path).
+
+**Signature:**
 ```ntl
-fs.move("draft.txt", "final.txt")
+fn dirname(path)
 ```
 
-### `fs.delete(path)`
-Delete a file.
+### `extname(path)`
 
+Executes the `extname` operation with the given parameter (path).
+
+**Signature:**
 ```ntl
-fs.delete("temp.txt")
+fn extname(path)
 ```
 
----
+### `resolve(...parts)`
 
-## Path Utilities
+Executes the `resolve` operation with the given parameter (...parts).
 
-### `fs.join(...parts)`
-Join path segments.
-
+**Signature:**
 ```ntl
-val p = fs.join("home", "user", "file.txt")
-// → "home/user/file.txt"
+fn resolve(...parts)
 ```
 
-### `fs.dirname(path)`
-Get the directory component of a path.
+### `isAbsolute(path)`
 
+Executes the `isAbsolute` operation with the given parameter (path).
+
+**Signature:**
 ```ntl
-val dir = fs.dirname("/home/user/file.txt")  // "/home/user"
+fn isAbsolute(path)
 ```
 
-### `fs.basename(path)`
-Get the filename component.
+### `isDir(path)`
 
+Executes the `isDir` operation with the given parameter (path).
+
+**Signature:**
 ```ntl
-val name = fs.basename("/home/user/file.txt")  // "file.txt"
+fn isDir(path)
 ```
 
-### `fs.ext(path)`
-Get the file extension (with dot).
+### `isFile(path)`
 
+Executes the `isFile` operation with the given parameter (path).
+
+**Signature:**
 ```ntl
-val e = fs.ext("file.txt")  // ".txt"
+fn isFile(path)
 ```
 
-### `fs.abs(path)`
-Get the absolute path.
+### `readJSON(path)`
 
+Executes the `readJSON` operation with the given parameter (path).
+
+**Signature:**
 ```ntl
-val abs = fs.abs("./config.json")
+fn readJSON(path)
 ```
 
----
+### `writeJSON(path, data, pretty)`
 
-## Example: Config File Manager
+Executes the `writeJSON` operation with the given parameters (path, data, pretty).
 
+**Signature:**
 ```ntl
-val fs = @import("std.fs")
-val io = @import("std.io")
-
-fn loadConfig(path) {
-  if !fs.exists(path) {
-    val defaults = { theme: "dark", lang: "en" }
-    fs.writeJSON(path, defaults)
-    defaults
-  }
-  fs.readJSON(path)
-}
-
-fn main() {
-  val cfg = loadConfig("config.json")
-  io.log("Theme:", cfg.theme)
-  io.log("Language:", cfg.lang)
-}
+fn writeJSON(path, data, pretty)
 ```
+
+### `glob(pattern)`
+
+Executes the `glob` operation with the given parameter (pattern).
+
+**Signature:**
+```ntl
+fn glob(pattern)
+```
+
+### `watch(path, callback)`
+
+Executes the `watch` operation with the given parameters (path, callback).
+
+**Signature:**
+```ntl
+fn watch(path, callback)
+```
+

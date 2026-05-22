@@ -1,6 +1,10 @@
-# env — Environment Variables Module
+# Environment Module
 
-The `env` module provides access to OS environment variables, `.env` file loading, and type-safe getters.
+Environment variable management with support for loading from .env files and accessing configuration values.
+
+**Use case:** Load configuration from environment variables and .env files.
+
+---
 
 ## Import
 
@@ -10,120 +14,77 @@ val env = @import("std.env")
 
 ---
 
-## Getting Variables
+## Available Functions
 
-### `env.get(name, [default])`
-Get an environment variable. Returns the default (or `null`) if not set.
+### `get(key, fallback)`
 
+Executes the `get` operation with the given parameters (key, fallback).
+
+**Signature:**
 ```ntl
-val port = env.get("PORT", "3000")
-val secret = env.get("JWT_SECRET")
+fn get(key, fallback)
 ```
 
-### `env.require(name)`
-Get a variable or throw if it is not set.
+### `set(key, value)`
 
+Executes the `set` operation with the given parameters (key, value).
+
+**Signature:**
 ```ntl
-val dbUrl = env.require("DATABASE_URL")
+fn set(key, value)
 ```
 
-### `env.getString(name, [default])`
-Get as string.
+### `has(key)`
 
-### `env.getInt(name, [default])`
-Get as integer.
+Executes the `has` operation with the given parameter (key).
 
+**Signature:**
 ```ntl
-val port = env.getInt("PORT", 3000)
+fn has(key)
 ```
 
-### `env.getBool(name, [default])`
-Get as boolean (`"true"`, `"1"`, `"yes"` → `true`).
+### `all()`
 
+Executes the `all` operation with the given no arguments.
+
+**Signature:**
 ```ntl
-val debug = env.getBool("DEBUG", false)
+fn all()
 ```
 
-### `env.getFloat(name, [default])`
-Get as float.
+### `load(path)`
 
----
+Executes the `load` operation with the given parameter (path).
 
-## Setting Variables
-
-### `env.set(name, value)`
-Set an environment variable for the current process.
-
+**Signature:**
 ```ntl
-env.set("LOG_LEVEL", "debug")
+fn load(path)
 ```
 
-### `env.delete(name)`
-Unset a variable.
+### `mustGet(key)`
 
+Executes the `mustGet` operation with the given parameter (key).
+
+**Signature:**
 ```ntl
-env.delete("TEMP_TOKEN")
+fn mustGet(key)
 ```
 
----
+### `getNumber(key, fallback)`
 
-## Listing Variables
+Executes the `getNumber` operation with the given parameters (key, fallback).
 
-### `env.all()`
-Return all environment variables as an object.
-
+**Signature:**
 ```ntl
-val vars = env.all()
-io.log(vars.PATH)
+fn getNumber(key, fallback)
 ```
 
-### `env.has(name)`
-Returns `true` if the variable is set.
+### `getBool(key, fallback)`
 
+Executes the `getBool` operation with the given parameters (key, fallback).
+
+**Signature:**
 ```ntl
-if env.has("CI") {
-  io.log("Running in CI")
-}
+fn getBool(key, fallback)
 ```
 
----
-
-## .env Files
-
-### `env.load([path])`
-Load variables from a `.env` file into the process environment. Default path is `.env`.
-
-```ntl
-env.load()          // loads .env
-env.load(".env.production")
-```
-
-### .env file format
-
-```
-PORT=3000
-DATABASE_URL=postgres://localhost/mydb
-JWT_SECRET=my-secret-key
-DEBUG=true
-```
-
----
-
-## Example
-
-```ntl
-val env = @import("std.env")
-val io = @import("std.io")
-
-env.load()
-
-val port    = env.getInt("PORT", 3000)
-val debug   = env.getBool("DEBUG", false)
-val secret  = env.require("JWT_SECRET")
-
-fn main() {
-  io.log("Port:", port)
-  io.log("Debug mode:", debug)
-  io.log("Secret loaded:", secret.length > 0)
-}
-```

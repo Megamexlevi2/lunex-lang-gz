@@ -1,6 +1,10 @@
-# io — Console I/O Module
+# Input/Output Module
 
-The `io` module provides all console input/output functions, colors, spinners, progress bars, and formatted output.
+Input/output operations including console logging, reading user input, and text formatting utilities.
+
+**Use case:** Log output, format console text, and read user input.
+
+---
 
 ## Import
 
@@ -10,225 +14,194 @@ val io = @import("std.io")
 
 ---
 
-## Output
+## Available Functions
 
-### `io.log(...args)`
-Print values to stdout separated by spaces, followed by a newline.
+### `log(...args)`
 
+Executes the `log` operation with the given parameter (...args).
+
+**Signature:**
 ```ntl
-io.log("Hello", "World")       // Hello World
-io.log(42, true, [1, 2])       // 42 true [1, 2]
+fn log(...args)
 ```
 
-### `io.io.log(...args)`
-Print without a trailing newline.
+### `error(...args)`
 
+Executes the `error` operation with the given parameter (...args).
+
+**Signature:**
 ```ntl
-io.io.log("Name: ")
-io.io.log("Alice")
+fn error(...args)
 ```
 
-### `io.println(...args)`
-Alias for `io.log`.
+### `warn(...args)`
 
-### `io.write(...args)`
-Alias for `io.print`.
+Executes the `warn` operation with the given parameter (...args).
 
-### `io.error(...args)`
-Print to stderr in red.
-
+**Signature:**
 ```ntl
-io.error("Something went wrong")
+fn warn(...args)
 ```
 
-### `io.warn(...args)`
-Print to stderr in yellow.
+### `success(...args)`
 
+Executes the `success` operation with the given parameter (...args).
+
+**Signature:**
 ```ntl
-io.warn("Disk space low")
+fn success(...args)
 ```
 
-### `io.info(...args)`
-Print to stdout in cyan.
+### `info(...args)`
 
+Executes the `info` operation with the given parameter (...args).
+
+**Signature:**
 ```ntl
-io.info("Server started on port 3000")
+fn info(...args)
 ```
 
-### `io.success(...args)`
-Print to stdout in green with a ✔ prefix.
+### `table(data, columns)`
 
+Executes the `table` operation with the given parameters (data, columns).
+
+**Signature:**
 ```ntl
-io.success("Build complete")
+fn table(data, columns)
 ```
 
----
+### `progress(current, total, label)`
 
-## Colors
+Executes the `progress` operation with the given parameters (current, total, label).
 
-Each color function wraps a string in ANSI color codes.
-
+**Signature:**
 ```ntl
-io.red("error!")
-io.green("ok")
-io.yellow("warning")
-io.blue("info")
-io.magenta("debug")
-io.cyan("hint")
-io.white("plain")
-io.gray("dim")
-io.bold("important")
-io.dim("subtle")
-io.italic("emphasis")
+fn progress(current, total, label)
 ```
 
-### `io.color(colorName, text)`
-Apply a named color to text.
+### `spinner(message)`
 
+Executes the `spinner` operation with the given parameter (message).
+
+**Signature:**
 ```ntl
-io.log(io.color("cyan", "Hello"))
+fn spinner(message)
 ```
 
-### `io.strip(text)`
-Remove ANSI escape codes from a string.
+### `banner(text, color)`
 
+Executes the `banner` operation with the given parameters (text, color).
+
+**Signature:**
 ```ntl
-val plain = io.strip(io.red("hello"))
+fn banner(text, color)
 ```
 
----
+### `hr(char, length)`
 
-## Input
+Executes the `hr` operation with the given parameters (char, length).
 
-### `io.read([prompt])`
-Read a line from stdin, optionally printing a prompt first.
-
+**Signature:**
 ```ntl
-val name = io.read("Your name: ")
-io.log("Hello,", name)
+fn hr(char, length)
 ```
 
-### `io.readLine([prompt])`
-Alias for `io.read`.
+### `readLine(prompt)`
 
-### `io.readInt([prompt])`
-Read an integer from stdin.
+Executes the `readLine` operation with the given parameter (prompt).
 
+**Signature:**
 ```ntl
-val age = io.readInt("Your age: ")
+fn readLine(prompt)
 ```
 
----
+### `readInt(prompt)`
 
-## Formatting
+Executes the `readInt` operation with the given parameter (prompt).
 
-### `io.format(template, ...args)`
-Replace `{}` or `{0}`, `{1}` placeholders with arguments.
-
+**Signature:**
 ```ntl
-val msg = io.format("Hello, {}! You are {} years old.", "Alice", 30)
-io.log(msg)   // Hello, Alice! You are 30 years old.
+fn readInt(prompt)
 ```
 
----
+### `clear()`
 
-## Structured Output
+Executes the `clear` operation with the given no arguments.
 
-### `io.table(array)`
-Render an array of objects as a formatted table.
-
+**Signature:**
 ```ntl
-io.table([
-  { name: "Alice", age: 30 },
-  { name: "Bob",   age: 25 },
-])
+fn clear()
 ```
 
-### `io.json(value)`
-Print a value as formatted JSON.
+### `red(text)`
 
+Executes the `red` operation with the given parameter (text).
+
+**Signature:**
 ```ntl
-io.json({ key: "value", list: [1, 2, 3] })
+fn red(text)
 ```
 
-### `io.banner(text)`
-Print text inside a box border.
+### `green(text)`
 
+Executes the `green` operation with the given parameter (text).
+
+**Signature:**
 ```ntl
-io.banner("NTL v0.4.0")
+fn green(text)
 ```
 
-### `io.hr([width], [char])`
-Print a horizontal rule.
+### `yellow(text)`
 
+Executes the `yellow` operation with the given parameter (text).
+
+**Signature:**
 ```ntl
-io.hr()           // ────────────────────────────────────────────────────────────
-io.hr(40, "═")    // ════════════════════════════════════════
+fn yellow(text)
 ```
 
-### `io.newline([n])`
-Print one or more blank lines.
+### `blue(text)`
 
+Executes the `blue` operation with the given parameter (text).
+
+**Signature:**
 ```ntl
-io.newline()     // one blank line
-io.newline(3)    // three blank lines
+fn blue(text)
 ```
 
----
+### `cyan(text)`
 
-## Progress
+Executes the `cyan` operation with the given parameter (text).
 
-### `io.progress(current, total)`
-Render an inline progress bar.
-
+**Signature:**
 ```ntl
-each i in range(0, 100) {
-  io.progress(i, 100)
-  sleep(10)
-}
+fn cyan(text)
 ```
 
-### `io.spinner()`
-Create a spinner object.
+### `magenta(text)`
 
+Executes the `magenta` operation with the given parameter (text).
+
+**Signature:**
 ```ntl
-val spin = io.spinner()
-spin.tick("Loading...")
-sleep(500)
-spin.stop()
+fn magenta(text)
 ```
 
----
+### `bold(text)`
 
-## Terminal
+Executes the `bold` operation with the given parameter (text).
 
-### `io.clear()`
-Clear the terminal screen.
-
-### `io.isTerminal()`
-Returns `true` if stdout is a real terminal (not piped).
-
+**Signature:**
 ```ntl
-if io.isTerminal() {
-  io.log(io.green("Colors supported"))
-}
+fn bold(text)
 ```
 
----
+### `dim(text)`
 
-## Example: Full Script
+Executes the `dim` operation with the given parameter (text).
 
+**Signature:**
 ```ntl
-val io = @import("std.io")
-
-fn greet(name) {
-  io.log(io.cyan("Hello,"), io.bold(name) + "!")
-  io.hr(40)
-}
-
-fn main() {
-  val name = io.read("Enter your name: ")
-  greet(name)
-  io.success("Done")
-}
+fn dim(text)
 ```
+

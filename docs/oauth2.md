@@ -1,6 +1,10 @@
-# ntl:oauth2
+# OAuth2 Module
 
-OAuth 2.0 authorization code flow — Google, GitHub, and custom providers.
+OAuth 2.0 authentication flows including authorization code, client credentials, and token management.
+
+**Use case:** Implement OAuth 2.0 authentication and authorization.
+
+---
 
 ## Import
 
@@ -8,112 +12,34 @@ OAuth 2.0 authorization code flow — Google, GitHub, and custom providers.
 val oauth2 = @import("std.oauth2")
 ```
 
-## Built-in providers
+---
 
-### `oauth2.google(options)`
+## Available Functions
 
-Creates an OAuth2 config for Google.
+### `create(options)`
 
+Executes the `create` operation with the given parameter (options).
+
+**Signature:**
 ```ntl
-val gauth = oauth2.google({
-  clientId: env.GOOGLE_CLIENT_ID,
-  clientSecret: env.GOOGLE_CLIENT_SECRET,
-  redirectUrl: "https://myapp.com/auth/google/callback",
-  scopes: ["openid", "email", "profile"]
-})
+fn create(options)
 ```
 
-### `oauth2.github(options)`
+### `google(options)`
 
-Creates an OAuth2 config for GitHub.
+Executes the `google` operation with the given parameter (options).
 
+**Signature:**
 ```ntl
-val ghauth = oauth2.github({
-  clientId: env.GITHUB_CLIENT_ID,
-  clientSecret: env.GITHUB_CLIENT_SECRET,
-  redirectUrl: "https://myapp.com/auth/github/callback",
-  scopes: ["read:user", "user:email"]
-})
+fn google(options)
 ```
 
-## Custom provider
+### `github(options)`
 
-### `oauth2.create(options)`
+Executes the `github` operation with the given parameter (options).
 
-Creates a config for any OAuth2-compatible provider.
-
+**Signature:**
 ```ntl
-val auth = oauth2.create({
-  clientId: "...",
-  clientSecret: "...",
-  redirectUrl: "...",
-  scopes: ["..."],
-  authURL: "https://provider.com/oauth/authorize",
-  tokenURL: "https://provider.com/oauth/token"
-})
+fn github(options)
 ```
 
-## Config methods
-
-All three functions return a config object with the following methods:
-
-### `config.authURL(state?)`
-
-Returns the authorization URL to redirect the user to. The optional `state` parameter is included in the URL for CSRF protection.
-
-```ntl
-val url = gauth.authURL("random_state_value")
-res.redirect(url)
-```
-
-### `config.exchange(code)`
-
-Exchanges an authorization code (from the callback query parameter) for an access token. Returns `{ accessToken, refreshToken, expiry }`.
-
-```ntl
-val tokens = gauth.exchange(req.query.code)
-```
-
-### `config.refresh(refreshToken)`
-
-Refreshes an expired access token. Returns a new `{ accessToken, refreshToken, expiry }`.
-
-```ntl
-val newTokens = gauth.refresh(tokens.refreshToken)
-```
-
-### `config.fetchUser(accessToken)`
-
-Fetches the authenticated user's profile from the provider. Returns a provider-specific user object.
-
-```ntl
-val user = gauth.fetchUser(tokens.accessToken)
-io.log(user.email)
-```
-
-## Example
-
-```ntl
-val oauth2 = @import("std.oauth2")
-val http = @import("std.http")
-val env = @import("std.env")
-
-val gauth = oauth2.google({
-  clientId: env.GOOGLE_CLIENT_ID,
-  clientSecret: env.GOOGLE_CLIENT_SECRET,
-  redirectUrl: "http://localhost:3000/callback",
-  scopes: ["openid", "email", "profile"]
-})
-
-http.get("/login", fn(req, res) {
-  res.redirect(gauth.authURL("state123"))
-})
-
-http.get("/callback", fn(req, res) {
-  val tokens = gauth.exchange(req.query.code)
-  val user = gauth.fetchUser(tokens.accessToken)
-  res.json({ email: user.email })
-})
-
-http.listen(3000)
-```

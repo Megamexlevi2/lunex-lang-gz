@@ -1,6 +1,10 @@
-# mail — Email Module
+# Mail Module
 
-The `mail` module provides SMTP email sending with support for HTML, attachments, and templating.
+Email sending via SMTP with support for attachments, HTML content, and templates.
+
+**Use case:** Send emails from your applications.
+
+---
 
 ## Import
 
@@ -10,175 +14,77 @@ val mail = @import("std.mail")
 
 ---
 
-## Configuration
+## Available Functions
 
-### `mail.configure(options)`
-Configure the SMTP connection. Call this once before sending.
+### `createMailer(config)`
 
+Executes the `createMailer` operation with the given parameter (config).
+
+**Signature:**
 ```ntl
-mail.configure({
-  host:     "smtp.gmail.com",
-  port:     587,
-  secure:   false,
-  username: "you@gmail.com",
-  password: env.get("SMTP_PASSWORD"),
-  from:     "My App <noreply@example.com>",
-})
+fn createMailer(config)
 ```
 
-#### Options
+### `send(options)`
 
-| Option | Description |
-|---|---|
-| `host` | SMTP server hostname |
-| `port` | SMTP port (`465` for SSL, `587` for TLS, `25` for plain) |
-| `secure` | Use TLS (`true` for port 465) |
-| `username` | SMTP authentication username |
-| `password` | SMTP authentication password |
-| `from` | Default sender address |
+Executes the `send` operation with the given parameter (options).
 
----
-
-## Sending Email
-
-### `mail.send(message)`
-Send an email. Returns `{ ok: bool, id: string }`.
-
+**Signature:**
 ```ntl
-val result = mail.send({
-  to:      "alice@example.com",
-  subject: "Welcome!",
-  text:    "Hello Alice, welcome to the app.",
-  html:    "<h1>Welcome!</h1><p>Hello Alice.</p>",
-})
-
-if result.ok {
-  io.success("Email sent:", result.id)
-} else {
-  io.error("Failed to send email")
-}
+fn send(options)
 ```
 
-#### Message Fields
+### `sendText(to, subject, text)`
 
-| Field | Type | Description |
-|---|---|---|
-| `to` | string \| array | Recipient(s) |
-| `cc` | string \| array | CC recipient(s) |
-| `bcc` | string \| array | BCC recipient(s) |
-| `subject` | string | Email subject |
-| `text` | string | Plain text body |
-| `html` | string | HTML body |
-| `from` | string | Override sender |
-| `replyTo` | string | Reply-To address |
-| `attachments` | array | File attachments |
+Executes the `sendText` operation with the given parameters (to, subject, text).
 
----
-
-## Multiple Recipients
-
+**Signature:**
 ```ntl
-mail.send({
-  to: ["alice@example.com", "bob@example.com"],
-  subject: "Team Update",
-  text: "See the attached report.",
-})
+fn sendText(to, subject, text)
 ```
 
----
+### `sendHTML(to, subject, html)`
 
-## Attachments
+Executes the `sendHTML` operation with the given parameters (to, subject, html).
 
+**Signature:**
 ```ntl
-mail.send({
-  to: "alice@example.com",
-  subject: "Your Report",
-  text: "Please find the report attached.",
-  attachments: [
-    { filename: "report.pdf", path: "/tmp/report.pdf" },
-    { filename: "data.csv",  content: "col1,col2\n1,2\n" },
-  ],
-})
+fn sendHTML(to, subject, html)
 ```
 
----
+### `sendTemplate(to, subject, html, vars)`
 
-## Email Templates
+Executes the `sendTemplate` operation with the given parameters (to, subject, html, vars).
 
-### `mail.template(html, vars)`
-Render a simple email template. Replaces `{{variable}}` placeholders.
-
+**Signature:**
 ```ntl
-val html = mail.template(`
-  <h1>Hello, {{name}}!</h1>
-  <p>Your activation code is: <strong>{{code}}</strong></p>
-`, {
-  name: "Alice",
-  code: "ABC-123",
-})
-
-mail.send({
-  to: "alice@example.com",
-  subject: "Activate your account",
-  html: html,
-})
+fn sendTemplate(to, subject, html, vars)
 ```
 
----
+### `send(config, options)`
 
-## Batch Sending
+Executes the `send` operation with the given parameters (config, options).
 
-### `mail.sendMany(messages)`
-Send multiple emails efficiently.
-
+**Signature:**
 ```ntl
-val emails = users.map(fn(u) {
-  {
-    to: u.email,
-    subject: "Your weekly report",
-    text: "Hi " + u.name + ", here is your report...",
-  }
-})
-
-mail.sendMany(emails)
+fn send(config, options)
 ```
 
----
+### `sendText(config, to, subject, text)`
 
-## Example: Registration Email
+Executes the `sendText` operation with the given parameters (config, to, subject, text).
 
+**Signature:**
 ```ntl
-val mail = @import("std.mail")
-val env = @import("std.env")
-val io = @import("std.io")
-
-env.load()
-
-mail.configure({
-  host:     env.require("SMTP_HOST"),
-  port:     env.getInt("SMTP_PORT", 587),
-  username: env.require("SMTP_USER"),
-  password: env.require("SMTP_PASS"),
-  from:     "MyApp <noreply@myapp.com>",
-})
-
-fn sendWelcome(name, email, code) {
-  val html = mail.template(`
-    <h2>Welcome to MyApp, {{name}}!</h2>
-    <p>Verify your email: <a href="https://myapp.com/verify?code={{code}}">Click here</a></p>
-  `, { name: name, code: code })
-
-  mail.send({
-    to:      email,
-    subject: "Welcome to MyApp",
-    html:    html,
-  })
-}
-
-fn main() {
-  val result = sendWelcome("Alice", "alice@example.com", "XYZ-789")
-  if result.ok {
-    io.success("Welcome email sent")
-  }
-}
+fn sendText(config, to, subject, text)
 ```
+
+### `sendHTML(config, to, subject, html)`
+
+Executes the `sendHTML` operation with the given parameters (config, to, subject, html).
+
+**Signature:**
+```ntl
+fn sendHTML(config, to, subject, html)
+```
+

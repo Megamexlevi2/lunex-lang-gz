@@ -1,6 +1,10 @@
-# crypto — Cryptography Module
+# Cryptography Module
 
-The `crypto` module provides hashing, encoding, JWT handling, random generation, and symmetric encryption.
+Cryptographic operations including hashing, symmetric/asymmetric encryption, digital signatures, and JWT handling.
+
+**Use case:** Secure data, verify integrity, implement authentication, and manage credentials.
+
+---
 
 ## Import
 
@@ -10,186 +14,284 @@ val crypto = @import("std.crypto")
 
 ---
 
-## Hashing
+## Available Functions
 
-### `crypto.hash(algorithm, data)`
-Hash data using the specified algorithm. Returns a hex string.
+### `hash(algorithm, data)`
 
-Supported algorithms: `md5`, `sha1`, `sha256`, `sha512`, `sha3_256`, `sha3_512`
+Executes the `hash` operation with the given parameters (algorithm, data).
 
+**Signature:**
 ```ntl
-val h = crypto.hash("sha256", "hello world")
-io.log(h)
-// b94d27b9934d3e08a52e52d7da7dabfac484efe04294e576f07e1a8a...
+fn hash(algorithm, data)
 ```
 
-### `crypto.hmac(algorithm, key, data)`
-Compute an HMAC.
+### `md5(data)`
 
+Executes the `md5` operation with the given parameter (data).
+
+**Signature:**
 ```ntl
-val sig = crypto.hmac("sha256", "secret-key", "message")
+fn md5(data)
 ```
 
-### `crypto.md5(data)`
-Shorthand for MD5 hash.
+### `sha1(data)`
 
-### `crypto.sha256(data)`
-Shorthand for SHA-256 hash.
+Executes the `sha1` operation with the given parameter (data).
 
-### `crypto.sha512(data)`
-Shorthand for SHA-512 hash.
-
----
-
-## Encoding
-
-### `crypto.base64encode(data)`
-Encode a string to Base64.
-
+**Signature:**
 ```ntl
-val encoded = crypto.base64encode("Hello, World!")
-// SGVsbG8sIFdvcmxkIQ==
+fn sha1(data)
 ```
 
-### `crypto.base64decode(data)`
-Decode a Base64 string.
+### `sha256(data)`
 
+Executes the `sha256` operation with the given parameter (data).
+
+**Signature:**
 ```ntl
-val decoded = crypto.base64decode("SGVsbG8sIFdvcmxkIQ==")
-// Hello, World!
+fn sha256(data)
 ```
 
-### `crypto.hexencode(data)`
-Encode to hex.
+### `sha512(data)`
 
-### `crypto.hexdecode(hex)`
-Decode from hex.
+Executes the `sha512` operation with the given parameter (data).
 
----
-
-## Random
-
-### `crypto.random(n)`
-Generate `n` cryptographically random bytes as a hex string.
-
+**Signature:**
 ```ntl
-val token = crypto.random(32)    // 64-char hex string
+fn sha512(data)
 ```
 
-### `crypto.randomInt(min, max)`
-Generate a random integer in `[min, max)`.
+### `hmac(algorithm, key, data)`
 
+Executes the `hmac` operation with the given parameters (algorithm, key, data).
+
+**Signature:**
 ```ntl
-val n = crypto.randomInt(1, 100)
+fn hmac(algorithm, key, data)
 ```
 
-### `crypto.uuid()`
-Generate a random UUID v4.
+### `hmacSha256(key, data)`
 
+Executes the `hmacSha256` operation with the given parameters (key, data).
+
+**Signature:**
 ```ntl
-val id = crypto.uuid()
-// "550e8400-e29b-41d4-a716-446655440000"
+fn hmacSha256(key, data)
 ```
 
----
+### `hmacSha512(key, data)`
 
-## JWT
+Executes the `hmacSha512` operation with the given parameters (key, data).
 
-### `crypto.jwtSign(payload, secret, [options])`
-Sign a JWT token.
-
+**Signature:**
 ```ntl
-val token = crypto.jwtSign(
-  { userId: 42, role: "admin" },
-  "my-secret-key",
-  { expiresIn: "24h" }
-)
+fn hmacSha512(key, data)
 ```
 
-### `crypto.jwtVerify(token, secret)`
-Verify and decode a JWT. Returns the payload, or `null` if invalid/expired.
+### `randomBytes(n)`
 
+Executes the `randomBytes` operation with the given parameter (n).
+
+**Signature:**
 ```ntl
-val payload = crypto.jwtVerify(token, "my-secret-key")
-if payload == null {
-  io.error("Invalid or expired token")
-}
-io.log("User ID:", payload.userId)
+fn randomBytes(n)
 ```
 
-### `crypto.jwtDecode(token)`
-Decode a JWT without verifying the signature.
+### `randomHex(n)`
 
+Executes the `randomHex` operation with the given parameter (n).
+
+**Signature:**
 ```ntl
-val header = crypto.jwtDecode(token)
+fn randomHex(n)
 ```
 
----
+### `randomUUID()`
 
-## Encryption
+Executes the `randomUUID` operation with the given no arguments.
 
-### `crypto.encrypt(data, key)`
-Encrypt a string using AES-256-GCM.
-
+**Signature:**
 ```ntl
-val encrypted = crypto.encrypt("sensitive data", "32-byte-secret-key-0123456789ab")
+fn randomUUID()
 ```
 
-### `crypto.decrypt(encrypted, key)`
-Decrypt an encrypted string.
+### `uuid()`
 
+Executes the `uuid` operation with the given no arguments.
+
+**Signature:**
 ```ntl
-val plain = crypto.decrypt(encrypted, "32-byte-secret-key-0123456789ab")
+fn uuid()
 ```
 
----
+### `token(n)`
 
-## Password Hashing
+Executes the `token` operation with the given parameter (n).
 
-### `crypto.bcryptHash(password, [cost])`
-Hash a password with bcrypt. Default cost is 10.
-
+**Signature:**
 ```ntl
-val hashed = crypto.bcryptHash("my-password", 12)
+fn token(n)
 ```
 
-### `crypto.bcryptVerify(password, hash)`
-Verify a password against a bcrypt hash.
+### `encrypt(data, key)`
 
+Executes the `encrypt` operation with the given parameters (data, key).
+
+**Signature:**
 ```ntl
-val ok = crypto.bcryptVerify("my-password", hashed)
-if ok {
-  io.success("Password correct")
-}
+fn encrypt(data, key)
 ```
 
----
+### `decrypt(data, key)`
 
-## Example: Auth Service
+Executes the `decrypt` operation with the given parameters (data, key).
 
+**Signature:**
 ```ntl
-val crypto = @import("std.crypto")
-val io = @import("std.io")
-
-val SECRET = "super-secret-key"
-
-fn createToken(userId, role) {
-  crypto.jwtSign({ userId: userId, role: role }, SECRET, { expiresIn: "1h" })
-}
-
-fn verifyToken(token) {
-  val payload = crypto.jwtVerify(token, SECRET)
-  if payload == null {
-    null
-  }
-  payload
-}
-
-fn main() {
-  val token = createToken(1, "admin")
-  io.log("Token:", token)
-
-  val payload = verifyToken(token)
-  io.log("User:", payload.userId, "Role:", payload.role)
-}
+fn decrypt(data, key)
 ```
+
+### `encryptAES(data, key)`
+
+Executes the `encryptAES` operation with the given parameters (data, key).
+
+**Signature:**
+```ntl
+fn encryptAES(data, key)
+```
+
+### `decryptAES(data, key)`
+
+Executes the `decryptAES` operation with the given parameters (data, key).
+
+**Signature:**
+```ntl
+fn decryptAES(data, key)
+```
+
+### `pbkdf2(password, salt, iterations, keyLen)`
+
+Executes the `pbkdf2` operation with the given parameters (password, salt, iterations, keyLen).
+
+**Signature:**
+```ntl
+fn pbkdf2(password, salt, iterations, keyLen)
+```
+
+### `hashPassword(password, cost)`
+
+Executes the `hashPassword` operation with the given parameters (password, cost).
+
+**Signature:**
+```ntl
+fn hashPassword(password, cost)
+```
+
+### `verifyPassword(password, hash)`
+
+Executes the `verifyPassword` operation with the given parameters (password, hash).
+
+**Signature:**
+```ntl
+fn verifyPassword(password, hash)
+```
+
+### `signJWT(payload, secret, expiresIn)`
+
+Executes the `signJWT` operation with the given parameters (payload, secret, expiresIn).
+
+**Signature:**
+```ntl
+fn signJWT(payload, secret, expiresIn)
+```
+
+### `verifyJWT(tok, secret)`
+
+Executes the `verifyJWT` operation with the given parameters (tok, secret).
+
+**Signature:**
+```ntl
+fn verifyJWT(tok, secret)
+```
+
+### `jwtDecode(tok)`
+
+Executes the `jwtDecode` operation with the given parameter (tok).
+
+**Signature:**
+```ntl
+fn jwtDecode(tok)
+```
+
+### `base64Encode(data)`
+
+Executes the `base64Encode` operation with the given parameter (data).
+
+**Signature:**
+```ntl
+fn base64Encode(data)
+```
+
+### `base64Decode(data)`
+
+Executes the `base64Decode` operation with the given parameter (data).
+
+**Signature:**
+```ntl
+fn base64Decode(data)
+```
+
+### `base64UrlEncode(data)`
+
+Executes the `base64UrlEncode` operation with the given parameter (data).
+
+**Signature:**
+```ntl
+fn base64UrlEncode(data)
+```
+
+### `base64UrlDecode(data)`
+
+Executes the `base64UrlDecode` operation with the given parameter (data).
+
+**Signature:**
+```ntl
+fn base64UrlDecode(data)
+```
+
+### `toHex(data)`
+
+Executes the `toHex` operation with the given parameter (data).
+
+**Signature:**
+```ntl
+fn toHex(data)
+```
+
+### `fromHex(data)`
+
+Executes the `fromHex` operation with the given parameter (data).
+
+**Signature:**
+```ntl
+fn fromHex(data)
+```
+
+### `compare(a, b)`
+
+Executes the `compare` operation with the given parameters (a, b).
+
+**Signature:**
+```ntl
+fn compare(a, b)
+```
+
+### `timingSafeEqual(a, b)`
+
+Executes the `timingSafeEqual` operation with the given parameters (a, b).
+
+**Signature:**
+```ntl
+fn timingSafeEqual(a, b)
+```
+

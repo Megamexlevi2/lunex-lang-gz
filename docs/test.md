@@ -1,6 +1,10 @@
-# test — Unit Testing Module
+# Testing Module
 
-The `test` module provides a lightweight testing framework with assertions, suites, and reporting.
+Unit testing framework with assertions, test suites, and test runners.
+
+**Use case:** Write and run automated tests for your code.
+
+---
 
 ## Import
 
@@ -10,209 +14,113 @@ val test = @import("std.test")
 
 ---
 
-## Defining Tests
+## Available Functions
 
-### `test.run(name, fn)`
-Register and immediately run a named test.
+### `describe(name, block)`
 
+Executes the `describe` operation with the given parameters (name, block).
+
+**Signature:**
 ```ntl
-test.run("addition works", fn() {
-  test.eq(1 + 1, 2)
-  test.eq(10 + 5, 15)
-})
+fn describe(name, block)
 ```
 
-### `test.suite(name, fn)`
-Group related tests in a suite.
+### `it(name, testCallback)`
 
+Executes the `it` operation with the given parameters (name, testCallback).
+
+**Signature:**
 ```ntl
-test.suite("Math", fn() {
-  test.run("add", fn() {
-    test.eq(1 + 2, 3)
-  })
-  test.run("subtract", fn() {
-    test.eq(5 - 3, 2)
-  })
-})
+fn it(name, testCallback)
 ```
 
----
+### `test(name, testCallback)`
 
-## Assertions
+Executes the `test` operation with the given parameters (name, testCallback).
 
-### `test.eq(actual, expected)`
-Assert strict equality.
-
+**Signature:**
 ```ntl
-test.eq(42, 42)
-test.eq("hello", "hello")
+fn test(name, testCallback)
 ```
 
-### `test.neq(actual, expected)`
-Assert not equal.
+### `skip(name, testCallback)`
 
+Executes the `skip` operation with the given parameters (name, testCallback).
+
+**Signature:**
 ```ntl
-test.neq(1, 2)
+fn skip(name, testCallback)
 ```
 
-### `test.ok(value)`
-Assert value is truthy.
+### `beforeEach(hook)`
 
+Executes the `beforeEach` operation with the given parameter (hook).
+
+**Signature:**
 ```ntl
-test.ok(1 > 0)
-test.ok(arr.length > 0)
+fn beforeEach(hook)
 ```
 
-### `test.fail(value)`
-Assert value is falsy.
+### `afterEach(hook)`
 
+Executes the `afterEach` operation with the given parameter (hook).
+
+**Signature:**
 ```ntl
-test.fail(false)
-test.fail(null)
+fn afterEach(hook)
 ```
 
-### `test.deepEq(actual, expected)`
-Assert deep equality (objects and arrays).
+### `beforeAll(hook)`
 
+Executes the `beforeAll` operation with the given parameter (hook).
+
+**Signature:**
 ```ntl
-test.deepEq([1, 2, 3], [1, 2, 3])
-test.deepEq({ name: "Alice" }, { name: "Alice" })
+fn beforeAll(hook)
 ```
 
-### `test.throws(fn, [message])`
-Assert that a function throws.
+### `afterAll(hook)`
 
+Executes the `afterAll` operation with the given parameter (hook).
+
+**Signature:**
 ```ntl
-test.throws(fn() {
-  throw "oops"
-})
+fn afterAll(hook)
 ```
 
-### `test.notThrows(fn)`
-Assert that a function does not throw.
+### `assertionError(message)`
 
-### `test.match(str, pattern)`
-Assert a string matches a regex pattern.
+Executes the `assertionError` operation with the given parameter (message).
 
+**Signature:**
 ```ntl
-test.match("hello world", "^hello")
+fn assertionError(message)
 ```
 
-### `test.type(value, typeName)`
-Assert the type of a value.
+### `_fail(msg)`
 
+Executes the `_fail` operation with the given parameter (msg).
+
+**Signature:**
 ```ntl
-test.type(42, "number")
-test.type("hi", "string")
-test.type([], "array")
+fn _fail(msg)
 ```
 
-### `test.range(value, min, max)`
-Assert a number is within a range.
+### `_toStr(v)`
 
+Executes the `_toStr` operation with the given parameter (v).
+
+**Signature:**
 ```ntl
-test.range(5, 0, 10)
+fn _toStr(v)
 ```
 
-### `test.null(value)`
-Assert value is `null`.
+### `run()`
 
-### `test.defined(value)`
-Assert value is not `undefined`.
+Executes the `run` operation with the given no arguments.
 
----
-
-## Setup & Teardown
-
-### `test.beforeEach(fn)`
-Run before every test in the current suite.
-
+**Signature:**
 ```ntl
-test.suite("DB tests", fn() {
-  val db = null
-
-  test.beforeEach(fn() {
-    db = createTestDB()
-  })
-
-  test.afterEach(fn() {
-    db.clear()
-  })
-
-  test.run("insert works", fn() {
-    db.insert({ name: "Alice" })
-    test.eq(db.count(), 1)
-  })
-})
+fn run()
 ```
 
-### `test.afterEach(fn)`
-Run after every test in the current suite.
-
-### `test.beforeAll(fn)`
-Run once before all tests in the suite.
-
-### `test.afterAll(fn)`
-Run once after all tests in the suite.
-
----
-
-## Reporting
-
-### `test.report()`
-Print a summary of all test results.
-
-```ntl
-test.report()
-```
-
-Output example:
-```
-  ✔ addition works            (0ms)
-  ✔ Math / add                (0ms)
-  ✔ Math / subtract           (0ms)
-  ✗ divide by zero            ReferenceError: division by zero
-
-  3 passed, 1 failed
-```
-
-### `test.summary()`
-Return test stats as an object.
-
-```ntl
-val stats = test.summary()
-io.log(stats.passed, "/", stats.total)
-```
-
----
-
-## Example: Testing a Function
-
-```ntl
-val test = @import("std.test")
-
-fn add(a, b) { return a + b }
-fn divide(a, b) {
-  if b == 0 { throw "division by zero" }
-  a / b
-}
-
-test.suite("Math Functions", fn() {
-  test.run("add returns correct sum", fn() {
-    test.eq(add(2, 3), 5)
-    test.eq(add(-1, 1), 0)
-    test.eq(add(0, 0), 0)
-  })
-
-  test.run("divide works for non-zero denominators", fn() {
-    test.eq(divide(10, 2), 5)
-    test.eq(divide(9, 3), 3)
-  })
-
-  test.run("divide throws on zero", fn() {
-    test.throws(fn() { divide(5, 0) })
-  })
-})
-
-test.report()
-```

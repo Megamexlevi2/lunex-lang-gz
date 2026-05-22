@@ -82,6 +82,29 @@ fn main() {
 
 ---
 
+---
+
+## example of http 
+
+```ntl
+val http = @import("std.http")
+val io = @import("std.io")
+
+fn main() {
+  val server = http.createServer(fn(req, res) {
+    http.json(res, {
+      "message": "Hello from NTL-lang"
+    }, 200)
+  })
+
+  http.listen(server, 3000, "0.0.0.0", fn() {
+    io.log("Server running on port 3000")
+  })
+}
+```
+
+---
+
 ## Variables
 
 ```ntl

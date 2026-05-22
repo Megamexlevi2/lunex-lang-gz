@@ -1,137 +1,108 @@
-# xml
+# XML Module
 
-  XML parsing, serialization, querying, and validation.
+XML parsing and generation utilities.
 
-  ## Import
+**Use case:** Parse and create XML documents.
 
-  ```ntl
-  val xml = @import("std.xml")
-  ```
+---
 
-  ## Functions
+## Import
 
-  ### parse(xmlString)
+```ntl
+val xml = @import("std.xml")
+```
 
-  Parse an XML string into an NTL object tree.
+---
 
-  ```ntl
-  val xml = @import("std.xml")
+## Available Functions
 
-  val doc = xml.parse(`<book id="1"><title>NTL Guide</title><author>David Dev</author></book>`)
-  io.log(doc.title)
-  io.log(xml.getAttribute(doc, "id"))
-  ```
+### `parse(data)`
 
-  Each element becomes an object with:
-  - `#tag` — element tag name
-  - `#text` — text content (if present)
-  - `@attributes` — object of attributes
-  - child element names as keys
+Executes the `parse` operation with the given parameter (data).
 
-  ### stringify(object, rootTag?, options?)
+**Signature:**
+```ntl
+fn parse(data)
+```
 
-  Convert an NTL object to an XML string.
+### `stringify(obj, root, options)`
 
-  ```ntl
-  val xml = @import("std.xml")
+Executes the `stringify` operation with the given parameters (obj, root, options).
 
-  val data = { name: "Alice", age: 30 }
-  val result = xml.stringify(data, "person", { pretty: true })
-  io.log(result)
-  ```
+**Signature:**
+```ntl
+fn stringify(obj, root, options)
+```
 
-  Options:
-  - `pretty` (boolean) — indent output, default `false`
+### `validate(data)`
 
-  ### validate(xmlString)
+Executes the `validate` operation with the given parameter (data).
 
-  Return `true` if the string is valid XML, `false` otherwise.
+**Signature:**
+```ntl
+fn validate(data)
+```
 
-  ```ntl
-  val xml = @import("std.xml")
+### `query(data, xpath)`
 
-  io.log(xml.validate("<ok/>"))
-  io.log(xml.validate("<bad>"))
-  ```
+Executes the `query` operation with the given parameters (data, xpath).
 
-  ### query(xmlString, path)
+**Signature:**
+```ntl
+fn query(data, xpath)
+```
 
-  Find elements by a slash-separated path.
+### `getAttribute(element, name)`
 
-  ```ntl
-  val xml = @import("std.xml")
+Executes the `getAttribute` operation with the given parameters (element, name).
 
-  val src = `<catalog><book><title>A</title></book><book><title>B</title></book></catalog>`
-  val titles = xml.query(src, "book/title")
-  each t in titles {
-    io.log(xml.getText(t))
-  }
-  ```
+**Signature:**
+```ntl
+fn getAttribute(element, name)
+```
 
-  ### getAttribute(element, name)
+### `getText(element)`
 
-  Return the value of an attribute on a parsed element.
+Executes the `getText` operation with the given parameter (element).
 
-  ```ntl
-  val xml = @import("std.xml")
+**Signature:**
+```ntl
+fn getText(element)
+```
 
-  val doc = xml.parse(`<item id="42" type="widget"/>`)
-  io.log(xml.getAttribute(doc, "id"))
-  io.log(xml.getAttribute(doc, "type"))
-  ```
+### `readFile(filePath)`
 
-  ### getText(element)
+Executes the `readFile` operation with the given parameter (filePath).
 
-  Return the text content of a parsed element.
+**Signature:**
+```ntl
+fn readFile(filePath)
+```
 
-  ```ntl
-  val xml = @import("std.xml")
+### `writeFile(filePath, obj, root, options)`
 
-  val doc = xml.parse("<msg>Hello world</msg>")
-  io.log(xml.getText(doc))
-  ```
+Executes the `writeFile` operation with the given parameters (filePath, obj, root, options).
 
-  ### readFile(path)
+**Signature:**
+```ntl
+fn writeFile(filePath, obj, root, options)
+```
 
-  Read an XML file from disk and parse it.
+### `fromJSON(obj, root)`
 
-  ```ntl
-  val xml = @import("std.xml")
+Executes the `fromJSON` operation with the given parameters (obj, root).
 
-  val config = xml.readFile("config.xml")
-  io.log(config)
-  ```
+**Signature:**
+```ntl
+fn fromJSON(obj, root)
+```
 
-  ### writeFile(path, object, rootTag?, options?)
+### `toJSON(data)`
 
-  Serialize an object to XML and write it to a file.
+Executes the `toJSON` operation with the given parameter (data).
 
-  ```ntl
-  val xml = @import("std.xml")
+**Signature:**
+```ntl
+fn toJSON(data)
+```
 
-  val data = { host: "localhost", port: 8080 }
-  xml.writeFile("config.xml", data, "config")
-  ```
-
-  ### fromJSON(object, rootTag?)
-
-  Alias for `stringify` with `pretty: true`. Converts a JSON-like object to XML.
-
-  ### toJSON(xmlString)
-
-  Alias for `parse`. Converts XML to an NTL object.
-
-  ## Privileged Author Example
-
-  If your module declares `# author: David Dev`, native modules are injected automatically:
-
-  ```ntl
-  # author: David Dev
-  # mymodule v1.0.0
-
-  fn loadConfig(path) {
-    val doc = xml.readFile(path)
-    doc
-  }
-  ```
-  

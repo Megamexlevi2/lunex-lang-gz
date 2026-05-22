@@ -1,6 +1,10 @@
-# http — HTTP Module
+# HTTP Module
 
-The `http` module provides an HTTP client for making requests and an HTTP server for building web APIs.
+HTTP client for making requests to web services with support for headers, cookies, and authentication.
+
+**Use case:** Call REST APIs and interact with web services.
+
+---
 
 ## Import
 
@@ -10,178 +14,122 @@ val http = @import("std.http")
 
 ---
 
-## HTTP Client
+## Available Functions
 
-### `http.get(url, [headers])`
-Perform a GET request. Returns a response object.
+### `createServer(handler)`
 
+Executes the `createServer` operation with the given parameter (handler).
+
+**Signature:**
 ```ntl
-val res = http.get("https://api.example.com/users")
-io.log(res.status)    // 200
-io.log(res.body)      // raw body string
-val data = res.json() // parse body as JSON
+fn createServer(handler)
 ```
 
-### `http.post(url, body, [headers])`
-Perform a POST request with a body.
+### `listen(server, port, host, callback)`
 
+Executes the `listen` operation with the given parameters (server, port, host, callback).
+
+**Signature:**
 ```ntl
-val res = http.post("https://api.example.com/users", {
-  name: "Alice",
-  email: "alice@example.com",
-})
-io.log(res.status)
+fn listen(server, port, host, callback)
 ```
 
-### `http.put(url, body, [headers])`
-Perform a PUT request.
+### `get(url, options)`
 
+Executes the `get` operation with the given parameters (url, options).
+
+**Signature:**
 ```ntl
-http.put("https://api.example.com/users/1", { name: "Alice Updated" })
+fn get(url, options)
 ```
 
-### `http.patch(url, body, [headers])`
-Perform a PATCH request.
+### `post(url, options)`
 
-### `http.delete(url, [headers])`
-Perform a DELETE request.
+Executes the `post` operation with the given parameters (url, options).
 
+**Signature:**
 ```ntl
-http.delete("https://api.example.com/users/1")
+fn post(url, options)
 ```
 
-### `http.request(options)`
-Full-control request with an options object.
+### `put(url, options)`
 
+Executes the `put` operation with the given parameters (url, options).
+
+**Signature:**
 ```ntl
-val res = http.request({
-  method: "POST",
-  url: "https://api.example.com/auth",
-  headers: { "Content-Type": "application/json" },
-  body: { username: "alice", password: "secret" },
-  timeout: 5000,
-})
+fn put(url, options)
 ```
 
-### Response Object
+### `patch(url, options)`
 
-| Property | Type | Description |
-|---|---|---|
-| `status` | number | HTTP status code |
-| `ok` | boolean | `true` if status is 2xx |
-| `body` | string | Raw response body |
-| `headers` | object | Response headers |
-| `json()` | fn | Parse body as JSON |
+Executes the `patch` operation with the given parameters (url, options).
 
----
-
-## HTTP Server
-
-### `http.serve(port, handler)`
-Start an HTTP server on the given port.
-
+**Signature:**
 ```ntl
-http.serve(3000, fn(req, res) {
-  res.json({ message: "Hello, World!" })
-})
+fn patch(url, options)
 ```
 
-### `http.router()`
-Create a router for defining multiple routes.
+### `del(url, options)`
 
+Executes the `del` operation with the given parameters (url, options).
+
+**Signature:**
 ```ntl
-val app = http.router()
-
-app.get("/", fn(req, res) {
-  res.html("<h1>Home</h1>")
-})
-
-app.get("/users/:id", fn(req, res) {
-  val id = req.params.id
-  res.json({ id: id, name: "Alice" })
-})
-
-app.post("/users", fn(req, res) {
-  val body = req.body
-  res.status(201).json({ created: body.name })
-})
-
-http.serve(3000, app.handler())
-io.log("Server running on :3000")
+fn del(url, options)
 ```
 
-### Request Object (`req`)
+### `head(url, options)`
 
-| Property | Type | Description |
-|---|---|---|
-| `method` | string | HTTP method (GET, POST, etc.) |
-| `path` | string | Request path |
-| `params` | object | URL parameters (`:id` → `params.id`) |
-| `query` | object | Query string parameters |
-| `headers` | object | Request headers |
-| `body` | object/string | Parsed request body |
+Executes the `head` operation with the given parameters (url, options).
 
-### Response Object (`res`)
-
-| Method | Description |
-|---|---|
-| `res.send(text)` | Send plain text response |
-| `res.json(value)` | Send JSON response |
-| `res.html(html)` | Send HTML response |
-| `res.status(code)` | Set status code (chainable) |
-| `res.header(name, value)` | Set a header (chainable) |
-| `res.redirect(url)` | Send redirect response |
-
----
-
-## Middleware
-
+**Signature:**
 ```ntl
-app.use(fn(req, res, next) {
-  io.log(req.method, req.path)
-  next()
-})
+fn head(url, options)
 ```
 
-### Built-in Middleware
+### `json(res, data, status)`
 
+Executes the `json` operation with the given parameters (res, data, status).
+
+**Signature:**
 ```ntl
-app.use(http.cors())          // Enable CORS
-app.use(http.json())          // Parse JSON bodies
-app.use(http.logger())        // Log all requests
-app.use(http.static("public")) // Serve static files
+fn json(res, data, status)
 ```
 
----
+### `text(res, data, status)`
 
-## Example: REST API
+Executes the `text` operation with the given parameters (res, data, status).
 
+**Signature:**
 ```ntl
-val http = @import("std.http")
-val io = @import("std.io")
-
-val users = [
-  { id: 1, name: "Alice" },
-  { id: 2, name: "Bob" },
-]
-
-val app = http.router()
-
-app.get("/users", fn(req, res) {
-  res.json(users)
-})
-
-app.get("/users/:id", fn(req, res) {
-  val id = req.params.id
-  val user = users.find(fn(u) { u.id == id })
-  if user == null {
-    res.status(404).json({ error: "Not found" })
-  }
-  res.json(user)
-})
-
-fn main() {
-  http.serve(3000, app.handler())
-  io.success("API running on http://localhost:3000")
-}
+fn text(res, data, status)
 ```
+
+### `redirect(res, url, status)`
+
+Executes the `redirect` operation with the given parameters (res, url, status).
+
+**Signature:**
+```ntl
+fn redirect(res, url, status)
+```
+
+### `router()`
+
+Executes the `router` operation with the given no arguments.
+
+**Signature:**
+```ntl
+fn router()
+```
+
+### `serve(port, handler)`
+
+Executes the `serve` operation with the given parameters (port, handler).
+
+**Signature:**
+```ntl
+fn serve(port, handler)
+```
+
