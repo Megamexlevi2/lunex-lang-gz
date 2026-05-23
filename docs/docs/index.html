@@ -143,7 +143,7 @@ fn main() {
         <h2>Basic syntax</h2>
         <p>NTL keeps syntax compact. It borrows the useful feeling of scripting languages, but it does not try to be a clone of anything else.</p>
         <div class="code-block">
-          <button class="copy-btn" data-copy='
+          <button class="copy-btn" data-copy='val io = @import("std.io")
 
 val name = "Alice"
 var count = 1
@@ -151,11 +151,11 @@ var count = 1
 fn main() {
   io.log(name, count)
 }'>Copy</button>
-          <pre><code>
+          <pre><code>val io = @import("std.io")
 
 val name = "Alice"
 var count = 1
-val io = @import("std.io")
+
 fn main() {
   io.log(name, count)
 }</code></pre>
@@ -238,14 +238,18 @@ fn main() {
           Functions are the place where most of the language style shows up. Keep them small, name them clearly, and use the last expression style where the current runtime expects it.
         </p>
         <div class="code-block">
-          <button class="copy-btn" data-copy='fn greet(name) {
+          <button class="copy-btn" data-copy='val io = @import("std.io")
+
+fn greet(name) {
   "Hello, " + name + "!"
 }
 
 fn main() {
   io.log(greet("David"))
 }'>Copy</button>
-          <pre><code>fn greet(name) {
+          <pre><code>val io = @import("std.io")
+
+fn greet(name) {
   "Hello, " + name + "!"
 }
 
@@ -349,16 +353,18 @@ fn main() {
         </p>
         <div class="code-block">
           <button class="copy-btn" data-copy='val fs = @import("std.fs")
+val io = @import("std.io")
 
-val text = fs.read("notes.txt")
-fs.write("out.txt", text)
+val text = fs.readFile("notes.txt")
+fs.writeFile("out.txt", text)
 if fs.exists("out.txt") {
   io.log("saved")
 }'>Copy</button>
           <pre><code>val fs = @import("std.fs")
+val io = @import("std.io")
 
-val text = fs.read("notes.txt")
-fs.write("out.txt", text)
+val text = fs.readFile("notes.txt")
+fs.writeFile("out.txt", text)
 if fs.exists("out.txt") {
   io.log("saved")
 }</code></pre>
@@ -372,12 +378,14 @@ if fs.exists("out.txt") {
         </p>
         <div class="code-block">
           <button class="copy-btn" data-copy='val http = @import("std.http")
+val io   = @import("std.io")
 
 fn main() {
   val res = http.get("https://example.com")
   io.log(res.status)
 }'>Copy</button>
           <pre><code>val http = @import("std.http")
+val io   = @import("std.io")
 
 fn main() {
   val res = http.get("https://example.com")
@@ -393,12 +401,14 @@ fn main() {
         </p>
         <div class="code-block">
           <button class="copy-btn" data-copy='val os = @import("std.os")
+val io = @import("std.io")
 
 fn main() {
   val result = os.exec("git status")
   io.log(result.stdout)
 }'>Copy</button>
           <pre><code>val os = @import("std.os")
+val io = @import("std.io")
 
 fn main() {
   val result = os.exec("git status")
@@ -414,13 +424,19 @@ fn main() {
         </p>
         <div class="code-block">
           <button class="copy-btn" data-copy='val alloc = @import("std.alloc")
+val io    = @import("std.io")
 
-val buf = alloc.fromString("hello")
-io.log(buf.size())'>Copy</button>
+val buf = alloc.buffer(16)
+buf.writeString(0, "hello")
+io.log(buf.size())
+buf.free()'>Copy</button>
           <pre><code>val alloc = @import("std.alloc")
+val io    = @import("std.io")
 
-val buf = alloc.fromString("hello")
-io.log(buf.size())</code></pre>
+val buf = alloc.buffer(16)
+buf.writeString(0, "hello")
+io.log(buf.size())
+buf.free()</code></pre>
         </div>
         <div class="danger" style="margin-top:14px">
           Low-level modules are powerful, but they also deserve respect. The docs should be honest about the fact that raw buffers can crash things if they are misused.
@@ -465,14 +481,16 @@ io.log(buf.size())</code></pre>
           The source docs show how to register native functions and how the build system discovers them.
         </p>
         <div class="code-block">
-          <button class="copy-btn" data-copy='fn square(x) {
+          <button class="copy-btn" data-copy='val io = @import("std.io")\n\nfn square(x) {
   x * x
 }
 
 fn main() {
   io.log(square(12))
 }'>Copy</button>
-          <pre><code>fn square(x) {
+          <pre><code>val io = @import("std.io")
+
+fn square(x) {
   x * x
 }
 

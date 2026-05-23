@@ -444,10 +444,15 @@
   ```ntl
   val io = @import("std.io")
 
-  io.io.log("Hello")          // print to stdout (newline)
-  io.write("no newline")     // write without newline
-  var line = io.readline()   // read a line from stdin
-  var line = io.prompt("Name: ")  // print prompt then read
+  io.log("Hello")              // print to stdout
+  io.error("something broke")  // print to stderr
+  io.warn("watch out")
+  io.success("done!")
+  io.info("starting...")
+
+  // Read input
+  var line = io.readLine("Enter name: ")
+  var n    = io.readInt("Enter number: ")
 
   // Colored output (returns colored string)
   io.red("error")
@@ -456,32 +461,25 @@
   io.blue("info")
   io.cyan("debug")
   io.magenta("special")
-  io.gray("muted")
-  io.white("normal")
   io.bold("important")
   io.dim("subtle")
-  io.italic("emphasis")
-  io.under("underlined")
 
-  // Background colors
-  io.bgRed("highlight")
-  io.bgGreen("success")
-  io.bgYellow("warn")
-  io.bgBlue("info")
-  io.bgCyan("note")
+  // Table
+  io.table([{ name: "Alice", age: 30 }, { name: "Bob", age: 25 }])
 
   // Progress bar
-  var bar = io.progress({ total: 100, width: 40, label: "Loading" })
-  bar.update(50)    // set to 50%
-  bar.increment(10) // add 10
-  bar.done()        // mark complete
+  io.progress(50, 100, "Loading")
 
   // Spinner
-  var spinner = io.spinner("Processing...")
-  spinner.stop()
-  ```
+  io.spinner("Processing...")
 
-  **ANSI color codes** supported: reset, bold, dim, italic, under, blink, all foreground/background colors.
+  // Banner and separator
+  io.banner("NTL", "green")
+  io.hr("-", 40)
+
+  // Clear terminal
+  io.clear()
+  ```
 
   ---
 
@@ -494,13 +492,13 @@
 
   // Read / Write
   var content = fs.readFile("file.txt")          // string or null
-  fs.writeFile("out.txt", "content")             // returns bool
-  fs.appendFile("log.txt", "new line\n")        // append
+  fs.writeFile("out.txt", "content")
+  fs.appendFile("log.txt", "new line\n")
 
   // Delete / Copy / Move
-  fs.delete("file.txt")                          // remove file
-  fs.copy("src.txt", "dst.txt")
-  fs.move("old.txt", "new.txt")
+  fs.deleteFile("file.txt")
+  fs.copyFile("src.txt", "dst.txt")
+  fs.moveFile("old.txt", "new.txt")
 
   // Directories
   fs.mkdir("dir")
@@ -509,31 +507,35 @@
   fs.rmdir("dir", true)                          // recursive
 
   // List
-  var entries = fs.readDir(".")                  // array of entry objects
-  // entry: { name, isDir, isFile, size, path }
+  var entries = fs.list(".")                     // array of names
+  var dirs    = fs.listDir(".")                  // directories only
 
   // Existence / Stats
   var exists = fs.exists("path")                 // bool
-  var stat = fs.stat("path")
-  // stat: { name, size, isDir, isFile, mode, modTime }
+  var stat   = fs.stat("path")                   // { name, size, isDir, isFile, modTime }
+  var isDir  = fs.isDir("path")                  // bool
+  var isFile = fs.isFile("path")                 // bool
 
   // Path helpers
-  var abs = fs.resolve("relative/path")
-  var base = fs.basename("/path/file.txt")       // "file.txt"
-  var dir = fs.dirname("/path/file.txt")         // "/path"
-  var ext = fs.extname("file.txt")               // ".txt"
+  var abs    = fs.resolve("relative/path")
+  var base   = fs.basename("/path/file.txt")     // "file.txt"
+  var dir    = fs.dirname("/path/file.txt")      // "/path"
+  var ext    = fs.extname("file.txt")            // ".txt"
   var joined = fs.join("dir", "sub", "file.txt")
+  var ok     = fs.isAbsolute("/tmp/file")        // bool
+
+  // Glob
+  var files = fs.glob("src/**/*.ntl")
 
   // JSON convenience
   var obj = fs.readJSON("config.json")           // parsed object or null
   fs.writeJSON("config.json", obj)
   fs.writeJSON("config.json", obj, true)         // pretty-print
 
-  // Watch (file watcher)
-  var watcher = fs.watch("file.txt", fn(event) {
+  // Watch
+  fs.watch("file.txt", fn(event) {
       io.log(event.type, event.path)
   })
-  watcher.stop()
   ```
 
   ---
@@ -564,70 +566,41 @@
   // Other methods
   await http.put(url, opts)
   await http.patch(url, opts)
-  await http.delete(url, opts)
-
-  // Generic fetch
-  var res = await http.fetch(url, {
-      method: "GET",
-      headers: { },
-      body: "...",
-      timeout: 5000           // ms
-  })
+  await http.del(url, opts)
+  await http.head(url, opts)
   ```
 
   #### Server
 
   ```ntl
   val http = @import("std.http")
+  val io   = @import("std.io")
 
-  var server = http.server()
-
-  // Routes
-  server.get("/", fn(req, res) {
-      res.send("Hello")
+  // Simple server with http.serve(port, handler)
+  http.serve(3000, fn(req, res) {
+      http.json(res, { message: "Hello from NTL" }, 200)
   })
 
-  server.post("/users", fn(req, res) {
-      var body = req.body       // string
-      var json = req.json()     // parsed
-      res.json({ ok: true, data: json })
+  // Full server with createServer + listen
+  val server = http.createServer(fn(req, res) {
+      if req.url == "/" {
+          http.text(res, "Hello", 200)
+      } elif req.url == "/data" {
+          http.json(res, { ok: true }, 200)
+      } else {
+          http.text(res, "Not Found", 404)
+      }
   })
 
-  // Route parameters
-  server.get("/users/:id", fn(req, res) {
-      var id = req.params.id
-      res.json({ id: id })
+  http.listen(server, 3000, "0.0.0.0", fn() {
+      io.log("Server running on port 3000")
   })
 
-  // Query params
-  // GET /search?q=hello
-  server.get("/search", fn(req, res) {
-      var q = req.query.q
-      res.send("Searching: " + q)
-  })
-
-  // Middleware
-  server.use(fn(req, res, next) {
-      req.startTime = now()
-      next()
-  })
-
-  // Response methods
-  res.send("text")
-  res.json(obj)
-  res.status(404).send("Not Found")
-  res.redirect("/other")
-  res.setHeader("X-Custom", "value")
-
-  // Static files
-  server.static("/public", "./static")
-
-  // Start
-  server.listen(3000, fn() { io.log("Running on :3000") })
-
-  // Request object
-  // req.method, req.url, req.path, req.query, req.params,
-  // req.headers, req.body, req.ip, req.host
+  // Response helpers
+  http.json(res, obj, 200)        // send JSON response
+  http.text(res, "ok", 200)       // send text response
+  http.redirect(res, "/other")    // 302 redirect
+  http.redirect(res, "/other", 301)
   ```
 
   ---
@@ -649,31 +622,34 @@
   crypto.hmac("sha256", "secret", "message")   // hex string
 
   // Base64
-  crypto.base64encode("hello world")    // "aGVsbG8gd29ybGQ="
-  crypto.base64decode("aGVsbG8gd29ybGQ=")  // "hello world"
+  crypto.base64Encode("hello world")       // "aGVsbG8gd29ybGQ="
+  crypto.base64Decode("aGVsbG8gd29ybGQ=") // "hello world"
+  crypto.base64UrlEncode("hello world")
+  crypto.base64UrlDecode("aGVsbG8gd29ybGQ")
 
   // Hex
-  crypto.hexencode("hello")       // "68656c6c6f"
-  crypto.hexdecode("68656c6c6f")  // "hello"
+  crypto.toHex("hello")       // "68656c6c6f"
+  crypto.fromHex("68656c6c6f") // "hello"
 
-  // AES-256-CBC encryption
-  var encrypted = crypto.encrypt("my-32-char-secret-key-for-aes256", "plaintext")
-  var decrypted = crypto.decrypt("my-32-char-secret-key-for-aes256", encrypted)
-
-  // AES-256-GCM (authenticated)
-  var enc = crypto.encryptGCM("key32chars", "plaintext")
-  var dec = crypto.decryptGCM("key32chars", enc)
+  // AES-256-GCM encryption
+  var encrypted = crypto.encrypt("plaintext", "my-32-char-secret-key-for-aes256")
+  var decrypted = crypto.decrypt(encrypted, "my-32-char-secret-key-for-aes256")
 
   // Random
-  var bytes = crypto.randomBytes(32)    // hex string of 32 random bytes
-  var token = crypto.randomToken(16)    // URL-safe base64 token
+  var bytes = crypto.randomBytes(32)   // random bytes
+  var hex   = crypto.randomHex(16)     // random hex string
+  var tok   = crypto.token(32)         // secure hex token
+  var id    = crypto.randomUUID()      // UUID v4
 
-  // Password hashing (bcrypt-style, constant-time compare)
+  // Password hashing (bcrypt)
   var hash = crypto.hashPassword("mypassword")
-  var ok = crypto.verifyPassword("mypassword", hash)    // bool
+  var ok   = crypto.verifyPassword("mypassword", hash)   // bool
 
-  // UUID
-  var id = crypto.uuid()     // "550e8400-e29b-41d4-a716-446655440000"
+  // Timing-safe compare
+  crypto.compare(a, b)
+
+  // PBKDF2
+  var key = crypto.pbkdf2("password", "salt", 100000, 32)
   ```
 
   ---
@@ -783,34 +759,40 @@
   val ws = @import("std.ws")
 
   // Server
-  var server = ws.server({ port: 8080 })
+  val server = ws.createServer(8080, {})
 
-  server.onConnect(fn(conn) {
+  server.on("connection", fn(conn) {
       io.log("Client connected")
-
-      conn.onMessage(fn(msg) {
-          io.log("Received:", msg)
-          conn.send("Echo: " + msg)
-      })
-
-      conn.onClose(fn() {
-          io.log("Client disconnected")
-      })
+      server.send(conn, "Welcome!")
   })
 
-  server.onError(fn(err) { io.log("Error:", err) })
-  server.start()
+  server.on("message", fn(conn, msg) {
+      io.log("Received:", msg)
+      server.send(conn, "Echo: " + msg)
+  })
+
+  server.on("close", fn(conn) {
+      io.log("Client disconnected")
+  })
+
+  server.start(fn() {
+      io.log("WebSocket server on port 8080")
+  })
 
   // Broadcast to all clients
   server.broadcast("Hello everyone")
+  io.log(server.clientCount())
+
+  server.stop()
 
   // Client
-  var client = ws.connect("ws://localhost:8080")
+  val client = ws.createClient("ws://localhost:8080")
 
-  client.onMessage(fn(msg) {
-      io.log("Server says:", msg)
-  })
+  client.on("open", fn() { io.log("Connected") })
+  client.on("message", fn(msg) { io.log("Server says:", msg) })
+  client.on("close", fn() { io.log("Disconnected") })
 
+  client.connect()
   client.send("Hello server")
   client.close()
   ```
@@ -822,7 +804,7 @@
   ```ntl
   val mail = @import("std.mail")
 
-  var mailer = mail.create({
+  var mailer = mail.createMailer({
       host: "smtp.gmail.com",
       port: 587,
       user: "me@gmail.com",
@@ -880,7 +862,7 @@
 
   // Streaming
   await client.stream("Write a poem about rain", fn(chunk) {
-      io.write(chunk)
+      io.log(chunk)
   }, { model: "gpt-4" })
 
   // Embeddings
@@ -1674,15 +1656,20 @@
 
   // Integrate with HTTP server
   val http = @import("std.http")
-  var server = http.server()
 
-  server.post("/graphql", fn(req, res) {
-      var body = req.json()
-      var result = graphql.execute(schema, body.query, body.variables)
-      res.json(result)
+  val server = http.createServer(fn(req, res) {
+      if req.method == "POST" and req.url == "/graphql" {
+          var body = JSON.parse(req.body)
+          var result = graphql.execute(schema, body.query, body.variables)
+          http.json(res, result, 200)
+      } else {
+          http.text(res, "Not Found", 404)
+      }
   })
 
-  server.listen(4000)
+  http.listen(server, 4000, "0.0.0.0", fn() {
+      io.log("GraphQL server on port 4000")
+  })
   ```
 
   ---

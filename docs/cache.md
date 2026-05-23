@@ -18,34 +18,34 @@ val cache = @import("std.cache")
 
 ### `create(maxSize, ttl)`
 
-Executes the `create` operation with the given parameters (maxSize, ttl).
+Creates a new cache instance with optional max size and TTL (in milliseconds).
 
 **Signature:**
 ```ntl
 fn create(maxSize, ttl)
 ```
 
-### `put(key, value)`
+### `set(key, value)`
 
-Executes the `put` operation with the given parameters (key, value).
+Stores a value by key. Evicts the oldest entry if the cache is full.
 
 **Signature:**
 ```ntl
-fn put(key, value)
+fn set(key, value)
 ```
 
-### `lookup(key)`
+### `get(key)`
 
-Executes the `lookup` operation with the given parameter (key).
+Retrieves a value by key. Returns `null` if not found or expired.
 
 **Signature:**
 ```ntl
-fn lookup(key)
+fn get(key)
 ```
 
 ### `has(key)`
 
-Executes the `has` operation with the given parameter (key).
+Returns `true` if the key exists and has not expired.
 
 **Signature:**
 ```ntl
@@ -54,7 +54,7 @@ fn has(key)
 
 ### `del(key)`
 
-Executes the `del` operation with the given parameter (key).
+Removes a key from the cache.
 
 **Signature:**
 ```ntl
@@ -63,7 +63,7 @@ fn del(key)
 
 ### `clear()`
 
-Executes the `clear` operation with the given no arguments.
+Removes all entries from the cache.
 
 **Signature:**
 ```ntl
@@ -72,7 +72,7 @@ fn clear()
 
 ### `size()`
 
-Executes the `size` operation with the given no arguments.
+Returns the number of active (non-expired) entries.
 
 **Signature:**
 ```ntl
@@ -81,7 +81,7 @@ fn size()
 
 ### `keys()`
 
-Executes the `keys` operation with the given no arguments.
+Returns an array of all active keys.
 
 **Signature:**
 ```ntl
@@ -90,10 +90,33 @@ fn keys()
 
 ### `stats()`
 
-Executes the `stats` operation with the given no arguments.
+Returns cache statistics: `{ hits, misses, size, hitRate }`.
 
 **Signature:**
 ```ntl
 fn stats()
 ```
 
+---
+
+## Example
+
+```ntl
+val cache = @import("std.cache")
+
+val c = cache.create(500, 60000)  // max 500 entries, 60s TTL
+
+c.set("user:1", { name: "Alice" })
+
+val user = c.get("user:1")        // { name: "Alice" }
+val miss = c.get("user:99")       // null
+
+io.log(c.has("user:1"))           // true
+io.log(c.size())                  // 1
+
+val s = c.stats()
+io.log(s.hits, s.misses, s.hitRate)
+
+c.del("user:1")
+c.clear()
+```
