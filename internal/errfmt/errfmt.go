@@ -284,7 +284,9 @@ func getSuggestions(code, name, msg string, similar []string) []string {
 		sugs = append(sugs, "use optional chaining: "+name+"?.property")
 		return sugs
 	case "E0010", "E0011", "E0012", "E0013", "E0014":
-		sugs = append(sugs, "run `lunex add <module>` to install it, or verify the module name")
+		sugs = append(sugs, "for local files: use @import(\"./file.lx\") or @import(\"file.lx\") — the file must be in the same directory")
+		sugs = append(sugs, "for stdlib modules: use @import(\"std.io\"), @import(\"std.fs\"), etc.")
+		sugs = append(sugs, "for external packages: run `lunex add <module>` to install it")
 		return sugs
 	case "UNDEF_VAR":
 		sugs = append(sugs, "declare it first:  val "+name+" = <value>")

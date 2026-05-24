@@ -1,5 +1,5 @@
 val io = @import("std.io")
 
 fn main() {
-  io.log(io.red("Hello, world!"))
+  io.log("test")
 }

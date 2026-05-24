@@ -20,6 +20,7 @@ import (
         "lunex/internal/lexer"
         "lunex/internal/parser"
         "os"
+        "path/filepath"
         "regexp"
         "strconv"
         "strings"
@@ -2120,16 +2121,93 @@ func (interp *Interpreter) loadModule(path string) (*Value, error) {
                 return mod, nil
         }
         interp.mu.RUnlock()
+
+        // Try stdlib loader first (std.io, std.fs, etc.)
         if interp.ntlLoader != nil {
                 src, ok := interp.ntlLoader(resolved)
                 if ok {
                         return interp.evalModuleSource(src, resolved)
                 }
         }
+
+        // Try resolving as a local file path relative to the current file,
+        // then relative to the working directory.
+        if localPath, ok := interp.resolveLocalFile(path); ok {
+                src, err := os.ReadFile(localPath)
+                if err == nil {
+                        // Use the absolute path as the cache key so the same file
+                        // is never executed twice regardless of how it was imported.
+                        abs, _ := filepath.Abs(localPath)
+                        interp.mu.RLock()
+                        if mod, ok := interp.modules[abs]; ok {
+                                interp.mu.RUnlock()
+                                return mod, nil
+                        }
+                        interp.mu.RUnlock()
+                        return interp.evalModuleSourceFile(string(src), abs, localPath)
+                }
+        }
+
         e := interp.runtimeError(errfmt.KindImport, "E0010",
                 fmt.Sprintf("module %q not found", path), nil, nil)
-        e.Notes = append(e.Notes, "run `lunex add <module>` to install it, or check the name in the stdlib list")
+        e.Notes = append(e.Notes, "run `lunex add <module>` to install it, or verify the module name")
         return nil, e
+}
+
+// resolveLocalFile tries to find a local .lx file for the given import path.
+// It checks, in order:
+//  1. path as-is (absolute or already has .lx extension)
+//  2. path + ".lx"
+//  3. Same directory as the currently executing file
+//  4. Current working directory
+func (interp *Interpreter) resolveLocalFile(path string) (string, bool) {
+        candidates := []string{}
+
+        // Build base names to try
+        bases := []string{path}
+        if !strings.HasSuffix(path, ".lx") {
+                bases = append(bases, path+".lx")
+        }
+
+        // Relative to current file's directory
+        if interp.filename != "" {
+                dir := filepath.Dir(interp.filename)
+                for _, b := range bases {
+                        candidates = append(candidates, filepath.Join(dir, b))
+                        candidates = append(candidates, filepath.Join(dir, filepath.FromSlash(b)))
+                }
+        }
+
+        // Relative to working directory
+        wd, _ := os.Getwd()
+        for _, b := range bases {
+                candidates = append(candidates, filepath.Join(wd, b))
+        }
+
+        // Absolute path
+        for _, b := range bases {
+                candidates = append(candidates, b)
+        }
+
+        for _, c := range candidates {
+                if info, err := os.Stat(c); err == nil && !info.IsDir() {
+                        return c, true
+                }
+        }
+        return "", false
+}
+
+// evalModuleSourceFile compiles and runs a local .lx file as a module.
+// cacheKey is the absolute path used for deduplication.
+// displayPath is used in error messages.
+func (interp *Interpreter) evalModuleSourceFile(src, cacheKey, displayPath string) (*Value, error) {
+        // Temporarily set filename so nested @imports inside the module resolve
+        // relative to the module's own directory.
+        prevFilename := interp.filename
+        interp.filename = cacheKey
+        defer func() { interp.filename = prevFilename }()
+
+        return interp.evalModuleSource(src, cacheKey)
 }
 
 func (interp *Interpreter) evalModuleSource(src, name string) (*Value, error) {
