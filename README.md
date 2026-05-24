@@ -1,4 +1,4 @@
-# NTL lang
+# Lunex lang
 
 <p align="center">
   <img src="icon.svg" width="140">
@@ -8,13 +8,13 @@
 
 # more comprehensive documentation 
 
-<a href="https://megamexlevi2.github.io/ntl-lang-gz/docs/index.html" target="_blank" style="padding:12px 20px;background:#111;color:#fff;text-decoration:none;border-radius:10px;display:inline-block;font-weight:bold;">
+<a href="https://megamexlevi2.github.io/lunex-lang-gz/docs/index.html" target="_blank" style="padding:12px 20px;background:#111;color:#fff;text-decoration:none;border-radius:10px;display:inline-block;font-weight:bold;">
   Open Documentation
 </a>
 
 # Installation
 
-NTL is currently distributed through official installers.
+Lunex is currently distributed through official installers.
 
 <div align="center">
 
@@ -27,13 +27,13 @@ bash install.sh
 Or install directly using curl:
 
 ```bash
-curl -fsSL https://github.com/Megamexlevi2/ntl-lang-gz/releases/latest/download/install.sh | bash
+curl -fsSL https://github.com/Megamexlevi2/lunex-lang-gz/releases/latest/download/install.sh | bash
 ```
 
 ## Windows
 
 ```powershell
-iwr https://github.com/Megamexlevi2/ntl-lang-gz/releases/latest/download/install.ps1 -useb | iex
+iwr https://github.com/Megamexlevi2/lunex-lang-gz/releases/latest/download/install.ps1 -useb | iex
 ```
 
 Manual installers:
@@ -47,18 +47,18 @@ install.sh
 
 # Source Code
 
-[Open Source Page](https://megamexlevi2.github.io/ntl-lang-gz/source/index.html)
-The result is a single binary: `./ntl`.
+[Open Source Page](https://megamexlevi2.github.io/lunex-lang-gz/source/index.html)
+The result is a single binary: `./lunex`.
 
 ---
 
 ## Usage
 
 ```bash
-./ntl run file.ntl              # run a source file
-./ntl run file.nc               # run compiled bytecode
-./ntl build file.ntl            # compile to bytecode (.nc)
-./ntl build file.ntl -o file.nc # compile with explicit output path
+./lunex run file.lx              # run a source file
+./lunex run file.nc               # run compiled bytecode
+./lunex build file.lx            # compile to bytecode (.nc)
+./lunex build file.lx -o file.nc # compile with explicit output path
 ```
 
 ## Language Notes
@@ -72,7 +72,7 @@ The result is a single binary: `./ntl`.
 
 ## Hello World
 
-```ntl
+```lunex
 val io = @import("std.io")
 
 fn main() {
@@ -86,14 +86,14 @@ fn main() {
 
 ## example of http 
 
-```ntl
+```lunex
 val http = @import("std.http")
 val io = @import("std.io")
 
 fn main() {
   val server = http.createServer(fn(req, res) {
     http.json(res, {
-      "message": "Hello from NTL-lang"
+      "message": "Hello from Lunex-lang"
     }, 200)
   })
 
@@ -107,7 +107,7 @@ fn main() {
 
 ## Variables
 
-```ntl
+```lunex
 val name  = "Alice"      // immutable
 var count = 0            // mutable
 count += 1
@@ -117,9 +117,9 @@ count += 1
 
 ## Types
 
-NTL is dynamically typed. Runtime types: `string`, `number`, `boolean`, `array`, `object`, `function`, `null`.
+Lunex is dynamically typed. Runtime types: `string`, `number`, `boolean`, `array`, `object`, `function`, `null`.
 
-```ntl
+```lunex
 typeof "hello"   // "string"
 typeof 42        // "number"
 typeof true      // "boolean"
@@ -132,7 +132,7 @@ typeof null      // "null"
 
 ## Operators
 
-```ntl
+```lunex
 +  -  *  /  %  **        arithmetic
 ==  !=  <  >  <=  >=     comparison
 ===  !==                 strict equality
@@ -146,7 +146,7 @@ and  or  not             logical
 
 ## Control Flow
 
-```ntl
+```lunex
 if x > 0 {
   io.log("positive")
 } else if x < 0 {
@@ -164,7 +164,7 @@ unless x == 0 {
 
 ## Loops
 
-```ntl
+```lunex
 // range
 each i in range(10) {
   io.log(i)
@@ -200,7 +200,7 @@ repeat 5 {
 
 ## Functions
 
-```ntl
+```lunex
 fn add(a, b) {
   a + b
 }
@@ -225,7 +225,7 @@ val result = [1, 2, 3]
 
 ## Objects
 
-```ntl
+```lunex
 val person = {
   name: "Alice",
   age: 30,
@@ -243,7 +243,7 @@ person.age = 31
 
 ## Arrays
 
-```ntl
+```lunex
 val arr = [1, 2, 3, 4, 5]
 
 arr.push(6)
@@ -267,7 +267,7 @@ arr.forEach(fn(x) { io.log(x) })
 ## Structs (Replacing Classes)
 
 
-```ntl
+```lunex
 fn Animal(name, sound) {
   val self = struct {
     name  = name
@@ -309,7 +309,7 @@ io.log(dog.perform())
 
 ## Match
 
-```ntl
+```lunex
 fn describe(x) {
   match x {
     case null  => "nothing"
@@ -325,7 +325,7 @@ fn describe(x) {
 
 ## Error Handling
 
-```ntl
+```lunex
 try {
   val result = riskyOperation()
 } catch err {
@@ -344,7 +344,7 @@ val result = try? riskyOperation()
 
 ## Template Strings
 
-```ntl
+```lunex
 val msg = `Hello, ${name}! You are ${age} years old.`
 ```
 
@@ -352,7 +352,7 @@ val msg = `Hello, ${name}! You are ${age} years old.`
 
 ## Destructuring
 
-```ntl
+```lunex
 val { name, age } = person
 val [first, second, ...rest] = items
 ```
@@ -361,7 +361,7 @@ val [first, second, ...rest] = items
 
 ## Spread
 
-```ntl
+```lunex
 val merged   = { ...obj1, ...obj2 }
 val combined = [...arr1, ...arr2]
 ```
@@ -370,7 +370,7 @@ val combined = [...arr1, ...arr2]
 
 ## Optional Chaining & Nullish
 
-```ntl
+```lunex
 val value = maybeNull ?? "default"
 val name  = user?.profile?.name ?? "anonymous"
 val len   = arr?.length ?? 0
@@ -380,7 +380,7 @@ val len   = arr?.length ?? 0
 
 ## Concurrency
 
-```ntl
+```lunex
 spawn myFunction()
 
 val ch = channel()
@@ -398,7 +398,7 @@ val value = ch.recv()
 
 ### Built-in stdlib
 
-```ntl
+```lunex
 val io       = @import("std.io")
 val fs       = @import("std.fs")
 val http     = @import("std.http")
@@ -417,11 +417,11 @@ val utils    = @import("std.utils")
 val test     = @import("std.test")
 ```
 
-### Packages (installed via `ntl add`)
+### Packages (installed via `lunex add`)
 
-```ntl
-val discord = @import("discordntl")
-val github  = @import("ntl-github")
+```lunex
+val discord = @import("discordlunex")
+val github  = @import("lunex-github")
 ```
 
 ---

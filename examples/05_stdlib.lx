@@ -7,10 +7,10 @@ fn main() {
   io.log("floor(3.7) = " + math.floor(3.7))
   io.log("abs(-5) = " + math.abs(-5))
 
-  val s = "Hello, NTL!"
+  val s = "Hello, Lunex!"
   io.log(str.toUpper(s))
   io.log(str.toLower(s))
-  io.log(str.replace(s, "NTL", "World"))
+  io.log(str.replace(s, "Lunex", "World"))
 
   val parts = str.split("a,b,c", ",")
   io.log(parts.join(" | "))

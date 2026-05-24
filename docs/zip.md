@@ -8,7 +8,7 @@ ZIP archive creation and extraction utilities.
 
 ## Import
 
-```ntl
+```lunex
 val zip = @import("std.zip")
 ```
 
@@ -21,7 +21,7 @@ val zip = @import("std.zip")
 Executes the `create` operation with the given parameters (output_path, files).
 
 **Signature:**
-```ntl
+```lunex
 fn create(output_path, files)
 ```
 
@@ -30,7 +30,7 @@ fn create(output_path, files)
 Executes the `extract` operation with the given parameters (zip_path, dest_dir).
 
 **Signature:**
-```ntl
+```lunex
 fn extract(zip_path, dest_dir)
 ```
 
@@ -39,7 +39,7 @@ fn extract(zip_path, dest_dir)
 Executes the `list` operation with the given parameter (zip_path).
 
 **Signature:**
-```ntl
+```lunex
 fn list(zip_path)
 ```
 
@@ -48,7 +48,7 @@ fn list(zip_path)
 Executes the `read` operation with the given parameters (zip_path, entry_name).
 
 **Signature:**
-```ntl
+```lunex
 fn read(zip_path, entry_name)
 ```
 
@@ -57,7 +57,7 @@ fn read(zip_path, entry_name)
 Executes the `addFile` operation with the given parameters (zip_path, file_path, entry_name).
 
 **Signature:**
-```ntl
+```lunex
 fn addFile(zip_path, file_path, entry_name)
 ```
 
@@ -66,7 +66,7 @@ fn addFile(zip_path, file_path, entry_name)
 Executes the `packDir` operation with the given parameters (src_dir, output_path).
 
 **Signature:**
-```ntl
+```lunex
 fn packDir(src_dir, output_path)
 ```
 
@@ -75,7 +75,7 @@ fn packDir(src_dir, output_path)
 Executes the `fromBytes` operation with the given parameter (raw).
 
 **Signature:**
-```ntl
+```lunex
 fn fromBytes(raw)
 ```
 

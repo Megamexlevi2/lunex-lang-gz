@@ -8,7 +8,7 @@ General-purpose utility functions and helpers for common operations.
 
 ## Import
 
-```ntl
+```lunex
 val utils = @import("std.utils")
 ```
 
@@ -21,7 +21,7 @@ val utils = @import("std.utils")
 Executes the `sleep` operation with the given parameter (ms).
 
 **Signature:**
-```ntl
+```lunex
 fn sleep(ms)
 ```
 
@@ -30,7 +30,7 @@ fn sleep(ms)
 Executes the `now` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn now()
 ```
 
@@ -39,7 +39,7 @@ fn now()
 Executes the `timestamp` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn timestamp()
 ```
 
@@ -48,7 +48,7 @@ fn timestamp()
 Executes the `uuid` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn uuid()
 ```
 
@@ -57,7 +57,7 @@ fn uuid()
 Executes the `range` operation with the given parameters (start, end, step).
 
 **Signature:**
-```ntl
+```lunex
 fn range(start, end, step)
 ```
 
@@ -66,7 +66,7 @@ fn range(start, end, step)
 Executes the `chunk` operation with the given parameters (arr, size).
 
 **Signature:**
-```ntl
+```lunex
 fn chunk(arr, size)
 ```
 
@@ -75,7 +75,7 @@ fn chunk(arr, size)
 Executes the `flatten` operation with the given parameters (arr, depth).
 
 **Signature:**
-```ntl
+```lunex
 fn flatten(arr, depth)
 ```
 
@@ -84,7 +84,7 @@ fn flatten(arr, depth)
 Executes the `flatMap` operation with the given parameters (arr, cb).
 
 **Signature:**
-```ntl
+```lunex
 fn flatMap(arr, cb)
 ```
 
@@ -93,7 +93,7 @@ fn flatMap(arr, cb)
 Executes the `zip` operation with the given parameter (...arrays).
 
 **Signature:**
-```ntl
+```lunex
 fn zip(...arrays)
 ```
 
@@ -102,7 +102,7 @@ fn zip(...arrays)
 Executes the `unzip` operation with the given parameter (arr).
 
 **Signature:**
-```ntl
+```lunex
 fn unzip(arr)
 ```
 
@@ -111,7 +111,7 @@ fn unzip(arr)
 Executes the `intersection` operation with the given parameters (a, b).
 
 **Signature:**
-```ntl
+```lunex
 fn intersection(a, b)
 ```
 
@@ -120,7 +120,7 @@ fn intersection(a, b)
 Executes the `difference` operation with the given parameters (a, b).
 
 **Signature:**
-```ntl
+```lunex
 fn difference(a, b)
 ```
 
@@ -129,7 +129,7 @@ fn difference(a, b)
 Executes the `union` operation with the given parameter (...arrays).
 
 **Signature:**
-```ntl
+```lunex
 fn union(...arrays)
 ```
 
@@ -138,7 +138,7 @@ fn union(...arrays)
 Executes the `uniq` operation with the given parameter (arr).
 
 **Signature:**
-```ntl
+```lunex
 fn uniq(arr)
 ```
 
@@ -147,7 +147,7 @@ fn uniq(arr)
 Executes the `uniqBy` operation with the given parameters (arr, key).
 
 **Signature:**
-```ntl
+```lunex
 fn uniqBy(arr, key)
 ```
 
@@ -156,7 +156,7 @@ fn uniqBy(arr, key)
 Executes the `groupBy` operation with the given parameters (arr, key).
 
 **Signature:**
-```ntl
+```lunex
 fn groupBy(arr, key)
 ```
 
@@ -165,7 +165,7 @@ fn groupBy(arr, key)
 Executes the `countBy` operation with the given parameters (arr, key).
 
 **Signature:**
-```ntl
+```lunex
 fn countBy(arr, key)
 ```
 
@@ -174,7 +174,7 @@ fn countBy(arr, key)
 Executes the `partition` operation with the given parameters (arr, predicate).
 
 **Signature:**
-```ntl
+```lunex
 fn partition(arr, predicate)
 ```
 
@@ -183,7 +183,7 @@ fn partition(arr, predicate)
 Executes the `sortBy` operation with the given parameters (arr, key, order).
 
 **Signature:**
-```ntl
+```lunex
 fn sortBy(arr, key, order)
 ```
 
@@ -192,7 +192,7 @@ fn sortBy(arr, key, order)
 Executes the `pick` operation with the given parameters (obj, ...keys).
 
 **Signature:**
-```ntl
+```lunex
 fn pick(obj, ...keys)
 ```
 
@@ -201,7 +201,7 @@ fn pick(obj, ...keys)
 Executes the `omit` operation with the given parameters (obj, ...keys).
 
 **Signature:**
-```ntl
+```lunex
 fn omit(obj, ...keys)
 ```
 
@@ -210,7 +210,7 @@ fn omit(obj, ...keys)
 Executes the `merge` operation with the given parameter (...objects).
 
 **Signature:**
-```ntl
+```lunex
 fn merge(...objects)
 ```
 
@@ -219,7 +219,7 @@ fn merge(...objects)
 Executes the `assign` operation with the given parameter (...objects).
 
 **Signature:**
-```ntl
+```lunex
 fn assign(...objects)
 ```
 
@@ -228,7 +228,7 @@ fn assign(...objects)
 Executes the `keys` operation with the given parameter (obj).
 
 **Signature:**
-```ntl
+```lunex
 fn keys(obj)
 ```
 
@@ -237,7 +237,7 @@ fn keys(obj)
 Executes the `values` operation with the given parameter (obj).
 
 **Signature:**
-```ntl
+```lunex
 fn values(obj)
 ```
 
@@ -246,7 +246,7 @@ fn values(obj)
 Executes the `entries` operation with the given parameter (obj).
 
 **Signature:**
-```ntl
+```lunex
 fn entries(obj)
 ```
 
@@ -255,7 +255,7 @@ fn entries(obj)
 Executes the `fromEntries` operation with the given parameter (arr).
 
 **Signature:**
-```ntl
+```lunex
 fn fromEntries(arr)
 ```
 
@@ -264,7 +264,7 @@ fn fromEntries(arr)
 Executes the `hasKey` operation with the given parameters (obj, key).
 
 **Signature:**
-```ntl
+```lunex
 fn hasKey(obj, key)
 ```
 
@@ -273,7 +273,7 @@ fn hasKey(obj, key)
 Executes the `invert` operation with the given parameter (obj).
 
 **Signature:**
-```ntl
+```lunex
 fn invert(obj)
 ```
 
@@ -282,7 +282,7 @@ fn invert(obj)
 Executes the `mapValues` operation with the given parameters (obj, cb).
 
 **Signature:**
-```ntl
+```lunex
 fn mapValues(obj, cb)
 ```
 
@@ -291,7 +291,7 @@ fn mapValues(obj, cb)
 Executes the `sum` operation with the given parameter (arr).
 
 **Signature:**
-```ntl
+```lunex
 fn sum(arr)
 ```
 
@@ -300,7 +300,7 @@ fn sum(arr)
 Executes the `mean` operation with the given parameter (arr).
 
 **Signature:**
-```ntl
+```lunex
 fn mean(arr)
 ```
 
@@ -309,7 +309,7 @@ fn mean(arr)
 Executes the `median` operation with the given parameter (arr).
 
 **Signature:**
-```ntl
+```lunex
 fn median(arr)
 ```
 
@@ -318,7 +318,7 @@ fn median(arr)
 Executes the `min` operation with the given parameter (...args).
 
 **Signature:**
-```ntl
+```lunex
 fn min(...args)
 ```
 
@@ -327,7 +327,7 @@ fn min(...args)
 Executes the `max` operation with the given parameter (...args).
 
 **Signature:**
-```ntl
+```lunex
 fn max(...args)
 ```
 
@@ -336,7 +336,7 @@ fn max(...args)
 Executes the `clamp` operation with the given parameters (n, lo, hi).
 
 **Signature:**
-```ntl
+```lunex
 fn clamp(n, lo, hi)
 ```
 
@@ -345,7 +345,7 @@ fn clamp(n, lo, hi)
 Executes the `lerp` operation with the given parameters (a, b, t).
 
 **Signature:**
-```ntl
+```lunex
 fn lerp(a, b, t)
 ```
 
@@ -354,7 +354,7 @@ fn lerp(a, b, t)
 Executes the `random` operation with the given parameters (lo, hi).
 
 **Signature:**
-```ntl
+```lunex
 fn random(lo, hi)
 ```
 
@@ -363,7 +363,7 @@ fn random(lo, hi)
 Executes the `randInt` operation with the given parameters (lo, hi).
 
 **Signature:**
-```ntl
+```lunex
 fn randInt(lo, hi)
 ```
 
@@ -372,7 +372,7 @@ fn randInt(lo, hi)
 Executes the `shuffle` operation with the given parameter (arr).
 
 **Signature:**
-```ntl
+```lunex
 fn shuffle(arr)
 ```
 
@@ -381,7 +381,7 @@ fn shuffle(arr)
 Executes the `sample` operation with the given parameter (arr).
 
 **Signature:**
-```ntl
+```lunex
 fn sample(arr)
 ```
 
@@ -390,7 +390,7 @@ fn sample(arr)
 Executes the `sampleSize` operation with the given parameters (arr, n).
 
 **Signature:**
-```ntl
+```lunex
 fn sampleSize(arr, n)
 ```
 
@@ -399,7 +399,7 @@ fn sampleSize(arr, n)
 Executes the `camelCase` operation with the given parameter (s).
 
 **Signature:**
-```ntl
+```lunex
 fn camelCase(s)
 ```
 
@@ -408,7 +408,7 @@ fn camelCase(s)
 Executes the `snakeCase` operation with the given parameter (s).
 
 **Signature:**
-```ntl
+```lunex
 fn snakeCase(s)
 ```
 
@@ -417,7 +417,7 @@ fn snakeCase(s)
 Executes the `kebabCase` operation with the given parameter (s).
 
 **Signature:**
-```ntl
+```lunex
 fn kebabCase(s)
 ```
 
@@ -426,7 +426,7 @@ fn kebabCase(s)
 Executes the `titleCase` operation with the given parameter (s).
 
 **Signature:**
-```ntl
+```lunex
 fn titleCase(s)
 ```
 
@@ -435,7 +435,7 @@ fn titleCase(s)
 Executes the `slugify` operation with the given parameter (s).
 
 **Signature:**
-```ntl
+```lunex
 fn slugify(s)
 ```
 
@@ -444,7 +444,7 @@ fn slugify(s)
 Executes the `truncate` operation with the given parameters (s, max, suffix).
 
 **Signature:**
-```ntl
+```lunex
 fn truncate(s, max, suffix)
 ```
 
@@ -453,7 +453,7 @@ fn truncate(s, max, suffix)
 Executes the `pad` operation with the given parameters (s, n, char).
 
 **Signature:**
-```ntl
+```lunex
 fn pad(s, n, char)
 ```
 
@@ -462,7 +462,7 @@ fn pad(s, n, char)
 Executes the `padStart` operation with the given parameters (s, n, char).
 
 **Signature:**
-```ntl
+```lunex
 fn padStart(s, n, char)
 ```
 
@@ -471,7 +471,7 @@ fn padStart(s, n, char)
 Executes the `padEnd` operation with the given parameters (s, n, char).
 
 **Signature:**
-```ntl
+```lunex
 fn padEnd(s, n, char)
 ```
 
@@ -480,7 +480,7 @@ fn padEnd(s, n, char)
 Executes the `repeat` operation with the given parameters (s, n).
 
 **Signature:**
-```ntl
+```lunex
 fn repeat(s, n)
 ```
 
@@ -489,7 +489,7 @@ fn repeat(s, n)
 Executes the `template` operation with the given parameters (s, vars).
 
 **Signature:**
-```ntl
+```lunex
 fn template(s, vars)
 ```
 
@@ -498,7 +498,7 @@ fn template(s, vars)
 Executes the `times` operation with the given parameters (n, cb).
 
 **Signature:**
-```ntl
+```lunex
 fn times(n, cb)
 ```
 
@@ -507,7 +507,7 @@ fn times(n, cb)
 Executes the `pipe` operation with the given parameter (...cbs).
 
 **Signature:**
-```ntl
+```lunex
 fn pipe(...cbs)
 ```
 
@@ -516,7 +516,7 @@ fn pipe(...cbs)
 Executes the `compose` operation with the given parameter (...cbs).
 
 **Signature:**
-```ntl
+```lunex
 fn compose(...cbs)
 ```
 
@@ -525,7 +525,7 @@ fn compose(...cbs)
 Executes the `memoize` operation with the given parameter (cb).
 
 **Signature:**
-```ntl
+```lunex
 fn memoize(cb)
 ```
 
@@ -534,7 +534,7 @@ fn memoize(cb)
 Executes the `once` operation with the given parameter (cb).
 
 **Signature:**
-```ntl
+```lunex
 fn once(cb)
 ```
 
@@ -543,7 +543,7 @@ fn once(cb)
 Executes the `negate` operation with the given parameter (cb).
 
 **Signature:**
-```ntl
+```lunex
 fn negate(cb)
 ```
 
@@ -552,7 +552,7 @@ fn negate(cb)
 Executes the `formatNumber` operation with the given parameters (n, decimals).
 
 **Signature:**
-```ntl
+```lunex
 fn formatNumber(n, decimals)
 ```
 
@@ -561,7 +561,7 @@ fn formatNumber(n, decimals)
 Executes the `formatBytes` operation with the given parameter (n).
 
 **Signature:**
-```ntl
+```lunex
 fn formatBytes(n)
 ```
 
@@ -570,7 +570,7 @@ fn formatBytes(n)
 Executes the `toNumber` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn toNumber(v)
 ```
 
@@ -579,7 +579,7 @@ fn toNumber(v)
 Executes the `toString` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn toString(v)
 ```
 
@@ -588,7 +588,7 @@ fn toString(v)
 Executes the `toJSON` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn toJSON(v)
 ```
 
@@ -597,7 +597,7 @@ fn toJSON(v)
 Executes the `fromJSON` operation with the given parameter (s).
 
 **Signature:**
-```ntl
+```lunex
 fn fromJSON(s)
 ```
 
@@ -606,7 +606,7 @@ fn fromJSON(s)
 Executes the `clone` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn clone(v)
 ```
 
@@ -615,7 +615,7 @@ fn clone(v)
 Executes the `equal` operation with the given parameters (a, b).
 
 **Signature:**
-```ntl
+```lunex
 fn equal(a, b)
 ```
 
@@ -624,7 +624,7 @@ fn equal(a, b)
 Executes the `isEmpty` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn isEmpty(v)
 ```
 
@@ -633,7 +633,7 @@ fn isEmpty(v)
 Executes the `isNil` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn isNil(v)
 ```
 
@@ -642,7 +642,7 @@ fn isNil(v)
 Executes the `deepClone` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn deepClone(v)
 ```
 
@@ -651,7 +651,7 @@ fn deepClone(v)
 Executes the `deepEqual` operation with the given parameters (a, b).
 
 **Signature:**
-```ntl
+```lunex
 fn deepEqual(a, b)
 ```
 

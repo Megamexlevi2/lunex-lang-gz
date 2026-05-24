@@ -4,7 +4,7 @@ val http = @import("std.http")
 fn main() {
   val server = http.createServer(fn(req, res) {
     if req.url == "/" {
-      res.send("Hello from NTL 0.4.0!")
+      res.send("Hello from Lunex 0.4.0!")
     } else if req.url == "/ping" {
       res.json({ status: "ok", version: "0.4.0" })
     } else {

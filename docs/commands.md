@@ -1,23 +1,23 @@
-# NTL Command Reference
+# Lunex Command Reference
 
-NTL — Native Typed Language. Compiled pipeline uses embedded TCC as the sole native backend.
+Lunex — Native Typed Language. Compiled pipeline uses embedded TCC as the sole native backend.
 
 ## Running Code
 
 ```
-ntl <file.ntl>             Run an NTL source file (TCC native if available, else interpreted)
-ntl run <file>             Run .ntl, .nc, or .nax file
+lunex <file.lx>             Run an Lunex source file (TCC native if available, else interpreted)
+lunex run <file>             Run .lx, .nc, or .nax file
 ```
 
 ## Building Bytecode (default)
 
-`ntl build` without a `--target` flag compiles to `.nc` bytecode. Bytecode files run via the
+`lunex build` without a `--target` flag compiles to `.nc` bytecode. Bytecode files run via the
 fast VM + JIT pipeline and are portable across platforms.
 
 ```
-ntl build app.ntl                       Compile to app.nc (default)
-ntl build app.ntl -o output.nc          Explicit output path
-ntl build                               Read build.ntl config and build all targets
+lunex build app.lx                       Compile to app.nc (default)
+lunex build app.lx -o output.nc          Explicit output path
+lunex build                               Read build.lx config and build all targets
 ```
 
 ## Building Native Binaries (`--target`)
@@ -26,22 +26,22 @@ Passing `--target` compiles to a native binary via the embedded TCC backend (hos
 system cross-compiler (non-host targets).
 
 ```
-ntl build app.ntl --target linux/amd64          Host binary (uses embedded TCC)
-ntl build app.ntl --target linux/arm64          Cross-compile (requires gcc-aarch64-linux-gnu or clang)
-ntl build app.ntl --target windows/amd64 -o app.exe
-ntl build app.ntl --target android/arm64        (requires Android NDK)
-ntl build app.ntl --target darwin/arm64         (requires clang on macOS or cross-clang)
+lunex build app.lx --target linux/amd64          Host binary (uses embedded TCC)
+lunex build app.lx --target linux/arm64          Cross-compile (requires gcc-aarch64-linux-gnu or clang)
+lunex build app.lx --target windows/amd64 -o app.exe
+lunex build app.lx --target android/arm64        (requires Android NDK)
+lunex build app.lx --target darwin/arm64         (requires clang on macOS or cross-clang)
 ```
 
 ### How the compilation pipeline works
 
 ```
-.ntl source
+.lx source
   -> Lexer -> Parser -> AST
   -> Bytecode (.nc)
-  -> NTIR (NTL Intermediate Representation)
+  -> NTIR (Lunex Intermediate Representation)
   -> ENFS optimizer (up to 12-pass extreme IR optimization)
-  -> C backend (NTL C code generator)
+  -> C backend (Lunex C code generator)
   -> main.c
   -> Embedded TCC (Tiny C Compiler) — no external tools for host builds
   -> Native binary: ELF (Linux), PE (Windows), Mach-O (macOS)
@@ -49,18 +49,18 @@ ntl build app.ntl --target darwin/arm64         (requires clang on macOS or cros
 
 TCC is the **only** native compilation backend. The custom amd64/arm64 machine code generator
 has been removed. TCC handles all host-platform builds automatically with no setup. For
-cross-compilation, install a system cross-compiler (see `ntl runtimes` for setup instructions).
+cross-compilation, install a system cross-compiler (see `lunex runtimes` for setup instructions).
 
 ## Building Bytecode Archives
 
 ```
-ntl pack <directory>         Pack all .nc files into a .nax archive
-ntl pack <directory> -o output.nax
+lunex pack <directory>         Pack all .nc files into a .nax archive
+lunex pack <directory> -o output.nax
 ```
 
 ## ENFS — Extreme Native Fast System
 
-ENFS is NTL's built-in IR optimizer. It runs automatically before every pipeline — both
+ENFS is Lunex's built-in IR optimizer. It runs automatically before every pipeline — both
 compiled and interpreted. You never need to invoke it manually.
 
 Optimization passes:
@@ -79,7 +79,7 @@ Optimization passes:
 
 ## Interpreted / Bytecode Execution
 
-When running `.nc` files or falling back from TCC, NTL uses its fast interpreted pipeline:
+When running `.nc` files or falling back from TCC, Lunex uses its fast interpreted pipeline:
 
 ```
 .nc bytecode
@@ -95,50 +95,50 @@ first call. No warm-up. Significantly faster than Node.js V8 for CPU-bound workl
 ## Project Management
 
 ```
-ntl init [name]              Initialize a new project (creates ntl.mod)
-ntl install                  Install packages listed in ntl.mod
-ntl install [pkg]            Install a specific package
-ntl add <pkg>                Add and install a package (updates ntl.mod)
-ntl remove <pkg>             Remove an installed package
-ntl list                     List installed packages
+lunex init [name]              Initialize a new project (creates lunex.mod)
+lunex install                  Install packages listed in lunex.mod
+lunex install [pkg]            Install a specific package
+lunex add <pkg>                Add and install a package (updates lunex.mod)
+lunex remove <pkg>             Remove an installed package
+lunex list                     List installed packages
 ```
 
 ## Code Quality
 
 ```
-ntl check app.ntl            Check for syntax/parse errors without running
-ntl fmt app.ntl              Format NTL source code in-place
-ntl dis app.nc               Disassemble bytecode module
-ntl see_errors app.ntl       Deep static analysis — list every error/warning
+lunex check app.lx            Check for syntax/parse errors without running
+lunex fmt app.lx              Format Lunex source code in-place
+lunex dis app.nc               Disassemble bytecode module
+lunex see_errors app.lx       Deep static analysis — list every error/warning
 ```
 
 ## Version
 
 ```
-ntl version
-ntl --version
-ntl -v
+lunex version
+lunex --version
+lunex -v
 ```
 
 ## File Types
 
 | Extension | Description                                            |
 |-----------|--------------------------------------------------------|
-| `.ntl`    | NTL source code (human readable)                       |
-| `.nc`     | NTL Compiled — bytecode (fast VM + JIT pipeline)       |
-| `.nax`    | NTL Archive — bundled bytecode                         |
-| `ntl.mod` | Project manifest (package dependencies)                |
+| `.lx`    | Lunex source code (human readable)                       |
+| `.nc`     | Lunex Compiled — bytecode (fast VM + JIT pipeline)       |
+| `.nax`    | Lunex Archive — bundled bytecode                         |
+| `lunex.mod` | Project manifest (package dependencies)                |
 
-Native binaries produced by `ntl build --target` have no extension on Linux/macOS and `.exe`
-on Windows. They run standalone with no NTL runtime required.
+Native binaries produced by `lunex build --target` have no extension on Linux/macOS and `.exe`
+on Windows. They run standalone with no Lunex runtime required.
 
 ## The naxer Editor
 
-`naxer` (or `ntl edit`) is NTL's built-in terminal editor with NTL syntax highlighting.
+`naxer` (or `lunex edit`) is Lunex's built-in terminal editor with Lunex syntax highlighting.
 
 ```
-ntl edit                     Open editor (new file)
-ntl edit <file>              Open a file in the editor
+lunex edit                     Open editor (new file)
+lunex edit <file>              Open a file in the editor
 ```
 
 ### Key Bindings

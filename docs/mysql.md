@@ -8,7 +8,7 @@ MySQL database client with connection pooling and SQL query building.
 
 ## Import
 
-```ntl
+```lunex
 val mysql = @import("std.mysql")
 ```
 
@@ -21,7 +21,7 @@ val mysql = @import("std.mysql")
 Executes the `connect` operation with the given parameter (options).
 
 **Signature:**
-```ntl
+```lunex
 fn connect(options)
 ```
 

@@ -8,7 +8,7 @@ Build system utilities for project compilation, dependency management, and artif
 
 ## Import
 
-```ntl
+```lunex
 val build = @import("std.build")
 ```
 
@@ -21,7 +21,7 @@ val build = @import("std.build")
 Executes the `hostTarget` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn hostTarget()
 ```
 
@@ -30,7 +30,7 @@ fn hostTarget()
 Executes the `allTargets` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn allTargets()
 ```
 
@@ -39,7 +39,7 @@ fn allTargets()
 Executes the `target` operation with the given parameters (os, arch).
 
 **Signature:**
-```ntl
+```lunex
 fn target(os, arch)
 ```
 
@@ -48,7 +48,7 @@ fn target(os, arch)
 Executes the `executable` operation with the given parameter (opts).
 
 **Signature:**
-```ntl
+```lunex
 fn executable(opts)
 ```
 
@@ -57,7 +57,7 @@ fn executable(opts)
 Executes the `setTarget` operation with the given parameter (t).
 
 **Signature:**
-```ntl
+```lunex
 fn setTarget(t)
 ```
 
@@ -66,7 +66,7 @@ fn setTarget(t)
 Executes the `optimize` operation with the given parameter (mode).
 
 **Signature:**
-```ntl
+```lunex
 fn optimize(mode)
 ```
 
@@ -75,7 +75,7 @@ fn optimize(mode)
 Executes the `output` operation with the given parameter (path).
 
 **Signature:**
-```ntl
+```lunex
 fn output(path)
 ```
 
@@ -84,7 +84,7 @@ fn output(path)
 Executes the `install` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn install()
 ```
 

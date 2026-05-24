@@ -1,6 +1,6 @@
-# NTL lang — Language Reference
+# Lunex lang — Language Reference
 
-  > **NTL v0.4.0** — A modern, dynamically-typed scripting language built on Go, designed for rapid development with a batteries-included standard library.
+  > **Lunex v0.4.0** — A modern, dynamically-typed scripting language built on Go, designed for rapid development with a batteries-included standard library.
 
   ---
 
@@ -65,7 +65,7 @@
 
   ## 1. Overview
 
-  NTL is a general-purpose scripting language that:
+  Lunex is a general-purpose scripting language that:
 
   - Compiles to an internal bytecode format (**.nc** files) with automatic caching
   - Can pack entire directories into single portable archives (**.nax** files)
@@ -76,7 +76,7 @@
   **Architecture summary**
 
   ```
-  NTL Source (.ntl)
+  Lunex Source (.lx)
         │
     Lexer → Parser → AST
         │
@@ -84,7 +84,7 @@
         │
     Bytecode (.nc)
         │  (Go writes → Zig reads via pipe)
-    NTL VM  →  JIT Profiler  →  Native machine code (x86_64 / AArch64)
+    Lunex VM  →  JIT Profiler  →  Native machine code (x86_64 / AArch64)
   ```
 
   The runtime uses a single `Value` type (tagged union) with the following tags:
@@ -139,27 +139,27 @@
 
   | Command | Description |
   |---------|-------------|
-  | `ntl <file.ntl>` | Run an NTL file (bytecode cached automatically) |
-  | `ntl run <file>` | Run a `.ntl`, `.nc`, or `.nax` file |
-  | `ntl repl` | Start interactive REPL |
-  | `ntl edit [file]` | Open the built-in TUI editor |
-  | `ntl build <file.ntl> [-o out.nc]` | Compile to `.nc` bytecode |
-  | `ntl pack <dir> [-o out.nax]` | Pack a directory to `.nax` archive |
-  | `ntl fmt <file.ntl>` | Format source file in-place |
-  | `ntl check <file.ntl>` | Syntax/semantic check without running |
-  | `ntl dis <file.nc>` | Disassemble a `.nc` object |
-  | `ntl cache` | Show bytecode cache info |
-  | `ntl cache clear` | Clear bytecode cache |
-  | `ntl init [name]` | Initialize a new `ntl.mod` project |
-  | `ntl install [pkg]` | Install all packages from `ntl.mod` |
-  | `ntl add <pkg>` | Add + install a package (updates `ntl.mod`) |
-  | `ntl remove <pkg>` | Remove a package |
-  | `ntl list` | List installed packages |
-  | `ntl version` | Show version |
+  | `lunex <file.lx>` | Run an Lunex file (bytecode cached automatically) |
+  | `lunex run <file>` | Run a `.lx`, `.nc`, or `.nax` file |
+  | `lunex repl` | Start interactive REPL |
+  | `lunex edit [file]` | Open the built-in TUI editor |
+  | `lunex build <file.lx> [-o out.nc]` | Compile to `.nc` bytecode |
+  | `lunex pack <dir> [-o out.nax]` | Pack a directory to `.nax` archive |
+  | `lunex fmt <file.lx>` | Format source file in-place |
+  | `lunex check <file.lx>` | Syntax/semantic check without running |
+  | `lunex dis <file.nc>` | Disassemble a `.nc` object |
+  | `lunex cache` | Show bytecode cache info |
+  | `lunex cache clear` | Clear bytecode cache |
+  | `lunex init [name]` | Initialize a new `lunex.mod` project |
+  | `lunex install [pkg]` | Install all packages from `lunex.mod` |
+  | `lunex add <pkg>` | Add + install a package (updates `lunex.mod`) |
+  | `lunex remove <pkg>` | Remove a package |
+  | `lunex list` | List installed packages |
+  | `lunex version` | Show version |
 
   ### Bytecode cache
 
-  NTL automatically caches compiled bytecode alongside sources. On second run the cached `.nc` is used, skipping parsing. The cache lives in `~/.ntl/cache/`.
+  Lunex automatically caches compiled bytecode alongside sources. On second run the cached `.nc` is used, skipping parsing. The cache lives in `~/.lx/cache/`.
 
   ---
 
@@ -167,7 +167,7 @@
 
   ### 4.1 Variables
 
-  ```ntl
+  ```lunex
   var x = 10         // mutable binding
   val y = "hello"    // immutable binding
   val PI = 3.14159   // immutable binding
@@ -175,7 +175,7 @@
 
   ### 4.2 Data Types
 
-  ```ntl
+  ```lunex
   // Primitives
   var n = 42
   var f = 3.14
@@ -206,7 +206,7 @@
 
   ### 4.3 Operators
 
-  ```ntl
+  ```lunex
   // Arithmetic
   +  -  *  /  %  **    // standard + power
 
@@ -233,7 +233,7 @@
 
   ### 4.4 Control Flow
 
-  ```ntl
+  ```lunex
   // if / elif / else
   if x > 0 {
       io.log("positive")
@@ -279,7 +279,7 @@
 
   ### 4.5 Functions
 
-  ```ntl
+  ```lunex
   // Named function
   fn add(a, b) {
       a + b
@@ -309,9 +309,9 @@
 
   ### 4.6 Structs (No Classes)
 
-  NTL has **no** `class` keyword. Use constructor functions with `struct { ... }` to define named types with methods.
+  Lunex has **no** `class` keyword. Use constructor functions with `struct { ... }` to define named types with methods.
 
-  ```ntl
+  ```lunex
   fn Animal(name, sound) {
       val self = struct {
           name  = name
@@ -353,7 +353,7 @@
 
     ### 4.7 Pattern Matching
 
-  ```ntl
+  ```lunex
   match value {
       case 0 => io.log("zero")
       case 1..10 => io.log("small")
@@ -373,7 +373,7 @@
 
   ### 4.8 Error Handling
 
-  ```ntl
+  ```lunex
   // try / catch / finally
   try {
       var data = JSON.parse(bad)
@@ -393,7 +393,7 @@
 
   ### 4.9 Async / Concurrency
 
-  ```ntl
+  ```lunex
   // Async functions
   async fn fetchUser(id) {
       var res = await http.get("https://api.example.com/users/" + id)
@@ -418,7 +418,7 @@
 
   ### 4.10 Modules
 
-  ```ntl
+  ```lunex
   // Import standard library modules
   val http     = @import("std.http")
   val fs       = @import("std.fs")
@@ -426,9 +426,9 @@
   val io       = @import("std.io")
   val env      = @import("std.env")
 
-  // Import third-party packages (installed via ntl add)
-  val discord = @import("discordntl")
-  val github  = @import("ntl-github")
+  // Import third-party packages (installed via lunex add)
+  val discord = @import("discordlunex")
+  val github  = @import("lunex-github")
   ```
 
   ---
@@ -441,7 +441,7 @@
 
   Provides terminal I/O, colored output, and progress bars.
 
-  ```ntl
+  ```lunex
   val io = @import("std.io")
 
   io.log("Hello")              // print to stdout
@@ -474,7 +474,7 @@
   io.spinner("Processing...")
 
   // Banner and separator
-  io.banner("NTL", "green")
+  io.banner("Lunex", "green")
   io.hr("-", 40)
 
   // Clear terminal
@@ -487,7 +487,7 @@
 
   Full file system access: read, write, directory operations, and metadata.
 
-  ```ntl
+  ```lunex
   val fs = @import("std.fs")
 
   // Read / Write
@@ -525,7 +525,7 @@
   var ok     = fs.isAbsolute("/tmp/file")        // bool
 
   // Glob
-  var files = fs.glob("src/**/*.ntl")
+  var files = fs.glob("src/**/*.lx")
 
   // JSON convenience
   var obj = fs.readJSON("config.json")           // parsed object or null
@@ -546,7 +546,7 @@
 
   #### Client
 
-  ```ntl
+  ```lunex
   val http = @import("std.http")
 
   // GET
@@ -572,13 +572,13 @@
 
   #### Server
 
-  ```ntl
+  ```lunex
   val http = @import("std.http")
   val io   = @import("std.io")
 
   // Simple server with http.serve(port, handler)
   http.serve(3000, fn(req, res) {
-      http.json(res, { message: "Hello from NTL" }, 200)
+      http.json(res, { message: "Hello from Lunex" }, 200)
   })
 
   // Full server with createServer + listen
@@ -609,7 +609,7 @@
 
   Hashing, HMAC, symmetric encryption, and key generation.
 
-  ```ntl
+  ```lunex
   val crypto = @import("std.crypto")
 
   // Hashing
@@ -658,7 +658,7 @@
 
   A full SQL-inspired in-memory database engine with collections, indexes, transactions, and aggregations.
 
-  ```ntl
+  ```lunex
   val db = @import("std.db")
 
   // Open / create a named database
@@ -737,7 +737,7 @@
 
   ### 5.6 `env` — Environment Variables
 
-  ```ntl
+  ```lunex
   val env = @import("std.env")
 
   var value = env.get("DATABASE_URL")            // string or undefined
@@ -755,7 +755,7 @@
 
   WebSocket client and server (no external library dependency — pure Go implementation).
 
-  ```ntl
+  ```lunex
   val ws = @import("std.ws")
 
   // Server
@@ -801,7 +801,7 @@
 
   ### 5.8 `mail` — SMTP Email
 
-  ```ntl
+  ```lunex
   val mail = @import("std.mail")
 
   var mailer = mail.createMailer({
@@ -834,7 +834,7 @@
 
   Connect to OpenAI, Anthropic, Ollama, or any OpenAI-compatible API.
 
-  ```ntl
+  ```lunex
   val ai = @import("std.ai")
 
   // Create a client
@@ -883,7 +883,7 @@
 
   A comprehensive functional utility library for arrays, objects, strings, numbers, and functions.
 
-  ```ntl
+  ```lunex
   val utils = @import("std.utils")
 
   // ── Time ──────────────────────────────────────────────
@@ -1023,7 +1023,7 @@
 
   Provides regex-based validators and a composable schema validation system.
 
-  ```ntl
+  ```lunex
   val validate = @import("std.validate")
 
   // Basic validators (return bool)
@@ -1098,7 +1098,7 @@
 
   Process management, environment, file system metadata, and path helpers.
 
-  ```ntl
+  ```lunex
   val os = @import("std.os")
 
   // Process execution (synchronous)
@@ -1176,7 +1176,7 @@
 
   ### 5.13 `xml` — XML Parsing and Generation
 
-  ```ntl
+  ```lunex
   val xml = @import("std.xml")
 
   // Parse XML string to object
@@ -1207,7 +1207,7 @@
 
   ### 6.1 `csv` — CSV Parsing
 
-  ```ntl
+  ```lunex
   val csv = @import("std.csv")
 
   // Parse CSV string
@@ -1230,7 +1230,7 @@
 
   ### 6.2 `yaml` — YAML Parsing
 
-  ```ntl
+  ```lunex
   val yaml = @import("std.yaml")
 
   var obj = yaml.parse("name: Alice\nage: 30")
@@ -1242,7 +1242,7 @@
 
   ### 6.3 `toml` — TOML Parsing
 
-  ```ntl
+  ```lunex
   val toml = @import("std.toml")
 
   var obj = toml.parse('[database]\nhost = "localhost"')
@@ -1256,7 +1256,7 @@
 
   Converts Markdown to HTML using Goldmark (supports tables, strikethrough, autolinks, task lists).
 
-  ```ntl
+  ```lunex
   val markdown = @import("std.markdown")
 
   var html = markdown.toHTML("# Hello\n\nThis is **bold**.")
@@ -1268,7 +1268,7 @@
 
   Logic-less templates following the Mustache spec.
 
-  ```ntl
+  ```lunex
   val mustache = @import("std.mustache")
 
   var html = mustache.render("Hello, {{name}}!", { name: "Alice" })
@@ -1288,7 +1288,7 @@
 
   Persistent connection pool backed by [pgx/v5](https://github.com/jackc/pgx).
 
-  ```ntl
+  ```lunex
   val postgres = @import("std.postgres")
 
   var db = await postgres.connect("postgresql://user:pass@localhost:5432/mydb")
@@ -1332,7 +1332,7 @@
 
   Backed by [go-sql-driver/mysql](https://github.com/go-sql-driver/mysql).
 
-  ```ntl
+  ```lunex
   val mysql = @import("std.mysql")
 
   var db = await mysql.connect("user:pass@tcp(localhost:3306)/mydb")
@@ -1361,7 +1361,7 @@
 
   Backed by [go-redis/v9](https://github.com/redis/go-redis).
 
-  ```ntl
+  ```lunex
   val redis = @import("std.redis")
 
   var client = redis.connect({ host: "localhost", port: 6379, db: 0 })
@@ -1427,7 +1427,7 @@
 
   Backed by [golang-jwt/jwt/v5](https://github.com/golang-jwt/jwt).
 
-  ```ntl
+  ```lunex
   val jwt = @import("std.jwt")
 
   // Sign
@@ -1458,7 +1458,7 @@
 
   Backed by [golang.org/x/oauth2](https://pkg.go.dev/golang.org/x/oauth2).
 
-  ```ntl
+  ```lunex
   val oauth2 = @import("std.oauth2")
 
   // Google
@@ -1505,7 +1505,7 @@
 
   Backed by [stripe-go/v76](https://github.com/stripe/stripe-go).
 
-  ```ntl
+  ```lunex
   val stripe = @import("std.stripe")
 
   var client = stripe.create(env.get("STRIPE_SECRET_KEY"))
@@ -1587,7 +1587,7 @@
 
   Backed by [amqp091-go](https://github.com/rabbitmq/amqp091-go).
 
-  ```ntl
+  ```lunex
   val rabbitmq = @import("std.rabbitmq")
 
   var conn = await rabbitmq.connect("amqp://guest:guest@localhost:5672/")
@@ -1633,10 +1633,10 @@
 
   Backed by [graphql-go/graphql](https://github.com/graphql-go/graphql).
 
-  ```ntl
+  ```lunex
   val graphql = @import("std.graphql")
 
-  // Build schema from NTL functions
+  // Build schema from Lunex functions
   var schema = graphql.buildSchema({
       query: {
           hello: fn(args) { return "Hello, " + (args.input ?? "world") },
@@ -1651,8 +1651,8 @@
   })
 
   // Execute a query
-  var result = graphql.execute(schema, "{ hello(input: \"NTL\") }")
-  // result: { data: { hello: "Hello, NTL" }, errors: [] }
+  var result = graphql.execute(schema, "{ hello(input: \"Lunex\") }")
+  // result: { data: { hello: "Hello, Lunex" }, errors: [] }
 
   // Integrate with HTTP server
   val http = @import("std.http")
@@ -1680,7 +1680,7 @@
 
   Backed by [excelize/v2](https://github.com/xuri/excelize).
 
-  ```ntl
+  ```lunex
   val excel = @import("std.excel")
 
   // Create new workbook
@@ -1729,7 +1729,7 @@
 
   Backed by [jung-kurt/gofpdf](https://github.com/jung-kurt/gofpdf).
 
-  ```ntl
+  ```lunex
   val pdf = @import("std.pdf")
 
   var doc = pdf.create({
@@ -1788,30 +1788,30 @@
 
   ### 11.1 Bytecode Format (.nc / .nax)
 
-  NTL compiles source to an intermediate format:
+  Lunex compiles source to an intermediate format:
 
-  - **.nc** (NTL Compiled) — single compiled module. Contains:
+  - **.nc** (Lunex Compiled) — single compiled module. Contains:
     - Source file path and source text (for error reporting)
     - Bytecode instructions
     - Constant pool
 
-  - **.nax** (NTL Archive) — directory packed into a single file. Requires `main.ntl` as entry point. All `.ntl` files are compiled before packing.
+  - **.nax** (Lunex Archive) — directory packed into a single file. Requires `main.lx` as entry point. All `.lx` files are compiled before packing.
 
   ```sh
-  ntl build app.ntl             # → app.nc
-  ntl build app.ntl -o app.nax  # → app.nax
+  lunex build app.lx             # → app.nc
+  lunex build app.lx -o app.nax  # → app.nax
 
-  ntl pack ./myproject          # → myproject.nax
-  ntl run app.nax               # execute archive
-  ntl dis app.nc                # disassemble and inspect
+  lunex pack ./myproject          # → myproject.nax
+  lunex run app.nax               # execute archive
+  lunex dis app.nc                # disassemble and inspect
   ```
 
   ### 11.2 REPL
 
   ```sh
-  ntl repl
+  lunex repl
   # or just:
-  ntl
+  lunex
   ```
 
   - Maintains state across lines
@@ -1824,8 +1824,8 @@
   A vim-style TUI editor built with [bubbletea](https://github.com/charmbracelet/bubbletea) and [lipgloss](https://github.com/charmbracelet/lipgloss).
 
   ```sh
-  ntl edit file.ntl
-  ntl edit          # opens file browser
+  lunex edit file.lx
+  lunex edit          # opens file browser
   ```
 
   | Key | Action |
@@ -1841,40 +1841,40 @@
 
   ### 11.4 JIT Profiler
 
-  NTL includes a lightweight JIT profiler that tracks hot code paths. The profiler runs transparently — no configuration needed. It collects call counts per function and can be used to identify optimization candidates in future runtime versions.
+  Lunex includes a lightweight JIT profiler that tracks hot code paths. The profiler runs transparently — no configuration needed. It collects call counts per function and can be used to identify optimization candidates in future runtime versions.
 
   ### 11.5 Package Manager
 
-  NTL has a built-in package manager that downloads packages from GitHub.
+  Lunex has a built-in package manager that downloads packages from GitHub.
 
-  **ntl.mod** — project manifest (JSON or simple KV format):
+  **lunex.mod** — project manifest (JSON or simple KV format):
 
   ```json
   {
     "name": "my-project",
     "version": "1.0.0",
-    "description": "An NTL project",
-    "main": "main.ntl",
+    "description": "An Lunex project",
+    "main": "main.lx",
     "dependencies": {
-      "discordntl": "github.com/user/discordntl@main",
-      "ntl-github": "github.com/user/ntl-github@v1.0.0"
+      "discordlunex": "github.com/user/discordlunex@main",
+      "lunex-github": "github.com/user/lunex-github@v1.0.0"
     }
   }
   ```
 
-  Packages are stored in `~/.ntl/modules/<name>@<version>/`.
+  Packages are stored in `~/.lx/modules/<name>@<version>/`.
 
   ```sh
-  ntl init myapp           # create ntl.mod
-  ntl add discordntl       # install + add to ntl.mod
-  ntl install              # install all from ntl.mod
-  ntl remove discordntl    # uninstall
-  ntl list                 # list installed packages
+  lunex init myapp           # create lunex.mod
+  lunex add discordlunex       # install + add to lunex.mod
+  lunex install              # install all from lunex.mod
+  lunex remove discordlunex    # uninstall
+  lunex list                 # list installed packages
   ```
 
   **Writing a package:**
 
-  Any directory with a `ntl.json` manifest and an `index.ntl` entry point is a valid package. Packages export functions and values using the `export` keyword.
+  Any directory with a `lunex.json` manifest and an `index.lx` entry point is a valid package. Packages export functions and values using the `export` keyword.
 
   ---
 
@@ -1882,7 +1882,7 @@
 
   These are always available without `use`:
 
-  ```ntl
+  ```lunex
   io.log(...)              // print to stdout
   typeOf(value)           // "string" | "number" | "boolean" | "array" | "object" | "function" | "null" | "undefined"
   isString(v)

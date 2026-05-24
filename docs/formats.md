@@ -1,12 +1,12 @@
-# ntl:csv / ntl:yaml / ntl:toml / ntl:markdown / ntl:mustache
+# lunex:csv / lunex:yaml / lunex:toml / lunex:markdown / lunex:mustache
 
 Data format parsers and serializers. Each format is available as its own module.
 
 ---
 
-## ntl:csv
+## lunex:csv
 
-```ntl
+```lunex
 val csv = @import("std.csv")
 ```
 
@@ -21,7 +21,7 @@ Options:
 | `separator` | `","` | Column separator character |
 | `header` | `true` | Use the first row as object keys |
 
-```ntl
+```lunex
 val rows = csv.parse("name,age\nAlice,30\nBob,25")
 io.log(rows[0].name)  // "Alice"
 ```
@@ -30,7 +30,7 @@ io.log(rows[0].name)  // "Alice"
 
 Converts an array of objects or arrays into a CSV string.
 
-```ntl
+```lunex
 val text = csv.stringify([{ name: "Alice", age: 30 }])
 ```
 
@@ -38,7 +38,7 @@ val text = csv.stringify([{ name: "Alice", age: 30 }])
 
 Reads and parses a CSV file from disk.
 
-```ntl
+```lunex
 val rows = csv.readFile("data.csv")
 ```
 
@@ -46,29 +46,29 @@ val rows = csv.readFile("data.csv")
 
 Writes an array of rows to a CSV file on disk.
 
-```ntl
+```lunex
 csv.writeFile("output.csv", rows)
 ```
 
 ---
 
-## ntl:yaml
+## lunex:yaml
 
-```ntl
+```lunex
 val yaml = @import("std.yaml")
 ```
 
 ### `yaml.parse(text)`
 
-Parses a YAML string into an NTL value.
+Parses a YAML string into an Lunex value.
 
-```ntl
+```lunex
 val config = yaml.parse("name: Alice\nage: 30")
 ```
 
 ### `yaml.stringify(value)`
 
-Serializes an NTL value to a YAML string.
+Serializes an Lunex value to a YAML string.
 
 ### `yaml.readFile(path)`
 
@@ -80,24 +80,24 @@ Serializes a value and writes it to a YAML file.
 
 ---
 
-## ntl:toml
+## lunex:toml
 
-```ntl
+```lunex
 val toml = @import("std.toml")
 ```
 
 ### `toml.parse(text)`
 
-Parses a TOML string into an NTL value.
+Parses a TOML string into an Lunex value.
 
-```ntl
+```lunex
 val config = toml.parse('[server]\nport = 8080')
 io.log(config.server.port)  // 8080
 ```
 
 ### `toml.stringify(value)`
 
-Serializes an NTL value to a TOML string.
+Serializes an Lunex value to a TOML string.
 
 ### `toml.readFile(path)`
 
@@ -109,9 +109,9 @@ Serializes a value and writes it to a TOML file.
 
 ---
 
-## ntl:markdown
+## lunex:markdown
 
-```ntl
+```lunex
 val markdown = @import("std.markdown")
 ```
 
@@ -124,7 +124,7 @@ Converts a Markdown string to HTML. Options:
 | `unsafe` | `false` | Allow raw HTML in input |
 | `hardWraps` | `false` | Treat newlines as `<br>` |
 
-```ntl
+```lunex
 val html = markdown.toHTML("# Hello\n**World**")
 ```
 
@@ -138,9 +138,9 @@ Reads a Markdown file and returns it as HTML.
 
 ---
 
-## ntl:mustache
+## lunex:mustache
 
-```ntl
+```lunex
 val mustache = @import("std.mustache")
 ```
 
@@ -148,7 +148,7 @@ val mustache = @import("std.mustache")
 
 Renders a Mustache template string with the given data object.
 
-```ntl
+```lunex
 val html = mustache.render("Hello, {{name}}!", { name: "Alice" })
 ```
 
@@ -156,6 +156,6 @@ val html = mustache.render("Hello, {{name}}!", { name: "Alice" })
 
 Reads a `.mustache` file from disk and renders it with `data`.
 
-```ntl
+```lunex
 val page = mustache.renderFile("views/home.mustache", { title: "Home" })
 ```

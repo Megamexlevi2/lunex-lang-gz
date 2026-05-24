@@ -8,7 +8,7 @@ Unit testing framework with assertions, test suites, and test runners.
 
 ## Import
 
-```ntl
+```lunex
 val test = @import("std.test")
 ```
 
@@ -21,7 +21,7 @@ val test = @import("std.test")
 Executes the `describe` operation with the given parameters (name, block).
 
 **Signature:**
-```ntl
+```lunex
 fn describe(name, block)
 ```
 
@@ -30,7 +30,7 @@ fn describe(name, block)
 Executes the `it` operation with the given parameters (name, testCallback).
 
 **Signature:**
-```ntl
+```lunex
 fn it(name, testCallback)
 ```
 
@@ -39,7 +39,7 @@ fn it(name, testCallback)
 Executes the `test` operation with the given parameters (name, testCallback).
 
 **Signature:**
-```ntl
+```lunex
 fn test(name, testCallback)
 ```
 
@@ -48,7 +48,7 @@ fn test(name, testCallback)
 Executes the `skip` operation with the given parameters (name, testCallback).
 
 **Signature:**
-```ntl
+```lunex
 fn skip(name, testCallback)
 ```
 
@@ -57,7 +57,7 @@ fn skip(name, testCallback)
 Executes the `beforeEach` operation with the given parameter (hook).
 
 **Signature:**
-```ntl
+```lunex
 fn beforeEach(hook)
 ```
 
@@ -66,7 +66,7 @@ fn beforeEach(hook)
 Executes the `afterEach` operation with the given parameter (hook).
 
 **Signature:**
-```ntl
+```lunex
 fn afterEach(hook)
 ```
 
@@ -75,7 +75,7 @@ fn afterEach(hook)
 Executes the `beforeAll` operation with the given parameter (hook).
 
 **Signature:**
-```ntl
+```lunex
 fn beforeAll(hook)
 ```
 
@@ -84,7 +84,7 @@ fn beforeAll(hook)
 Executes the `afterAll` operation with the given parameter (hook).
 
 **Signature:**
-```ntl
+```lunex
 fn afterAll(hook)
 ```
 
@@ -93,7 +93,7 @@ fn afterAll(hook)
 Executes the `assertionError` operation with the given parameter (message).
 
 **Signature:**
-```ntl
+```lunex
 fn assertionError(message)
 ```
 
@@ -102,7 +102,7 @@ fn assertionError(message)
 Executes the `_fail` operation with the given parameter (msg).
 
 **Signature:**
-```ntl
+```lunex
 fn _fail(msg)
 ```
 
@@ -111,7 +111,7 @@ fn _fail(msg)
 Executes the `_toStr` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn _toStr(v)
 ```
 
@@ -120,7 +120,7 @@ fn _toStr(v)
 Executes the `run` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn run()
 ```
 

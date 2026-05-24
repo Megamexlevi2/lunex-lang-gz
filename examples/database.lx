@@ -22,9 +22,9 @@ val alice = users.insert({ name: "Alice", email: "alice@example.com", role: "adm
 val bob   = users.insert({ name: "Bob",   email: "bob@example.com" })
 val carol = users.insert({ name: "Carol", email: "carol@example.com" })
 
-products.insert({ name: "NTL Book",     price: 29.99, stock: 100, ownerId: alice.id })
-products.insert({ name: "NTL Course",   price: 49.99, stock: 50,  ownerId: alice.id })
-products.insert({ name: "NTL T-Shirt",  price: 19.99, stock: 200, ownerId: bob.id })
+products.insert({ name: "Lunex Book",     price: 29.99, stock: 100, ownerId: alice.id })
+products.insert({ name: "Lunex Course",   price: 49.99, stock: 50,  ownerId: alice.id })
+products.insert({ name: "Lunex T-Shirt",  price: 19.99, stock: 200, ownerId: bob.id })
 
 io.log(io.bold("All Users:"))
 io.table(users.find(), ["id", "name", "email", "role"])

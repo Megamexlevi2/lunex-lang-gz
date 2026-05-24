@@ -8,7 +8,7 @@ Parse and generate CSV (Comma-Separated Values) files with proper escaping and f
 
 ## Import
 
-```ntl
+```lunex
 val csv = @import("std.csv")
 ```
 
@@ -21,7 +21,7 @@ val csv = @import("std.csv")
 Executes the `parse` operation with the given parameters (content, options).
 
 **Signature:**
-```ntl
+```lunex
 fn parse(content, options)
 ```
 
@@ -30,7 +30,7 @@ fn parse(content, options)
 Executes the `stringify` operation with the given parameters (data, options).
 
 **Signature:**
-```ntl
+```lunex
 fn stringify(data, options)
 ```
 
@@ -39,7 +39,7 @@ fn stringify(data, options)
 Executes the `readFile` operation with the given parameters (path, options).
 
 **Signature:**
-```ntl
+```lunex
 fn readFile(path, options)
 ```
 
@@ -48,7 +48,7 @@ fn readFile(path, options)
 Executes the `writeFile` operation with the given parameters (path, data, options).
 
 **Signature:**
-```ntl
+```lunex
 fn writeFile(path, data, options)
 ```
 

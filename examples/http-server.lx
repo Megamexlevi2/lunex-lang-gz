@@ -11,7 +11,7 @@ val users = [
 
 val server = http.createServer(fn(req, res) {
   if req.method === "GET" and req.path === "/" {
-    http.json(res, { message: "NTL HTTP Server", version: "1.0.0" })
+    http.json(res, { message: "Lunex HTTP Server", version: "1.0.0" })
 
   }
 

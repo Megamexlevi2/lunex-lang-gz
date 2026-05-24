@@ -1,16 +1,16 @@
-NTL Trademark Policy
+Lunex Trademark Policy
 
 Copyright (c) 2026 David Dev
 
-The names "NTL", "ntl-lang", official logos, icons, branding assets,
-and visual identity associated with the NTL project are trademarks of
+The names "Lunex", "lunex-lang", official logos, icons, branding assets,
+and visual identity associated with the Lunex project are trademarks of
 David Dev.
 
-Permission is granted to reference the original NTL project for
+Permission is granted to reference the original Lunex project for
 informational and attribution purposes only.
 
-Forks and derivative projects may not use the names "NTL" or
-"ntl-lang" in a manner that implies official affiliation,
+Forks and derivative projects may not use the names "Lunex" or
+"lunex-lang" in a manner that implies official affiliation,
 endorsement, or identity with the original project.
 
 Derivative projects must clearly identify themselves as unofficial

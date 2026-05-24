@@ -8,7 +8,7 @@ File system operations including reading, writing, deleting, and directory listi
 
 ## Import
 
-```ntl
+```lunex
 val fs = @import("std.fs")
 ```
 
@@ -21,7 +21,7 @@ val fs = @import("std.fs")
 Executes the `readFile` operation with the given parameters (path, encoding).
 
 **Signature:**
-```ntl
+```lunex
 fn readFile(path, encoding)
 ```
 
@@ -30,7 +30,7 @@ fn readFile(path, encoding)
 Executes the `writeFile` operation with the given parameters (path, content, options).
 
 **Signature:**
-```ntl
+```lunex
 fn writeFile(path, content, options)
 ```
 
@@ -39,7 +39,7 @@ fn writeFile(path, content, options)
 Executes the `appendFile` operation with the given parameters (path, content).
 
 **Signature:**
-```ntl
+```lunex
 fn appendFile(path, content)
 ```
 
@@ -48,7 +48,7 @@ fn appendFile(path, content)
 Executes the `deleteFile` operation with the given parameter (path).
 
 **Signature:**
-```ntl
+```lunex
 fn deleteFile(path)
 ```
 
@@ -57,7 +57,7 @@ fn deleteFile(path)
 Executes the `exists` operation with the given parameter (path).
 
 **Signature:**
-```ntl
+```lunex
 fn exists(path)
 ```
 
@@ -66,7 +66,7 @@ fn exists(path)
 Executes the `stat` operation with the given parameter (path).
 
 **Signature:**
-```ntl
+```lunex
 fn stat(path)
 ```
 
@@ -75,7 +75,7 @@ fn stat(path)
 Executes the `mkdir` operation with the given parameters (path, recursive).
 
 **Signature:**
-```ntl
+```lunex
 fn mkdir(path, recursive)
 ```
 
@@ -84,7 +84,7 @@ fn mkdir(path, recursive)
 Executes the `rmdir` operation with the given parameters (path, recursive).
 
 **Signature:**
-```ntl
+```lunex
 fn rmdir(path, recursive)
 ```
 
@@ -93,7 +93,7 @@ fn rmdir(path, recursive)
 Executes the `list` operation with the given parameter (path).
 
 **Signature:**
-```ntl
+```lunex
 fn list(path)
 ```
 
@@ -102,7 +102,7 @@ fn list(path)
 Executes the `listDir` operation with the given parameter (path).
 
 **Signature:**
-```ntl
+```lunex
 fn listDir(path)
 ```
 
@@ -111,7 +111,7 @@ fn listDir(path)
 Executes the `copyFile` operation with the given parameters (src, dest).
 
 **Signature:**
-```ntl
+```lunex
 fn copyFile(src, dest)
 ```
 
@@ -120,7 +120,7 @@ fn copyFile(src, dest)
 Executes the `moveFile` operation with the given parameters (src, dest).
 
 **Signature:**
-```ntl
+```lunex
 fn moveFile(src, dest)
 ```
 
@@ -129,7 +129,7 @@ fn moveFile(src, dest)
 Executes the `join` operation with the given parameter (...parts).
 
 **Signature:**
-```ntl
+```lunex
 fn join(...parts)
 ```
 
@@ -138,7 +138,7 @@ fn join(...parts)
 Executes the `basename` operation with the given parameters (path, ext).
 
 **Signature:**
-```ntl
+```lunex
 fn basename(path, ext)
 ```
 
@@ -147,7 +147,7 @@ fn basename(path, ext)
 Executes the `dirname` operation with the given parameter (path).
 
 **Signature:**
-```ntl
+```lunex
 fn dirname(path)
 ```
 
@@ -156,7 +156,7 @@ fn dirname(path)
 Executes the `extname` operation with the given parameter (path).
 
 **Signature:**
-```ntl
+```lunex
 fn extname(path)
 ```
 
@@ -165,7 +165,7 @@ fn extname(path)
 Executes the `resolve` operation with the given parameter (...parts).
 
 **Signature:**
-```ntl
+```lunex
 fn resolve(...parts)
 ```
 
@@ -174,7 +174,7 @@ fn resolve(...parts)
 Executes the `isAbsolute` operation with the given parameter (path).
 
 **Signature:**
-```ntl
+```lunex
 fn isAbsolute(path)
 ```
 
@@ -183,7 +183,7 @@ fn isAbsolute(path)
 Executes the `isDir` operation with the given parameter (path).
 
 **Signature:**
-```ntl
+```lunex
 fn isDir(path)
 ```
 
@@ -192,7 +192,7 @@ fn isDir(path)
 Executes the `isFile` operation with the given parameter (path).
 
 **Signature:**
-```ntl
+```lunex
 fn isFile(path)
 ```
 
@@ -201,7 +201,7 @@ fn isFile(path)
 Executes the `readJSON` operation with the given parameter (path).
 
 **Signature:**
-```ntl
+```lunex
 fn readJSON(path)
 ```
 
@@ -210,7 +210,7 @@ fn readJSON(path)
 Executes the `writeJSON` operation with the given parameters (path, data, pretty).
 
 **Signature:**
-```ntl
+```lunex
 fn writeJSON(path, data, pretty)
 ```
 
@@ -219,7 +219,7 @@ fn writeJSON(path, data, pretty)
 Executes the `glob` operation with the given parameter (pattern).
 
 **Signature:**
-```ntl
+```lunex
 fn glob(pattern)
 ```
 
@@ -228,7 +228,7 @@ fn glob(pattern)
 Executes the `watch` operation with the given parameters (path, callback).
 
 **Signature:**
-```ntl
+```lunex
 fn watch(path, callback)
 ```
 

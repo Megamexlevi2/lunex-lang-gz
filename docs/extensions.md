@@ -1,8 +1,8 @@
-# NTL lang — Writing Extensions
+# Lunex lang — Writing Extensions
 
-Extensions let you add new built-in functions to NTL in Zig, without changing any existing file.
+Extensions let you add new built-in functions to Lunex in Zig, without changing any existing file.
 The build system scans `zig/src/extensions/`, auto-generates `zig/src/extensions_gen.zig`, and your
-functions are available in every NTL program after a rebuild.
+functions are available in every Lunex program after a rebuild.
 
 ## Step 1 — create `zig/src/extensions/myext.zig`
 

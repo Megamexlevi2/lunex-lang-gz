@@ -1,4 +1,4 @@
-# NTL v0.4.0 — Credits & Dependencies
+# Lunex v0.4.0 — Credits & Dependencies
 
 **Created by David Dev**
 GitHub: https://github.com/Megamexlevi2
@@ -10,9 +10,9 @@ GitHub: https://github.com/Megamexlevi2
 
 | Language | Role |
 |----------|------|
-| **NTL** | The language itself — source files, stdlib modules, compiler library written in NTL |
+| **Lunex** | The language itself — source files, stdlib modules, compiler library written in Lunex |
 | **Go** | Host compiler, parser, AST, IR builder, interpreter, CLI, package manager |
-| **Zig** | Native runtime (`ntl-rt`) — VM, JIT backend, memory manager, bytecode executor |
+| **Zig** | Native runtime (`lunex-rt`) — VM, JIT backend, memory manager, bytecode executor |
 
 ---
 
@@ -85,7 +85,7 @@ GitHub: https://github.com/Megamexlevi2
 
 ## Zig Dependencies
 
-NTL's Zig runtime (`ntl-rt`) has **zero external Zig dependencies** — it uses only the Zig standard library.
+Lunex's Zig runtime (`lunex-rt`) has **zero external Zig dependencies** — it uses only the Zig standard library.
 
 | Component | Source |
 |-----------|--------|
@@ -104,7 +104,7 @@ Minimum Zig version: **0.17.0**
 
 | Tool | Version | Role |
 |------|---------|------|
-| Go | ≥ 1.21 | Compiles the `ntl` host binary |
-| Zig | ≥ 0.17.0 | Compiles `ntl-rt` (native VM) |
+| Go | ≥ 1.21 | Compiles the `lunex` host binary |
+| Zig | ≥ 0.17.0 | Compiles `lunex-rt` (native VM) |
 
 Both are auto-installed by `build.sh` if not present on Linux, macOS, Android/Termux, and BSD.

@@ -3,7 +3,7 @@ val io = @import("std.io")
 fn main() {
   io.log("Hello, World!")
 
-  val name = "NTL"
+  val name = "Lunex"
   io.log("Hello, " + name + "!")
 
   val names = ["Alice", "Bob", "Charlie"]

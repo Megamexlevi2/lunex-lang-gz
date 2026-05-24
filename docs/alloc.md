@@ -8,7 +8,7 @@ Low-level memory management and allocation utilities for fine-grained control ov
 
 ## Import
 
-```ntl
+```lunex
 val alloc = @import("std.alloc")
 ```
 
@@ -21,7 +21,7 @@ val alloc = @import("std.alloc")
 Executes the `buffer` operation with the given parameter (size).
 
 **Signature:**
-```ntl
+```lunex
 fn buffer(size)
 ```
 
@@ -30,7 +30,7 @@ fn buffer(size)
 Executes the `write` operation with the given parameters (offset, ...bytes).
 
 **Signature:**
-```ntl
+```lunex
 fn write(offset, ...bytes)
 ```
 
@@ -39,7 +39,7 @@ fn write(offset, ...bytes)
 Executes the `writeString` operation with the given parameters (offset, str).
 
 **Signature:**
-```ntl
+```lunex
 fn writeString(offset, str)
 ```
 
@@ -48,7 +48,7 @@ fn writeString(offset, str)
 Executes the `readByte` operation with the given parameter (offset).
 
 **Signature:**
-```ntl
+```lunex
 fn readByte(offset)
 ```
 
@@ -57,7 +57,7 @@ fn readByte(offset)
 Executes the `readString` operation with the given parameters (offset, length).
 
 **Signature:**
-```ntl
+```lunex
 fn readString(offset, length)
 ```
 
@@ -66,7 +66,7 @@ fn readString(offset, length)
 Executes the `readBytes` operation with the given parameters (offset, length).
 
 **Signature:**
-```ntl
+```lunex
 fn readBytes(offset, length)
 ```
 
@@ -75,7 +75,7 @@ fn readBytes(offset, length)
 Executes the `fill` operation with the given parameter (value).
 
 **Signature:**
-```ntl
+```lunex
 fn fill(value)
 ```
 
@@ -84,7 +84,7 @@ fn fill(value)
 Executes the `slice` operation with the given parameters (start, end).
 
 **Signature:**
-```ntl
+```lunex
 fn slice(start, end)
 ```
 
@@ -93,7 +93,7 @@ fn slice(start, end)
 Executes the `copy` operation with the given parameters (src, destOffset, srcOffset, length).
 
 **Signature:**
-```ntl
+```lunex
 fn copy(src, destOffset, srcOffset, length)
 ```
 
@@ -102,7 +102,7 @@ fn copy(src, destOffset, srcOffset, length)
 Executes the `byteSize` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn byteSize()
 ```
 
@@ -111,7 +111,7 @@ fn byteSize()
 Executes the `raw` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn raw()
 ```
 
@@ -120,7 +120,7 @@ fn raw()
 Executes the `free` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn free()
 ```
 
@@ -129,7 +129,7 @@ fn free()
 Executes the `arena` operation with the given parameter (capacity).
 
 **Signature:**
-```ntl
+```lunex
 fn arena(capacity)
 ```
 
@@ -138,7 +138,7 @@ fn arena(capacity)
 Executes the `alloc` operation with the given parameter (size).
 
 **Signature:**
-```ntl
+```lunex
 fn alloc(size)
 ```
 
@@ -147,7 +147,7 @@ fn alloc(size)
 Executes the `allocZero` operation with the given parameter (size).
 
 **Signature:**
-```ntl
+```lunex
 fn allocZero(size)
 ```
 
@@ -156,7 +156,7 @@ fn allocZero(size)
 Executes the `reset` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn reset()
 ```
 
@@ -165,7 +165,7 @@ fn reset()
 Executes the `destroy` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn destroy()
 ```
 
@@ -174,7 +174,7 @@ fn destroy()
 Executes the `used` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn used()
 ```
 
@@ -183,7 +183,7 @@ fn used()
 Executes the `remaining` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn remaining()
 ```
 
@@ -192,7 +192,7 @@ fn remaining()
 Executes the `fromString` operation with the given parameter (str).
 
 **Signature:**
-```ntl
+```lunex
 fn fromString(str)
 ```
 
@@ -201,7 +201,7 @@ fn fromString(str)
 Executes the `fromBytes` operation with the given parameter (arr).
 
 **Signature:**
-```ntl
+```lunex
 fn fromBytes(arr)
 ```
 
@@ -210,7 +210,7 @@ fn fromBytes(arr)
 Executes the `pageSize` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn pageSize()
 ```
 
@@ -219,7 +219,7 @@ fn pageSize()
 Executes the `alignTo` operation with the given parameters (size, align).
 
 **Signature:**
-```ntl
+```lunex
 fn alignTo(size, align)
 ```
 
@@ -228,7 +228,7 @@ fn alignTo(size, align)
 Executes the `sizeof` operation with the given parameter (val).
 
 **Signature:**
-```ntl
+```lunex
 fn sizeof(val)
 ```
 
@@ -237,7 +237,7 @@ fn sizeof(val)
 Executes the `concat` operation with the given parameter (...bufs).
 
 **Signature:**
-```ntl
+```lunex
 fn concat(...bufs)
 ```
 
@@ -246,7 +246,7 @@ fn concat(...bufs)
 Executes the `stats` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn stats()
 ```
 

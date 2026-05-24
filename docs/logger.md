@@ -8,7 +8,7 @@ Structured logging with multiple severity levels, formatting options, and output
 
 ## Import
 
-```ntl
+```lunex
 val logger = @import("std.logger")
 ```
 
@@ -21,7 +21,7 @@ val logger = @import("std.logger")
 Executes the `_levelLabel` operation with the given parameter (level).
 
 **Signature:**
-```ntl
+```lunex
 fn _levelLabel(level)
 ```
 
@@ -30,7 +30,7 @@ fn _levelLabel(level)
 Executes the `_formatMeta` operation with the given parameter (meta).
 
 **Signature:**
-```ntl
+```lunex
 fn _formatMeta(meta)
 ```
 
@@ -39,7 +39,7 @@ fn _formatMeta(meta)
 Executes the `create` operation with the given parameters (name, options).
 
 **Signature:**
-```ntl
+```lunex
 fn create(name, options)
 ```
 
@@ -48,7 +48,7 @@ fn create(name, options)
 Executes the `_write` operation with the given parameters (lvl, msg, meta).
 
 **Signature:**
-```ntl
+```lunex
 fn _write(lvl, msg, meta)
 ```
 
@@ -57,7 +57,7 @@ fn _write(lvl, msg, meta)
 Executes the `_setLevel` operation with the given parameter (lvl).
 
 **Signature:**
-```ntl
+```lunex
 fn _setLevel(lvl)
 ```
 
@@ -66,7 +66,7 @@ fn _setLevel(lvl)
 Executes the `_getLevel` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn _getLevel()
 ```
 
@@ -75,7 +75,7 @@ fn _getLevel()
 Executes the `_addHandler` operation with the given parameter (h).
 
 **Signature:**
-```ntl
+```lunex
 fn _addHandler(h)
 ```
 
@@ -84,7 +84,7 @@ fn _addHandler(h)
 Executes the `_clearHandlers` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn _clearHandlers()
 ```
 
@@ -93,7 +93,7 @@ fn _clearHandlers()
 Executes the `_removeHandler` operation with the given parameter (h).
 
 **Signature:**
-```ntl
+```lunex
 fn _removeHandler(h)
 ```
 
@@ -102,7 +102,7 @@ fn _removeHandler(h)
 Executes the `_count` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn _count()
 ```
 
@@ -111,7 +111,7 @@ fn _count()
 Executes the `_reset` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn _reset()
 ```
 
@@ -120,7 +120,7 @@ fn _reset()
 Executes the `_trace` operation with the given parameters (msg, meta).
 
 **Signature:**
-```ntl
+```lunex
 fn _trace(msg, meta)
 ```
 
@@ -129,7 +129,7 @@ fn _trace(msg, meta)
 Executes the `_debug` operation with the given parameters (msg, meta).
 
 **Signature:**
-```ntl
+```lunex
 fn _debug(msg, meta)
 ```
 
@@ -138,7 +138,7 @@ fn _debug(msg, meta)
 Executes the `_info` operation with the given parameters (msg, meta).
 
 **Signature:**
-```ntl
+```lunex
 fn _info(msg, meta)
 ```
 
@@ -147,7 +147,7 @@ fn _info(msg, meta)
 Executes the `_warn` operation with the given parameters (msg, meta).
 
 **Signature:**
-```ntl
+```lunex
 fn _warn(msg, meta)
 ```
 
@@ -156,7 +156,7 @@ fn _warn(msg, meta)
 Executes the `_error` operation with the given parameters (msg, meta).
 
 **Signature:**
-```ntl
+```lunex
 fn _error(msg, meta)
 ```
 
@@ -165,7 +165,7 @@ fn _error(msg, meta)
 Executes the `_fatal` operation with the given parameters (msg, meta).
 
 **Signature:**
-```ntl
+```lunex
 fn _fatal(msg, meta)
 ```
 
@@ -174,7 +174,7 @@ fn _fatal(msg, meta)
 Executes the `_log` operation with the given parameters (msg, meta).
 
 **Signature:**
-```ntl
+```lunex
 fn _log(msg, meta)
 ```
 
@@ -183,7 +183,7 @@ fn _log(msg, meta)
 Executes the `_child` operation with the given parameters (childName, extraCtx).
 
 **Signature:**
-```ntl
+```lunex
 fn _child(childName, extraCtx)
 ```
 
@@ -192,7 +192,7 @@ fn _child(childName, extraCtx)
 Executes the `_withContext` operation with the given parameter (ctx).
 
 **Signature:**
-```ntl
+```lunex
 fn _withContext(ctx)
 ```
 
@@ -201,7 +201,7 @@ fn _withContext(ctx)
 Executes the `_timed` operation with the given parameter (label).
 
 **Signature:**
-```ntl
+```lunex
 fn _timed(label)
 ```
 
@@ -210,7 +210,7 @@ fn _timed(label)
 Executes the `_group` operation with the given parameter (label).
 
 **Signature:**
-```ntl
+```lunex
 fn _group(label)
 ```
 
@@ -219,7 +219,7 @@ fn _group(label)
 Executes the `_assert` operation with the given parameters (condition, msg, meta).
 
 **Signature:**
-```ntl
+```lunex
 fn _assert(condition, msg, meta)
 ```
 
@@ -228,7 +228,7 @@ fn _assert(condition, msg, meta)
 Executes the `_fileHandler` operation with the given parameter (path).
 
 **Signature:**
-```ntl
+```lunex
 fn _fileHandler(path)
 ```
 
@@ -237,7 +237,7 @@ fn _fileHandler(path)
 Executes the `_jsonHandler` operation with the given parameter (path).
 
 **Signature:**
-```ntl
+```lunex
 fn _jsonHandler(path)
 ```
 

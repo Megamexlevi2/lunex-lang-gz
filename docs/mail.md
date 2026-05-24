@@ -8,7 +8,7 @@ Email sending via SMTP with support for attachments, HTML content, and templates
 
 ## Import
 
-```ntl
+```lunex
 val mail = @import("std.mail")
 ```
 
@@ -21,7 +21,7 @@ val mail = @import("std.mail")
 Executes the `createMailer` operation with the given parameter (config).
 
 **Signature:**
-```ntl
+```lunex
 fn createMailer(config)
 ```
 
@@ -30,7 +30,7 @@ fn createMailer(config)
 Executes the `send` operation with the given parameter (options).
 
 **Signature:**
-```ntl
+```lunex
 fn send(options)
 ```
 
@@ -39,7 +39,7 @@ fn send(options)
 Executes the `sendText` operation with the given parameters (to, subject, text).
 
 **Signature:**
-```ntl
+```lunex
 fn sendText(to, subject, text)
 ```
 
@@ -48,7 +48,7 @@ fn sendText(to, subject, text)
 Executes the `sendHTML` operation with the given parameters (to, subject, html).
 
 **Signature:**
-```ntl
+```lunex
 fn sendHTML(to, subject, html)
 ```
 
@@ -57,7 +57,7 @@ fn sendHTML(to, subject, html)
 Executes the `sendTemplate` operation with the given parameters (to, subject, html, vars).
 
 **Signature:**
-```ntl
+```lunex
 fn sendTemplate(to, subject, html, vars)
 ```
 
@@ -66,7 +66,7 @@ fn sendTemplate(to, subject, html, vars)
 Executes the `send` operation with the given parameters (config, options).
 
 **Signature:**
-```ntl
+```lunex
 fn send(config, options)
 ```
 
@@ -75,7 +75,7 @@ fn send(config, options)
 Executes the `sendText` operation with the given parameters (config, to, subject, text).
 
 **Signature:**
-```ntl
+```lunex
 fn sendText(config, to, subject, text)
 ```
 
@@ -84,7 +84,7 @@ fn sendText(config, to, subject, text)
 Executes the `sendHTML` operation with the given parameters (config, to, subject, html).
 
 **Signature:**
-```ntl
+```lunex
 fn sendHTML(config, to, subject, html)
 ```
 

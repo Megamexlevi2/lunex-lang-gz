@@ -8,7 +8,7 @@ Interact with large language models and AI services. Provides interfaces for tex
 
 ## Import
 
-```ntl
+```lunex
 val ai = @import("std.ai")
 ```
 
@@ -21,7 +21,7 @@ val ai = @import("std.ai")
 Executes the `complete` operation with the given parameters (prompt, options).
 
 **Signature:**
-```ntl
+```lunex
 fn complete(prompt, options)
 ```
 
@@ -30,7 +30,7 @@ fn complete(prompt, options)
 Executes the `chat` operation with the given parameters (messages, options).
 
 **Signature:**
-```ntl
+```lunex
 fn chat(messages, options)
 ```
 
@@ -39,7 +39,7 @@ fn chat(messages, options)
 Executes the `embed` operation with the given parameter (text).
 
 **Signature:**
-```ntl
+```lunex
 fn embed(text)
 ```
 
@@ -48,7 +48,7 @@ fn embed(text)
 Executes the `classify` operation with the given parameters (text, labels).
 
 **Signature:**
-```ntl
+```lunex
 fn classify(text, labels)
 ```
 
@@ -57,7 +57,7 @@ fn classify(text, labels)
 Executes the `moderate` operation with the given parameter (text).
 
 **Signature:**
-```ntl
+```lunex
 fn moderate(text)
 ```
 
@@ -66,7 +66,7 @@ fn moderate(text)
 Executes the `similarity` operation with the given parameters (a, b).
 
 **Signature:**
-```ntl
+```lunex
 fn similarity(a, b)
 ```
 
@@ -75,7 +75,7 @@ fn similarity(a, b)
 Executes the `create` operation with the given parameter (options).
 
 **Signature:**
-```ntl
+```lunex
 fn create(options)
 ```
 
@@ -84,7 +84,7 @@ fn create(options)
 Executes the `summarize` operation with the given parameters (text, options).
 
 **Signature:**
-```ntl
+```lunex
 fn summarize(text, options)
 ```
 
@@ -93,7 +93,7 @@ fn summarize(text, options)
 Executes the `translate` operation with the given parameters (text, targetLang, options).
 
 **Signature:**
-```ntl
+```lunex
 fn translate(text, targetLang, options)
 ```
 
@@ -102,7 +102,7 @@ fn translate(text, targetLang, options)
 Executes the `sentiment` operation with the given parameter (text).
 
 **Signature:**
-```ntl
+```lunex
 fn sentiment(text)
 ```
 
@@ -111,7 +111,7 @@ fn sentiment(text)
 Executes the `extract` operation with the given parameters (text, schema, options).
 
 **Signature:**
-```ntl
+```lunex
 fn extract(text, schema, options)
 ```
 
@@ -120,7 +120,7 @@ fn extract(text, schema, options)
 Executes the `createAssistant` operation with the given parameters (systemPrompt, options).
 
 **Signature:**
-```ntl
+```lunex
 fn createAssistant(systemPrompt, options)
 ```
 
@@ -129,7 +129,7 @@ fn createAssistant(systemPrompt, options)
 Executes the `ask` operation with the given parameter (userMessage).
 
 **Signature:**
-```ntl
+```lunex
 fn ask(userMessage)
 ```
 
@@ -138,7 +138,7 @@ fn ask(userMessage)
 Executes the `reset` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn reset()
 ```
 
@@ -147,7 +147,7 @@ fn reset()
 Executes the `getHistory` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn getHistory()
 ```
 
@@ -156,7 +156,7 @@ fn getHistory()
 Executes the `findMostSimilar` operation with the given parameters (query, documents).
 
 **Signature:**
-```ntl
+```lunex
 fn findMostSimilar(query, documents)
 ```
 

@@ -8,7 +8,7 @@ Message queue implementation with support for both in-memory and Redis-backed qu
 
 ## Import
 
-```ntl
+```lunex
 val queue = @import("std.queue")
 ```
 
@@ -21,7 +21,7 @@ val queue = @import("std.queue")
 Executes the `create` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn create()
 ```
 
@@ -30,7 +30,7 @@ fn create()
 Executes the `push` operation with the given parameter (item).
 
 **Signature:**
-```ntl
+```lunex
 fn push(item)
 ```
 
@@ -39,7 +39,7 @@ fn push(item)
 Executes the `pop` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn pop()
 ```
 
@@ -48,7 +48,7 @@ fn pop()
 Executes the `peek` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn peek()
 ```
 
@@ -57,7 +57,7 @@ fn peek()
 Executes the `size` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn size()
 ```
 
@@ -66,7 +66,7 @@ fn size()
 Executes the `isEmpty` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn isEmpty()
 ```
 
@@ -75,7 +75,7 @@ fn isEmpty()
 Executes the `clear` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn clear()
 ```
 
@@ -84,7 +84,7 @@ fn clear()
 Executes the `toArray` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn toArray()
 ```
 
@@ -93,7 +93,7 @@ fn toArray()
 Executes the `drain` operation with the given parameter (handler).
 
 **Signature:**
-```ntl
+```lunex
 fn drain(handler)
 ```
 
@@ -102,7 +102,7 @@ fn drain(handler)
 Executes the `stats` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn stats()
 ```
 
@@ -111,7 +111,7 @@ fn stats()
 Executes the `createPriority` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn createPriority()
 ```
 
@@ -120,7 +120,7 @@ fn createPriority()
 Executes the `push` operation with the given parameters (item, priority).
 
 **Signature:**
-```ntl
+```lunex
 fn push(item, priority)
 ```
 
@@ -129,7 +129,7 @@ fn push(item, priority)
 Executes the `pop` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn pop()
 ```
 
@@ -138,7 +138,7 @@ fn pop()
 Executes the `size` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn size()
 ```
 
@@ -147,7 +147,7 @@ fn size()
 Executes the `isEmpty` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn isEmpty()
 ```
 
@@ -156,7 +156,7 @@ fn isEmpty()
 Executes the `clear` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn clear()
 ```
 
@@ -165,7 +165,7 @@ fn clear()
 Executes the `createDeque` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn createDeque()
 ```
 
@@ -174,7 +174,7 @@ fn createDeque()
 Executes the `pushFront` operation with the given parameter (item).
 
 **Signature:**
-```ntl
+```lunex
 fn pushFront(item)
 ```
 
@@ -183,7 +183,7 @@ fn pushFront(item)
 Executes the `pushBack` operation with the given parameter (item).
 
 **Signature:**
-```ntl
+```lunex
 fn pushBack(item)
 ```
 
@@ -192,7 +192,7 @@ fn pushBack(item)
 Executes the `popFront` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn popFront()
 ```
 
@@ -201,7 +201,7 @@ fn popFront()
 Executes the `popBack` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn popBack()
 ```
 
@@ -210,7 +210,7 @@ fn popBack()
 Executes the `peekFront` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn peekFront()
 ```
 
@@ -219,7 +219,7 @@ fn peekFront()
 Executes the `peekBack` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn peekBack()
 ```
 
@@ -228,7 +228,7 @@ fn peekBack()
 Executes the `size` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn size()
 ```
 
@@ -237,7 +237,7 @@ fn size()
 Executes the `isEmpty` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn isEmpty()
 ```
 
@@ -246,7 +246,7 @@ fn isEmpty()
 Executes the `clear` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn clear()
 ```
 

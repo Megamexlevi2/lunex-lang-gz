@@ -8,7 +8,7 @@ Markdown parsing and conversion to HTML.
 
 ## Import
 
-```ntl
+```lunex
 val markdown = @import("std.markdown")
 ```
 
@@ -21,7 +21,7 @@ val markdown = @import("std.markdown")
 Executes the `toHTML` operation with the given parameter (content).
 
 **Signature:**
-```ntl
+```lunex
 fn toHTML(content)
 ```
 
@@ -30,7 +30,7 @@ fn toHTML(content)
 Executes the `parse` operation with the given parameter (content).
 
 **Signature:**
-```ntl
+```lunex
 fn parse(content)
 ```
 
@@ -39,7 +39,7 @@ fn parse(content)
 Executes the `readFile` operation with the given parameter (path).
 
 **Signature:**
-```ntl
+```lunex
 fn readFile(path)
 ```
 
@@ -48,7 +48,7 @@ fn readFile(path)
 Executes the `renderFile` operation with the given parameters (inputPath, outputPath).
 
 **Signature:**
-```ntl
+```lunex
 fn renderFile(inputPath, outputPath)
 ```
 

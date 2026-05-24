@@ -8,7 +8,7 @@ TOML configuration file parsing and serialization.
 
 ## Import
 
-```ntl
+```lunex
 val toml = @import("std.toml")
 ```
 
@@ -21,7 +21,7 @@ val toml = @import("std.toml")
 Executes the `parse` operation with the given parameter (content).
 
 **Signature:**
-```ntl
+```lunex
 fn parse(content)
 ```
 
@@ -30,7 +30,7 @@ fn parse(content)
 Executes the `stringify` operation with the given parameter (data).
 
 **Signature:**
-```ntl
+```lunex
 fn stringify(data)
 ```
 
@@ -39,7 +39,7 @@ fn stringify(data)
 Executes the `readFile` operation with the given parameter (path).
 
 **Signature:**
-```ntl
+```lunex
 fn readFile(path)
 ```
 
@@ -48,7 +48,7 @@ fn readFile(path)
 Executes the `writeFile` operation with the given parameters (path, data).
 
 **Signature:**
-```ntl
+```lunex
 fn writeFile(path, data)
 ```
 

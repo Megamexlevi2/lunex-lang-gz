@@ -8,7 +8,7 @@ Cryptographic operations including hashing, symmetric/asymmetric encryption, dig
 
 ## Import
 
-```ntl
+```lunex
 val crypto = @import("std.crypto")
 ```
 
@@ -21,7 +21,7 @@ val crypto = @import("std.crypto")
 Executes the `hash` operation with the given parameters (algorithm, data).
 
 **Signature:**
-```ntl
+```lunex
 fn hash(algorithm, data)
 ```
 
@@ -30,7 +30,7 @@ fn hash(algorithm, data)
 Executes the `md5` operation with the given parameter (data).
 
 **Signature:**
-```ntl
+```lunex
 fn md5(data)
 ```
 
@@ -39,7 +39,7 @@ fn md5(data)
 Executes the `sha1` operation with the given parameter (data).
 
 **Signature:**
-```ntl
+```lunex
 fn sha1(data)
 ```
 
@@ -48,7 +48,7 @@ fn sha1(data)
 Executes the `sha256` operation with the given parameter (data).
 
 **Signature:**
-```ntl
+```lunex
 fn sha256(data)
 ```
 
@@ -57,7 +57,7 @@ fn sha256(data)
 Executes the `sha512` operation with the given parameter (data).
 
 **Signature:**
-```ntl
+```lunex
 fn sha512(data)
 ```
 
@@ -66,7 +66,7 @@ fn sha512(data)
 Executes the `hmac` operation with the given parameters (algorithm, key, data).
 
 **Signature:**
-```ntl
+```lunex
 fn hmac(algorithm, key, data)
 ```
 
@@ -75,7 +75,7 @@ fn hmac(algorithm, key, data)
 Executes the `hmacSha256` operation with the given parameters (key, data).
 
 **Signature:**
-```ntl
+```lunex
 fn hmacSha256(key, data)
 ```
 
@@ -84,7 +84,7 @@ fn hmacSha256(key, data)
 Executes the `hmacSha512` operation with the given parameters (key, data).
 
 **Signature:**
-```ntl
+```lunex
 fn hmacSha512(key, data)
 ```
 
@@ -93,7 +93,7 @@ fn hmacSha512(key, data)
 Executes the `randomBytes` operation with the given parameter (n).
 
 **Signature:**
-```ntl
+```lunex
 fn randomBytes(n)
 ```
 
@@ -102,7 +102,7 @@ fn randomBytes(n)
 Executes the `randomHex` operation with the given parameter (n).
 
 **Signature:**
-```ntl
+```lunex
 fn randomHex(n)
 ```
 
@@ -111,7 +111,7 @@ fn randomHex(n)
 Executes the `randomUUID` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn randomUUID()
 ```
 
@@ -120,7 +120,7 @@ fn randomUUID()
 Executes the `uuid` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn uuid()
 ```
 
@@ -129,7 +129,7 @@ fn uuid()
 Executes the `token` operation with the given parameter (n).
 
 **Signature:**
-```ntl
+```lunex
 fn token(n)
 ```
 
@@ -138,7 +138,7 @@ fn token(n)
 Executes the `encrypt` operation with the given parameters (data, key).
 
 **Signature:**
-```ntl
+```lunex
 fn encrypt(data, key)
 ```
 
@@ -147,7 +147,7 @@ fn encrypt(data, key)
 Executes the `decrypt` operation with the given parameters (data, key).
 
 **Signature:**
-```ntl
+```lunex
 fn decrypt(data, key)
 ```
 
@@ -156,7 +156,7 @@ fn decrypt(data, key)
 Executes the `encryptAES` operation with the given parameters (data, key).
 
 **Signature:**
-```ntl
+```lunex
 fn encryptAES(data, key)
 ```
 
@@ -165,7 +165,7 @@ fn encryptAES(data, key)
 Executes the `decryptAES` operation with the given parameters (data, key).
 
 **Signature:**
-```ntl
+```lunex
 fn decryptAES(data, key)
 ```
 
@@ -174,7 +174,7 @@ fn decryptAES(data, key)
 Executes the `pbkdf2` operation with the given parameters (password, salt, iterations, keyLen).
 
 **Signature:**
-```ntl
+```lunex
 fn pbkdf2(password, salt, iterations, keyLen)
 ```
 
@@ -183,7 +183,7 @@ fn pbkdf2(password, salt, iterations, keyLen)
 Executes the `hashPassword` operation with the given parameters (password, cost).
 
 **Signature:**
-```ntl
+```lunex
 fn hashPassword(password, cost)
 ```
 
@@ -192,7 +192,7 @@ fn hashPassword(password, cost)
 Executes the `verifyPassword` operation with the given parameters (password, hash).
 
 **Signature:**
-```ntl
+```lunex
 fn verifyPassword(password, hash)
 ```
 
@@ -201,7 +201,7 @@ fn verifyPassword(password, hash)
 Executes the `signJWT` operation with the given parameters (payload, secret, expiresIn).
 
 **Signature:**
-```ntl
+```lunex
 fn signJWT(payload, secret, expiresIn)
 ```
 
@@ -210,7 +210,7 @@ fn signJWT(payload, secret, expiresIn)
 Executes the `verifyJWT` operation with the given parameters (tok, secret).
 
 **Signature:**
-```ntl
+```lunex
 fn verifyJWT(tok, secret)
 ```
 
@@ -219,7 +219,7 @@ fn verifyJWT(tok, secret)
 Executes the `jwtDecode` operation with the given parameter (tok).
 
 **Signature:**
-```ntl
+```lunex
 fn jwtDecode(tok)
 ```
 
@@ -228,7 +228,7 @@ fn jwtDecode(tok)
 Executes the `base64Encode` operation with the given parameter (data).
 
 **Signature:**
-```ntl
+```lunex
 fn base64Encode(data)
 ```
 
@@ -237,7 +237,7 @@ fn base64Encode(data)
 Executes the `base64Decode` operation with the given parameter (data).
 
 **Signature:**
-```ntl
+```lunex
 fn base64Decode(data)
 ```
 
@@ -246,7 +246,7 @@ fn base64Decode(data)
 Executes the `base64UrlEncode` operation with the given parameter (data).
 
 **Signature:**
-```ntl
+```lunex
 fn base64UrlEncode(data)
 ```
 
@@ -255,7 +255,7 @@ fn base64UrlEncode(data)
 Executes the `base64UrlDecode` operation with the given parameter (data).
 
 **Signature:**
-```ntl
+```lunex
 fn base64UrlDecode(data)
 ```
 
@@ -264,7 +264,7 @@ fn base64UrlDecode(data)
 Executes the `toHex` operation with the given parameter (data).
 
 **Signature:**
-```ntl
+```lunex
 fn toHex(data)
 ```
 
@@ -273,7 +273,7 @@ fn toHex(data)
 Executes the `fromHex` operation with the given parameter (data).
 
 **Signature:**
-```ntl
+```lunex
 fn fromHex(data)
 ```
 
@@ -282,7 +282,7 @@ fn fromHex(data)
 Executes the `compare` operation with the given parameters (a, b).
 
 **Signature:**
-```ntl
+```lunex
 fn compare(a, b)
 ```
 
@@ -291,7 +291,7 @@ fn compare(a, b)
 Executes the `timingSafeEqual` operation with the given parameters (a, b).
 
 **Signature:**
-```ntl
+```lunex
 fn timingSafeEqual(a, b)
 ```
 

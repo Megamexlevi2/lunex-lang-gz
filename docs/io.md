@@ -8,7 +8,7 @@ Input/output operations including console logging, reading user input, and text 
 
 ## Import
 
-```ntl
+```lunex
 val io = @import("std.io")
 ```
 
@@ -21,7 +21,7 @@ val io = @import("std.io")
 Executes the `log` operation with the given parameter (...args).
 
 **Signature:**
-```ntl
+```lunex
 fn log(...args)
 ```
 
@@ -30,7 +30,7 @@ fn log(...args)
 Executes the `error` operation with the given parameter (...args).
 
 **Signature:**
-```ntl
+```lunex
 fn error(...args)
 ```
 
@@ -39,7 +39,7 @@ fn error(...args)
 Executes the `warn` operation with the given parameter (...args).
 
 **Signature:**
-```ntl
+```lunex
 fn warn(...args)
 ```
 
@@ -48,7 +48,7 @@ fn warn(...args)
 Executes the `success` operation with the given parameter (...args).
 
 **Signature:**
-```ntl
+```lunex
 fn success(...args)
 ```
 
@@ -57,7 +57,7 @@ fn success(...args)
 Executes the `info` operation with the given parameter (...args).
 
 **Signature:**
-```ntl
+```lunex
 fn info(...args)
 ```
 
@@ -66,7 +66,7 @@ fn info(...args)
 Executes the `table` operation with the given parameters (data, columns).
 
 **Signature:**
-```ntl
+```lunex
 fn table(data, columns)
 ```
 
@@ -75,7 +75,7 @@ fn table(data, columns)
 Executes the `progress` operation with the given parameters (current, total, label).
 
 **Signature:**
-```ntl
+```lunex
 fn progress(current, total, label)
 ```
 
@@ -84,7 +84,7 @@ fn progress(current, total, label)
 Executes the `spinner` operation with the given parameter (message).
 
 **Signature:**
-```ntl
+```lunex
 fn spinner(message)
 ```
 
@@ -93,7 +93,7 @@ fn spinner(message)
 Executes the `banner` operation with the given parameters (text, color).
 
 **Signature:**
-```ntl
+```lunex
 fn banner(text, color)
 ```
 
@@ -102,7 +102,7 @@ fn banner(text, color)
 Executes the `hr` operation with the given parameters (char, length).
 
 **Signature:**
-```ntl
+```lunex
 fn hr(char, length)
 ```
 
@@ -111,7 +111,7 @@ fn hr(char, length)
 Executes the `readLine` operation with the given parameter (prompt).
 
 **Signature:**
-```ntl
+```lunex
 fn readLine(prompt)
 ```
 
@@ -120,7 +120,7 @@ fn readLine(prompt)
 Executes the `readInt` operation with the given parameter (prompt).
 
 **Signature:**
-```ntl
+```lunex
 fn readInt(prompt)
 ```
 
@@ -129,7 +129,7 @@ fn readInt(prompt)
 Executes the `clear` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn clear()
 ```
 
@@ -138,7 +138,7 @@ fn clear()
 Executes the `red` operation with the given parameter (text).
 
 **Signature:**
-```ntl
+```lunex
 fn red(text)
 ```
 
@@ -147,7 +147,7 @@ fn red(text)
 Executes the `green` operation with the given parameter (text).
 
 **Signature:**
-```ntl
+```lunex
 fn green(text)
 ```
 
@@ -156,7 +156,7 @@ fn green(text)
 Executes the `yellow` operation with the given parameter (text).
 
 **Signature:**
-```ntl
+```lunex
 fn yellow(text)
 ```
 
@@ -165,7 +165,7 @@ fn yellow(text)
 Executes the `blue` operation with the given parameter (text).
 
 **Signature:**
-```ntl
+```lunex
 fn blue(text)
 ```
 
@@ -174,7 +174,7 @@ fn blue(text)
 Executes the `cyan` operation with the given parameter (text).
 
 **Signature:**
-```ntl
+```lunex
 fn cyan(text)
 ```
 
@@ -183,7 +183,7 @@ fn cyan(text)
 Executes the `magenta` operation with the given parameter (text).
 
 **Signature:**
-```ntl
+```lunex
 fn magenta(text)
 ```
 
@@ -192,7 +192,7 @@ fn magenta(text)
 Executes the `bold` operation with the given parameter (text).
 
 **Signature:**
-```ntl
+```lunex
 fn bold(text)
 ```
 
@@ -201,7 +201,7 @@ fn bold(text)
 Executes the `dim` operation with the given parameter (text).
 
 **Signature:**
-```ntl
+```lunex
 fn dim(text)
 ```
 

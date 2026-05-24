@@ -1,13 +1,13 @@
-# NTL lang — Architecture
+# Lunex lang — Architecture
 
-The NTL compiler is written in Go. The runtime and JIT are written in Zig.
-Both are compiled into a **single binary** (`ntl`) — the Zig runtime is embedded at link time via `go:embed`.
+The Lunex compiler is written in Go. The runtime and JIT are written in Zig.
+Both are compiled into a **single binary** (`lunex`) — the Zig runtime is embedded at link time via `go:embed`.
 There is no CGo, no shared memory, no FFI. The Go compiler writes bytecode to a pipe; the Zig runtime reads and executes it.
 
 ## Pipeline
 
 ```
-NTL Source (.ntl)
+Lunex Source (.lx)
       │
   ┌───▼───┐
   │ Lexer │   tokenize source text
@@ -24,7 +24,7 @@ NTL Source (.ntl)
   └───┬──────┘
       │  subprocess pipe (Go writes → Zig reads)
   ┌───▼──────┐
-  │  NTL VM  │  register-based bytecode interpreter
+  │  Lunex VM  │  register-based bytecode interpreter
   └───┬──────┘
   ┌───▼──────┐
   │ Profiler │  counts calls + loop back-edges per function
@@ -74,11 +74,11 @@ ENFS is the built-in IR optimizer. It runs automatically on every compilation.
 ## Source Layout
 
 ```
-ntl/
+lunex/
 ├── main.go                 entry point — CLI dispatch
 ├── embed.go                embed lib/ into the binary
-├── embed_unix.go           embed bin/ntl-rt  (non-Windows)
-├── embed_windows.go        embed bin/ntl-rt.exe
+├── embed_unix.go           embed bin/lunex-rt  (non-Windows)
+├── embed_windows.go        embed bin/lunex-rt.exe
 ├── internal/
 │   ├── lexer/              tokenizer
 │   ├── parser/             recursive descent parser → AST
@@ -105,7 +105,7 @@ ntl/
 │       ├── builtins.zig    built-in functions
 │       ├── extensions_gen.zig   AUTO-GENERATED — do not edit
 │       └── vm_test.zig     unit tests (zig build test)
-├── lib/                    NTL standard library (embedded)
+├── lib/                    Lunex standard library (embedded)
 ├── tests/                  integration tests
 ├── examples/               example programs
 └── build.sh                one-command build script

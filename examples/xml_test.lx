@@ -3,7 +3,7 @@ val xml = @import("std.xml")
   val src = `
   <catalog>
     <book id="1" genre="fiction">
-      <title>The NTL Way</title>
+      <title>The Lunex Way</title>
       <author>David Dev</author>
       <price>29.99</price>
     </book>

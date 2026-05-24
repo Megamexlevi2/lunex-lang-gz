@@ -8,7 +8,7 @@ JSON Web Token creation, verification, signing, and claims management.
 
 ## Import
 
-```ntl
+```lunex
 val jwt = @import("std.jwt")
 ```
 
@@ -21,7 +21,7 @@ val jwt = @import("std.jwt")
 Executes the `sign` operation with the given parameters (payload, secret, options).
 
 **Signature:**
-```ntl
+```lunex
 fn sign(payload, secret, options)
 ```
 
@@ -30,7 +30,7 @@ fn sign(payload, secret, options)
 Executes the `verify` operation with the given parameters (token, secret).
 
 **Signature:**
-```ntl
+```lunex
 fn verify(token, secret)
 ```
 
@@ -39,7 +39,7 @@ fn verify(token, secret)
 Executes the `decode` operation with the given parameter (token).
 
 **Signature:**
-```ntl
+```lunex
 fn decode(token)
 ```
 
@@ -48,7 +48,7 @@ fn decode(token)
 Executes the `isExpired` operation with the given parameter (token).
 
 **Signature:**
-```ntl
+```lunex
 fn isExpired(token)
 ```
 
@@ -57,7 +57,7 @@ fn isExpired(token)
 Executes the `refresh` operation with the given parameters (token, secret, expiresIn).
 
 **Signature:**
-```ntl
+```lunex
 fn refresh(token, secret, expiresIn)
 ```
 

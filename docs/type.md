@@ -8,7 +8,7 @@ Type checking and runtime type utilities for type validation.
 
 ## Import
 
-```ntl
+```lunex
 val type = @import("std.type")
 ```
 
@@ -21,7 +21,7 @@ val type = @import("std.type")
 Executes the `isString` operation with the given parameter (x).
 
 **Signature:**
-```ntl
+```lunex
 fn isString(x)
 ```
 
@@ -30,7 +30,7 @@ fn isString(x)
 Executes the `isNumber` operation with the given parameter (x).
 
 **Signature:**
-```ntl
+```lunex
 fn isNumber(x)
 ```
 
@@ -39,7 +39,7 @@ fn isNumber(x)
 Executes the `isBool` operation with the given parameter (x).
 
 **Signature:**
-```ntl
+```lunex
 fn isBool(x)
 ```
 
@@ -48,7 +48,7 @@ fn isBool(x)
 Executes the `isBoolean` operation with the given parameter (x).
 
 **Signature:**
-```ntl
+```lunex
 fn isBoolean(x)
 ```
 
@@ -57,7 +57,7 @@ fn isBoolean(x)
 Executes the `isArray` operation with the given parameter (x).
 
 **Signature:**
-```ntl
+```lunex
 fn isArray(x)
 ```
 
@@ -66,7 +66,7 @@ fn isArray(x)
 Executes the `isObject` operation with the given parameter (x).
 
 **Signature:**
-```ntl
+```lunex
 fn isObject(x)
 ```
 
@@ -75,7 +75,7 @@ fn isObject(x)
 Executes the `isNull` operation with the given parameter (x).
 
 **Signature:**
-```ntl
+```lunex
 fn isNull(x)
 ```
 
@@ -84,7 +84,7 @@ fn isNull(x)
 Executes the `isUndefined` operation with the given parameter (x).
 
 **Signature:**
-```ntl
+```lunex
 fn isUndefined(x)
 ```
 
@@ -93,7 +93,7 @@ fn isUndefined(x)
 Executes the `isFunction` operation with the given parameter (x).
 
 **Signature:**
-```ntl
+```lunex
 fn isFunction(x)
 ```
 
@@ -102,7 +102,7 @@ fn isFunction(x)
 Executes the `typeOf` operation with the given parameter (x).
 
 **Signature:**
-```ntl
+```lunex
 fn typeOf(x)
 ```
 
@@ -111,7 +111,7 @@ fn typeOf(x)
 Executes the `isInt` operation with the given parameter (x).
 
 **Signature:**
-```ntl
+```lunex
 fn isInt(x)
 ```
 
@@ -120,7 +120,7 @@ fn isInt(x)
 Executes the `isFloat` operation with the given parameter (x).
 
 **Signature:**
-```ntl
+```lunex
 fn isFloat(x)
 ```
 
@@ -129,7 +129,7 @@ fn isFloat(x)
 Executes the `isNaN` operation with the given parameter (x).
 
 **Signature:**
-```ntl
+```lunex
 fn isNaN(x)
 ```
 
@@ -138,7 +138,7 @@ fn isNaN(x)
 Executes the `isFinite` operation with the given parameter (x).
 
 **Signature:**
-```ntl
+```lunex
 fn isFinite(x)
 ```
 
@@ -147,7 +147,7 @@ fn isFinite(x)
 Executes the `isDate` operation with the given parameter (x).
 
 **Signature:**
-```ntl
+```lunex
 fn isDate(x)
 ```
 
@@ -156,7 +156,7 @@ fn isDate(x)
 Executes the `toInt` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn toInt(v)
 ```
 
@@ -165,7 +165,7 @@ fn toInt(v)
 Executes the `toFloat` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn toFloat(v)
 ```
 
@@ -174,7 +174,7 @@ fn toFloat(v)
 Executes the `toBool` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn toBool(v)
 ```
 
@@ -183,7 +183,7 @@ fn toBool(v)
 Executes the `toString` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn toString(v)
 ```
 
@@ -192,7 +192,7 @@ fn toString(v)
 Executes the `toArray` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn toArray(v)
 ```
 
@@ -201,7 +201,7 @@ fn toArray(v)
 Executes the `toObject` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn toObject(v)
 ```
 
@@ -210,7 +210,7 @@ fn toObject(v)
 Executes the `cast` operation with the given parameters (value, targetType).
 
 **Signature:**
-```ntl
+```lunex
 fn cast(value, targetType)
 ```
 
@@ -219,7 +219,7 @@ fn cast(value, targetType)
 Executes the `assertString` operation with the given parameters (v, name).
 
 **Signature:**
-```ntl
+```lunex
 fn assertString(v, name)
 ```
 
@@ -228,7 +228,7 @@ fn assertString(v, name)
 Executes the `assertNumber` operation with the given parameters (v, name).
 
 **Signature:**
-```ntl
+```lunex
 fn assertNumber(v, name)
 ```
 
@@ -237,7 +237,7 @@ fn assertNumber(v, name)
 Executes the `assertArray` operation with the given parameters (v, name).
 
 **Signature:**
-```ntl
+```lunex
 fn assertArray(v, name)
 ```
 
@@ -246,7 +246,7 @@ fn assertArray(v, name)
 Executes the `assertObject` operation with the given parameters (v, name).
 
 **Signature:**
-```ntl
+```lunex
 fn assertObject(v, name)
 ```
 
@@ -255,7 +255,7 @@ fn assertObject(v, name)
 Executes the `assertBool` operation with the given parameters (v, name).
 
 **Signature:**
-```ntl
+```lunex
 fn assertBool(v, name)
 ```
 
@@ -264,7 +264,7 @@ fn assertBool(v, name)
 Executes the `nullable` operation with the given parameters (v, defaultVal).
 
 **Signature:**
-```ntl
+```lunex
 fn nullable(v, defaultVal)
 ```
 

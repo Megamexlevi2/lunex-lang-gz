@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NTL GZ — Docs</title>
+<title>Lunex GZ — Docs</title>
 <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body class="">
@@ -11,8 +11,8 @@
 
     <header class="topbar">
       <a class="brand" href="../index.html">
-        <span class="brand-mark">NTL</span>
-        <span class="brand-text"><strong>NTL GZ</strong><span>documentation site</span></span>
+        <span class="brand-mark">Lunex</span>
+        <span class="brand-text"><strong>Lunex GZ</strong><span>documentation site</span></span>
       </a>
       <nav class="top-links">
         <a class="" href="../index.html">Home</a>
@@ -48,14 +48,14 @@
 <main class="page">
   <section class="panel section">
     <div class="kicker">Documentation</div>
-    <h1 style="margin-top:10px">Starting with NTL</h1>
+    <h1 style="margin-top:10px">Starting with Lunex</h1>
     <p class="lead">
       This page is the main reference for the language. It starts simple and keeps going until it covers the
       bits people usually need in real projects: syntax, commands, modules, stdlib, runtime notes, and the
       rough edges that are worth knowing about early.
     </p>
     <div class="note">
-      NTL is still moving fast. Some details may shift over time, and that is normal for a project built by one person.
+      Lunex is still moving fast. Some details may shift over time, and that is normal for a project built by one person.
       The goal here is clarity first, not pretending the language is finished forever.
     </div>
   </section>
@@ -89,19 +89,19 @@
       <section id="starting">
         <h2>Starting</h2>
         <p>
-          The shortest way to understand NTL is to look at a tiny file, run it, and then add one thing at a time.
-          NTL is designed to feel direct. You import only what you need, keep the program structure small, and move on.
+          The shortest way to understand Lunex is to look at a tiny file, run it, and then add one thing at a time.
+          Lunex is designed to feel direct. You import only what you need, keep the program structure small, and move on.
         </p>
         <div class="code-block">
           <button class="copy-btn" data-copy='val io = @import("std.io")
 
 fn main() {
-  io.log("Hello from NTL")
+  io.log("Hello from Lunex")
 }'>Copy</button>
           <pre><code>val io = @import("std.io")
 
 fn main() {
-  io.log("Hello from NTL")
+  io.log("Hello from Lunex")
 }</code></pre>
         </div>
         <p>
@@ -135,13 +135,13 @@ fn main() {
           </div>
         </div>
         <div class="warn" style="margin-top:14px">
-          A quick note: because NTL is built by one person, installer names and packaging details can change. The docs try to stay honest about that instead of pretending everything is perfectly static.
+          A quick note: because Lunex is built by one person, installer names and packaging details can change. The docs try to stay honest about that instead of pretending everything is perfectly static.
         </div>
       </section>
 
       <section id="syntax">
         <h2>Basic syntax</h2>
-        <p>NTL keeps syntax compact. It borrows the useful feeling of scripting languages, but it does not try to be a clone of anything else.</p>
+        <p>Lunex keeps syntax compact. It borrows the useful feeling of scripting languages, but it does not try to be a clone of anything else.</p>
         <div class="code-block">
           <button class="copy-btn" data-copy='val io = @import("std.io")
 
@@ -171,7 +171,7 @@ fn main() {
       <section id="variables">
         <h2>Variables and values</h2>
         <p>
-          NTL uses values that are easy to read in examples and easy to pass around in real code. The reference docs in the source tree show strings, numbers, arrays, objects, booleans, and null-like values as the day-to-day building blocks.
+          Lunex uses values that are easy to read in examples and easy to pass around in real code. The reference docs in the source tree show strings, numbers, arrays, objects, booleans, and null-like values as the day-to-day building blocks.
         </p>
         <div class="grid-2">
           <div class="card">
@@ -184,10 +184,10 @@ fn main() {
           </div>
         </div>
         <div class="code-block">
-          <button class="copy-btn" data-copy='val title = "NTL"
+          <button class="copy-btn" data-copy='val title = "Lunex"
 var retries = 0
 retries += 1'>Copy</button>
-          <pre><code>val title = "NTL"
+          <pre><code>val title = "Lunex"
 var retries = 0
 retries += 1</code></pre>
         </div>
@@ -265,7 +265,7 @@ fn main() {
       <section id="modules">
         <h2>Modules</h2>
         <p>
-          NTL uses explicit imports. Nothing is magically present unless you import it. That makes the code a bit more honest and a lot easier to reason about in larger projects.
+          Lunex uses explicit imports. Nothing is magically present unless you import it. That makes the code a bit more honest and a lot easier to reason about in larger projects.
         </p>
         <div class="code-block">
           <button class="copy-btn" data-copy='val io = @import("std.io")
@@ -287,17 +287,17 @@ val http = @import("std.http")</code></pre>
         </p>
         <table class="table">
           <tr><th>Command</th><th>What it does</th></tr>
-          <tr><td><code>ntl file.ntl</code></td><td>Run a source file directly.</td></tr>
-          <tr><td><code>ntl run file.ntl</code></td><td>Run a source file with the explicit run command.</td></tr>
-          <tr><td><code>ntl build</code></td><td>Build the project or produce bytecode depending on config.</td></tr>
-          <tr><td><code>ntl add package</code></td><td>Install a module from a GitHub source.</td></tr>
+          <tr><td><code>lunex file.lx</code></td><td>Run a source file directly.</td></tr>
+          <tr><td><code>lunex run file.lx</code></td><td>Run a source file with the explicit run command.</td></tr>
+          <tr><td><code>lunex build</code></td><td>Build the project or produce bytecode depending on config.</td></tr>
+          <tr><td><code>lunex add package</code></td><td>Install a module from a GitHub source.</td></tr>
         </table>
       </section>
 
       <section id="stdlib">
         <h2>Standard library</h2>
         <p>
-          NTL ships with a broad standard library. The source tree shows modules for I/O, filesystem, HTTP, OS access,
+          Lunex ships with a broad standard library. The source tree shows modules for I/O, filesystem, HTTP, OS access,
           crypto, environment variables, databases, validation, XML, websockets, PDF, mail, JWT, OAuth2, PostgreSQL,
           MySQL, Redis, RabbitMQ, Stripe, Excel, GraphQL, and more.
         </p>
@@ -374,7 +374,7 @@ if fs.exists("out.txt") {
       <section id="http">
         <h2>http — HTTP client and server</h2>
         <p>
-          HTTP is one of the modules that makes NTL feel more like a real toolchain than a toy language. The source docs include client calls, request objects, and server examples.
+          HTTP is one of the modules that makes Lunex feel more like a real toolchain than a toy language. The source docs include client calls, request objects, and server examples.
         </p>
         <div class="code-block">
           <button class="copy-btn" data-copy='val http = @import("std.http")
@@ -420,7 +420,7 @@ fn main() {
       <section id="alloc">
         <h2>alloc — low-level buffers</h2>
         <p>
-          The alloc module is where NTL gets closer to raw memory work. It is useful when you need bytes, slices, or a buffer-oriented view of data.
+          The alloc module is where Lunex gets closer to raw memory work. It is useful when you need bytes, slices, or a buffer-oriented view of data.
         </p>
         <div class="code-block">
           <button class="copy-btn" data-copy='val alloc = @import("std.alloc")
@@ -499,7 +499,7 @@ fn main() {
 }</code></pre>
         </div>
         <p>
-          Zig gets a lot of credit here. It is a very good fit for the runtime and for the kind of low-level control NTL needs.
+          Zig gets a lot of credit here. It is a very good fit for the runtime and for the kind of low-level control Lunex needs.
           That part is worth saying plainly.
         </p>
       </section>
@@ -516,7 +516,7 @@ fn main() {
 
       <section id="faq">
         <h2>FAQ</h2>
-        <h3>Is NTL finished?</h3>
+        <h3>Is Lunex finished?</h3>
         <p>No. It is a growing project. The docs should say that straight up.</p>
         <h3>Can the docs be expanded later?</h3>
         <p>Yes. That is the point of the structure. More modules, more examples, more pages, no drama.</p>
@@ -525,7 +525,7 @@ fn main() {
       <section id="credits">
         <h2>Credits</h2>
         <p>
-          NTL is a solo project by David Dev. The language, runtime direction, and the release workflow all reflect that hands-on style.
+          Lunex is a solo project by David Dev. The language, runtime direction, and the release workflow all reflect that hands-on style.
           The site should say it clearly and give credit where it belongs.
         </p>
         <div class="note">

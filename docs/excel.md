@@ -8,7 +8,7 @@ Read and write Excel/XLSX spreadsheet files with cell formatting and formula sup
 
 ## Import
 
-```ntl
+```lunex
 val excel = @import("std.excel")
 ```
 
@@ -21,7 +21,7 @@ val excel = @import("std.excel")
 Executes the `create` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn create()
 ```
 
@@ -30,7 +30,7 @@ fn create()
 Executes the `open` operation with the given parameter (path).
 
 **Signature:**
-```ntl
+```lunex
 fn open(path)
 ```
 
@@ -39,7 +39,7 @@ fn open(path)
 Executes the `columnName` operation with the given parameter (number).
 
 **Signature:**
-```ntl
+```lunex
 fn columnName(number)
 ```
 

@@ -8,7 +8,7 @@ Generic database abstractions and SQL utilities for database connectivity and qu
 
 ## Import
 
-```ntl
+```lunex
 val db = @import("std.db")
 ```
 
@@ -21,7 +21,7 @@ val db = @import("std.db")
 Executes the `create` operation with the given parameter (name).
 
 **Signature:**
-```ntl
+```lunex
 fn create(name)
 ```
 
@@ -30,7 +30,7 @@ fn create(name)
 Executes the `open` operation with the given parameter (name).
 
 **Signature:**
-```ntl
+```lunex
 fn open(name)
 ```
 
@@ -39,7 +39,7 @@ fn open(name)
 Executes the `connect` operation with the given parameter (name).
 
 **Signature:**
-```ntl
+```lunex
 fn connect(name)
 ```
 
@@ -48,7 +48,7 @@ fn connect(name)
 Executes the `table` operation with the given parameter (name).
 
 **Signature:**
-```ntl
+```lunex
 fn table(name)
 ```
 
@@ -57,7 +57,7 @@ fn table(name)
 Executes the `collection` operation with the given parameter (name).
 
 **Signature:**
-```ntl
+```lunex
 fn collection(name)
 ```
 
@@ -66,7 +66,7 @@ fn collection(name)
 Executes the `drop` operation with the given parameter (name).
 
 **Signature:**
-```ntl
+```lunex
 fn drop(name)
 ```
 
@@ -75,7 +75,7 @@ fn drop(name)
 Executes the `list` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn list()
 ```
 

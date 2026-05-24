@@ -8,7 +8,7 @@ RabbitMQ client for message publishing, consuming, and queue management.
 
 ## Import
 
-```ntl
+```lunex
 val rabbitmq = @import("std.rabbitmq")
 ```
 
@@ -21,7 +21,7 @@ val rabbitmq = @import("std.rabbitmq")
 Executes the `connect` operation with the given parameter (url).
 
 **Signature:**
-```ntl
+```lunex
 fn connect(url)
 ```
 

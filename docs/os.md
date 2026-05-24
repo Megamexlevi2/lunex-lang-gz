@@ -8,7 +8,7 @@ Operating system utilities including process management, signal handling, and en
 
 ## Import
 
-```ntl
+```lunex
 val os = @import("std.os")
 ```
 
@@ -21,7 +21,7 @@ val os = @import("std.os")
 Executes the `_exec` operation with the given parameters (command, options).
 
 **Signature:**
-```ntl
+```lunex
 fn _exec(command, options)
 ```
 
@@ -30,7 +30,7 @@ fn _exec(command, options)
 Executes the `_spawn` operation with the given parameters (command, options).
 
 **Signature:**
-```ntl
+```lunex
 fn _spawn(command, options)
 ```
 
@@ -39,7 +39,7 @@ fn _spawn(command, options)
 Executes the `_getenv` operation with the given parameter (key).
 
 **Signature:**
-```ntl
+```lunex
 fn _getenv(key)
 ```
 
@@ -48,7 +48,7 @@ fn _getenv(key)
 Executes the `_setenv` operation with the given parameters (key, value).
 
 **Signature:**
-```ntl
+```lunex
 fn _setenv(key, value)
 ```
 
@@ -57,7 +57,7 @@ fn _setenv(key, value)
 Executes the `_unsetenv` operation with the given parameter (key).
 
 **Signature:**
-```ntl
+```lunex
 fn _unsetenv(key)
 ```
 
@@ -66,7 +66,7 @@ fn _unsetenv(key)
 Executes the `_environ` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn _environ()
 ```
 
@@ -75,7 +75,7 @@ fn _environ()
 Executes the `_getpid` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn _getpid()
 ```
 
@@ -84,7 +84,7 @@ fn _getpid()
 Executes the `_getppid` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn _getppid()
 ```
 
@@ -93,7 +93,7 @@ fn _getppid()
 Executes the `_getcwd` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn _getcwd()
 ```
 
@@ -102,7 +102,7 @@ fn _getcwd()
 Executes the `_chdir` operation with the given parameter (path).
 
 **Signature:**
-```ntl
+```lunex
 fn _chdir(path)
 ```
 
@@ -111,7 +111,7 @@ fn _chdir(path)
 Executes the `_hostname` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn _hostname()
 ```
 
@@ -120,7 +120,7 @@ fn _hostname()
 Executes the `_platform` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn _platform()
 ```
 
@@ -129,7 +129,7 @@ fn _platform()
 Executes the `_arch` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn _arch()
 ```
 
@@ -138,7 +138,7 @@ fn _arch()
 Executes the `_cpus` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn _cpus()
 ```
 
@@ -147,7 +147,7 @@ fn _cpus()
 Executes the `_exit` operation with the given parameter (code).
 
 **Signature:**
-```ntl
+```lunex
 fn _exit(code)
 ```
 
@@ -156,7 +156,7 @@ fn _exit(code)
 Executes the `_args` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn _args()
 ```
 
@@ -165,7 +165,7 @@ fn _args()
 Executes the `_stat` operation with the given parameter (path).
 
 **Signature:**
-```ntl
+```lunex
 fn _stat(path)
 ```
 
@@ -174,7 +174,7 @@ fn _stat(path)
 Executes the `_exists` operation with the given parameter (path).
 
 **Signature:**
-```ntl
+```lunex
 fn _exists(path)
 ```
 
@@ -183,7 +183,7 @@ fn _exists(path)
 Executes the `_mkdir` operation with the given parameters (path, recursive).
 
 **Signature:**
-```ntl
+```lunex
 fn _mkdir(path, recursive)
 ```
 
@@ -192,7 +192,7 @@ fn _mkdir(path, recursive)
 Executes the `_remove` operation with the given parameters (path, recursive).
 
 **Signature:**
-```ntl
+```lunex
 fn _remove(path, recursive)
 ```
 
@@ -201,7 +201,7 @@ fn _remove(path, recursive)
 Executes the `_rename` operation with the given parameters (src, dst).
 
 **Signature:**
-```ntl
+```lunex
 fn _rename(src, dst)
 ```
 
@@ -210,7 +210,7 @@ fn _rename(src, dst)
 Executes the `_listDir` operation with the given parameter (path).
 
 **Signature:**
-```ntl
+```lunex
 fn _listDir(path)
 ```
 
@@ -219,7 +219,7 @@ fn _listDir(path)
 Executes the `_glob` operation with the given parameter (pattern).
 
 **Signature:**
-```ntl
+```lunex
 fn _glob(pattern)
 ```
 
@@ -228,7 +228,7 @@ fn _glob(pattern)
 Executes the `_tempDir` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn _tempDir()
 ```
 
@@ -237,7 +237,7 @@ fn _tempDir()
 Executes the `_tempFile` operation with the given parameter (prefix).
 
 **Signature:**
-```ntl
+```lunex
 fn _tempFile(prefix)
 ```
 
@@ -246,7 +246,7 @@ fn _tempFile(prefix)
 Executes the `_expandEnv` operation with the given parameter (str).
 
 **Signature:**
-```ntl
+```lunex
 fn _expandEnv(str)
 ```
 
@@ -255,7 +255,7 @@ fn _expandEnv(str)
 Executes the `_join` operation with the given parameter (...parts).
 
 **Signature:**
-```ntl
+```lunex
 fn _join(...parts)
 ```
 
@@ -264,7 +264,7 @@ fn _join(...parts)
 Executes the `_dirname` operation with the given parameter (path).
 
 **Signature:**
-```ntl
+```lunex
 fn _dirname(path)
 ```
 
@@ -273,7 +273,7 @@ fn _dirname(path)
 Executes the `_basename` operation with the given parameter (path).
 
 **Signature:**
-```ntl
+```lunex
 fn _basename(path)
 ```
 
@@ -282,7 +282,7 @@ fn _basename(path)
 Executes the `_extname` operation with the given parameter (path).
 
 **Signature:**
-```ntl
+```lunex
 fn _extname(path)
 ```
 
@@ -291,7 +291,7 @@ fn _extname(path)
 Executes the `_abs` operation with the given parameter (path).
 
 **Signature:**
-```ntl
+```lunex
 fn _abs(path)
 ```
 

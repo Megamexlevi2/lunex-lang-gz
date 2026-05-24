@@ -8,7 +8,7 @@ HTTP client for making requests to web services with support for headers, cookie
 
 ## Import
 
-```ntl
+```lunex
 val http = @import("std.http")
 ```
 
@@ -21,7 +21,7 @@ val http = @import("std.http")
 Executes the `createServer` operation with the given parameter (handler).
 
 **Signature:**
-```ntl
+```lunex
 fn createServer(handler)
 ```
 
@@ -30,7 +30,7 @@ fn createServer(handler)
 Executes the `listen` operation with the given parameters (server, port, host, callback).
 
 **Signature:**
-```ntl
+```lunex
 fn listen(server, port, host, callback)
 ```
 
@@ -39,7 +39,7 @@ fn listen(server, port, host, callback)
 Executes the `get` operation with the given parameters (url, options).
 
 **Signature:**
-```ntl
+```lunex
 fn get(url, options)
 ```
 
@@ -48,7 +48,7 @@ fn get(url, options)
 Executes the `post` operation with the given parameters (url, options).
 
 **Signature:**
-```ntl
+```lunex
 fn post(url, options)
 ```
 
@@ -57,7 +57,7 @@ fn post(url, options)
 Executes the `put` operation with the given parameters (url, options).
 
 **Signature:**
-```ntl
+```lunex
 fn put(url, options)
 ```
 
@@ -66,7 +66,7 @@ fn put(url, options)
 Executes the `patch` operation with the given parameters (url, options).
 
 **Signature:**
-```ntl
+```lunex
 fn patch(url, options)
 ```
 
@@ -75,7 +75,7 @@ fn patch(url, options)
 Executes the `del` operation with the given parameters (url, options).
 
 **Signature:**
-```ntl
+```lunex
 fn del(url, options)
 ```
 
@@ -84,7 +84,7 @@ fn del(url, options)
 Executes the `head` operation with the given parameters (url, options).
 
 **Signature:**
-```ntl
+```lunex
 fn head(url, options)
 ```
 
@@ -93,7 +93,7 @@ fn head(url, options)
 Executes the `json` operation with the given parameters (res, data, status).
 
 **Signature:**
-```ntl
+```lunex
 fn json(res, data, status)
 ```
 
@@ -102,7 +102,7 @@ fn json(res, data, status)
 Executes the `text` operation with the given parameters (res, data, status).
 
 **Signature:**
-```ntl
+```lunex
 fn text(res, data, status)
 ```
 
@@ -111,7 +111,7 @@ fn text(res, data, status)
 Executes the `redirect` operation with the given parameters (res, url, status).
 
 **Signature:**
-```ntl
+```lunex
 fn redirect(res, url, status)
 ```
 
@@ -120,7 +120,7 @@ fn redirect(res, url, status)
 Executes the `router` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn router()
 ```
 
@@ -129,7 +129,7 @@ fn router()
 Executes the `serve` operation with the given parameters (port, handler).
 
 **Signature:**
-```ntl
+```lunex
 fn serve(port, handler)
 ```
 

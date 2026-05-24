@@ -1,6 +1,6 @@
-# NTL — Language Reference
+# Lunex — Language Reference
 
-NTL is a fast, statically-scoped scripting language. It is NOT a copy of JavaScript.
+Lunex is a fast, statically-scoped scripting language. It is NOT a copy of JavaScript.
 
 Key differences:
 - No `return` — the last expression in a function is its result automatically.
@@ -11,21 +11,21 @@ Key differences:
 
 ## Quick Start
 
-```ntl
+```lunex
 val io = @import("std.io")
 
 fn main() {
-  io.log("Hello, NTL!")
+  io.log("Hello, Lunex!")
 }
 ```
 
-Run: `ntl hello.ntl` or `ntl run hello.ntl`
+Run: `lunex hello.lx` or `lunex run hello.lx`
 
 ## Variables
 
 ### `val` — immutable binding
 
-```ntl
+```lunex
 val name = "Alice"
 val count = 42
 val active = true
@@ -35,7 +35,7 @@ val user = { name: "Bob", age: 25 }
 
 ### `var` — mutable binding
 
-```ntl
+```lunex
 var x = 0
 x = x + 1
 x += 10
@@ -43,9 +43,9 @@ x += 10
 
 ## Types
 
-NTL is dynamically typed. Runtime types: `string`, `number`, `boolean`, `array`, `object`, `function`, `null`, `undefined`.
+Lunex is dynamically typed. Runtime types: `string`, `number`, `boolean`, `array`, `object`, `function`, `null`, `undefined`.
 
-```ntl
+```lunex
 typeof "hello"     // "string"
 typeof 42          // "number"
 typeof true        // "boolean"
@@ -56,7 +56,7 @@ typeof null        // "null"
 
 ## Operators
 
-```ntl
+```lunex
 +  -  *  /  %  **          arithmetic
 ==  !=  <  >  <=  >=       comparison
 ===  !==                   strict equality
@@ -70,7 +70,7 @@ and  or  not               logical
 
 ### if / else
 
-```ntl
+```lunex
 if x > 0 {
   io.log("positive")
 } else if x < 0 {
@@ -82,7 +82,7 @@ if x > 0 {
 
 ### unless
 
-```ntl
+```lunex
 unless x == 0 {
   io.log("not zero")
 }
@@ -90,7 +90,7 @@ unless x == 0 {
 
 ### while
 
-```ntl
+```lunex
 var i = 0
 while i < 10 {
   io.log(i)
@@ -100,7 +100,7 @@ while i < 10 {
 
 ### loop (infinite)
 
-```ntl
+```lunex
 loop {
   if done { break }
 }
@@ -108,7 +108,7 @@ loop {
 
 ### repeat
 
-```ntl
+```lunex
 repeat 5 {
   io.log("hello")
 }
@@ -116,7 +116,7 @@ repeat 5 {
 
 ### for / range
 
-```ntl
+```lunex
 each i in range(10) {
   io.log(i)
 }
@@ -128,7 +128,7 @@ each i in range(2, 20, 2) {
 
 ### each
 
-```ntl
+```lunex
 val items = ["a", "b", "c"]
 each item in items {
   io.log(item)
@@ -137,7 +137,7 @@ each item in items {
 
 ### break / continue
 
-```ntl
+```lunex
 while true {
   if done { break }
   if skip { continue }
@@ -146,7 +146,7 @@ while true {
 
 ### guard
 
-```ntl
+```lunex
 fn process(x) {
   guard x != null else { io.log("null input") }
   io.log(x)
@@ -155,7 +155,7 @@ fn process(x) {
 
 ### defer
 
-```ntl
+```lunex
 fn readFile(path) {
   val f = fs.open(path)
   defer f.close()
@@ -168,7 +168,7 @@ fn readFile(path) {
 The last expression in a function body is automatically its result.
 There is **no** `return` keyword.
 
-```ntl
+```lunex
 fn add(a, b) {
   a + b
 }
@@ -188,14 +188,14 @@ fn sum(...nums) {
 
 ### Arrow-style
 
-```ntl
+```lunex
 val square = fn(x) { x * x }
 val doubled = [1, 2, 3].map(fn(x) { x * 2 })
 ```
 
 ### Pipeline
 
-```ntl
+```lunex
 val result = [1, 2, 3]
   |> fn(arr) { arr.map(fn(x) { x * 2 }) }
   |> fn(arr) { arr.filter(fn(x) { x > 2 }) }
@@ -203,7 +203,7 @@ val result = [1, 2, 3]
 
 ## Objects
 
-```ntl
+```lunex
 val person = {
   name: "Alice",
   age: 30,
@@ -219,7 +219,7 @@ person.age = 31
 
 ## Arrays
 
-```ntl
+```lunex
 val arr = [1, 2, 3, 4, 5]
 
 arr.push(6)
@@ -242,9 +242,9 @@ arr.forEach(fn(x) { io.log(x) })
 
 ## Structs
 
-NTL has no `class` keyword. Use `struct { ... }` to create a named type with methods.
+Lunex has no `class` keyword. Use `struct { ... }` to create a named type with methods.
 
-```ntl
+```lunex
 val Animal = struct {
   fn new(name, sound) {
     { name: name, sound: sound }
@@ -270,7 +270,7 @@ Dog.learn(dog, "sit")
 
 ## Match
 
-```ntl
+```lunex
 fn describe(x) {
   match x {
     case null    => "nothing"
@@ -284,7 +284,7 @@ fn describe(x) {
 
 ## Error Handling
 
-```ntl
+```lunex
 try {
   val result = riskyOperation()
 } catch err {
@@ -298,7 +298,7 @@ throw "something went wrong"
 
 ### Safe call (returns null on error)
 
-```ntl
+```lunex
 val result = try? riskyOperation()
 ```
 
@@ -306,7 +306,7 @@ val result = try? riskyOperation()
 
 Use `@import("std.module")` to load any standard library module.
 
-```ntl
+```lunex
 val io       = @import("std.io")
 val fs       = @import("std.fs")
 val http     = @import("std.http")
@@ -337,12 +337,12 @@ use "./utils"    ← old syntax, causes an error
 | Removed  | Reason                      | Replacement                                 |
 |----------|-----------------------------|---------------------------------------------|
 | `return` | Not needed                  | Last expression is the function result      |
-| `class`  | No OO classes in NTL        | `val Name = struct { fn new() { ... } }`    |
+| `class`  | No OO classes in Lunex        | `val Name = struct { fn new() { ... } }`    |
 | `use`    | Replaced by `@import`       | `val mod = @import("std.module")`           |
 
 ## Concurrency
 
-```ntl
+```lunex
 spawn myFunction()
 
 val ch = channel()
@@ -356,14 +356,14 @@ val value = ch.recv()
 
 ## Destructuring
 
-```ntl
+```lunex
 val { name, age } = person
 val [first, second, ...rest] = items
 ```
 
 ## Spread
 
-```ntl
+```lunex
 val merged = { ...obj1, ...obj2 }
 val combined = [...arr1, ...arr2]
 fn call(fn, ...args) { fn(...args) }
@@ -371,14 +371,14 @@ fn call(fn, ...args) { fn(...args) }
 
 ## Template Strings
 
-```ntl
+```lunex
 val msg = `Hello, ${name}! You are ${age} years old.`
 val math = `Result: ${2 + 2}`
 ```
 
 ## Optional Chaining & Nullish
 
-```ntl
+```lunex
 val value = maybeNull ?? "default"
 val name = user?.profile?.name ?? "anonymous"
 val len = arr?.length ?? 0
@@ -386,7 +386,7 @@ val len = arr?.length ?? 0
 
 ## String Operations
 
-```ntl
+```lunex
 val s = "Hello, World!"
 s.length
 s.toUpperCase()
@@ -404,7 +404,7 @@ s.repeat(3)
 
 ## Math
 
-```ntl
+```lunex
 Math.abs(-5)
 Math.ceil(4.1)
 Math.floor(4.9)
@@ -419,7 +419,7 @@ Math.PI
 
 ## JSON
 
-```ntl
+```lunex
 val json = JSON.stringify({ name: "Alice" })
 val obj = JSON.parse('{"name":"Alice"}')
 val pretty = JSON.stringify(obj, null, 2)

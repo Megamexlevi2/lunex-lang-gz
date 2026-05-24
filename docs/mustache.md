@@ -8,7 +8,7 @@ Mustache template engine for string interpolation and template rendering.
 
 ## Import
 
-```ntl
+```lunex
 val mustache = @import("std.mustache")
 ```
 
@@ -21,7 +21,7 @@ val mustache = @import("std.mustache")
 Executes the `render` operation with the given parameters (template, data).
 
 **Signature:**
-```ntl
+```lunex
 fn render(template, data)
 ```
 
@@ -30,7 +30,7 @@ fn render(template, data)
 Executes the `renderFile` operation with the given parameters (path, data).
 
 **Signature:**
-```ntl
+```lunex
 fn renderFile(path, data)
 ```
 
@@ -39,7 +39,7 @@ fn renderFile(path, data)
 Executes the `parse` operation with the given parameter (template).
 
 **Signature:**
-```ntl
+```lunex
 fn parse(template)
 ```
 

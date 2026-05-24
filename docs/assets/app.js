@@ -41,7 +41,7 @@
   const count = document.getElementById('playground-count');
   if(editor && output && count){
     const samples = {
-      hello: `val io = @import("std.io")\n\nfn main() {\n  io.log("Hello from NTL")\n}`,
+      hello: `val io = @import("std.io")\n\nfn main() {\n  io.log("Hello from Lunex")\n}`,
       control: `val io = @import("std.io")\n\nfn main() {\n  var i = 0\n  while i < 5 {\n    io.log("tick", i)\n    i += 1\n  }\n}`,
       module: `val io = @import("std.io")\n\nfn greet(name) {\n  "Hello, " + name + "!"\n}\n\nfn main() {\n  io.log(greet("David"))\n}`
     };
@@ -49,9 +49,9 @@
     function sync(){
       output.textContent = editor.value;
       count.textContent = editor.value.length + ' chars';
-      localStorage.setItem('ntl-playground', editor.value);
+      localStorage.setItem('lunex-playground', editor.value);
     }
-    const saved = localStorage.getItem('ntl-playground');
+    const saved = localStorage.getItem('lunex-playground');
     if(saved) editor.value = saved;
     sync();
 

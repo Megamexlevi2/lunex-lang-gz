@@ -8,7 +8,7 @@ Environment variable management with support for loading from .env files and acc
 
 ## Import
 
-```ntl
+```lunex
 val env = @import("std.env")
 ```
 
@@ -21,7 +21,7 @@ val env = @import("std.env")
 Executes the `get` operation with the given parameters (key, fallback).
 
 **Signature:**
-```ntl
+```lunex
 fn get(key, fallback)
 ```
 
@@ -30,7 +30,7 @@ fn get(key, fallback)
 Executes the `set` operation with the given parameters (key, value).
 
 **Signature:**
-```ntl
+```lunex
 fn set(key, value)
 ```
 
@@ -39,7 +39,7 @@ fn set(key, value)
 Executes the `has` operation with the given parameter (key).
 
 **Signature:**
-```ntl
+```lunex
 fn has(key)
 ```
 
@@ -48,7 +48,7 @@ fn has(key)
 Executes the `all` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn all()
 ```
 
@@ -57,7 +57,7 @@ fn all()
 Executes the `load` operation with the given parameter (path).
 
 **Signature:**
-```ntl
+```lunex
 fn load(path)
 ```
 
@@ -66,7 +66,7 @@ fn load(path)
 Executes the `mustGet` operation with the given parameter (key).
 
 **Signature:**
-```ntl
+```lunex
 fn mustGet(key)
 ```
 
@@ -75,7 +75,7 @@ fn mustGet(key)
 Executes the `getNumber` operation with the given parameters (key, fallback).
 
 **Signature:**
-```ntl
+```lunex
 fn getNumber(key, fallback)
 ```
 
@@ -84,7 +84,7 @@ fn getNumber(key, fallback)
 Executes the `getBool` operation with the given parameters (key, fallback).
 
 **Signature:**
-```ntl
+```lunex
 fn getBool(key, fallback)
 ```
 

@@ -8,7 +8,7 @@ OAuth 2.0 authentication flows including authorization code, client credentials,
 
 ## Import
 
-```ntl
+```lunex
 val oauth2 = @import("std.oauth2")
 ```
 
@@ -21,7 +21,7 @@ val oauth2 = @import("std.oauth2")
 Executes the `create` operation with the given parameter (options).
 
 **Signature:**
-```ntl
+```lunex
 fn create(options)
 ```
 
@@ -30,7 +30,7 @@ fn create(options)
 Executes the `google` operation with the given parameter (options).
 
 **Signature:**
-```ntl
+```lunex
 fn google(options)
 ```
 
@@ -39,7 +39,7 @@ fn google(options)
 Executes the `github` operation with the given parameter (options).
 
 **Signature:**
-```ntl
+```lunex
 fn github(options)
 ```
 

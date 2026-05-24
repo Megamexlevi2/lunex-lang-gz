@@ -1,6 +1,6 @@
 val crypto = @import("std.crypto")
 val io = @import("std.io")
-io.log(io.bold("=== NTL Crypto Demo ===\n"))
+io.log(io.bold("=== Lunex Crypto Demo ===\n"))
 
 io.log("SHA-256:", crypto.sha256("hello world"))
 io.log("MD5:    ", crypto.md5("hello world"))
@@ -33,5 +33,5 @@ io.log("Wrong: ", crypto.verifyPassword("wrongpass", hash) ? io.red("yes") : io.
 io.log("\n" + io.bold("Random Values:"))
 io.log("UUID:        ", crypto.randomUUID())
 io.log("Token (32):  ", crypto.token(32))
-io.log("Base64:      ", crypto.base64Encode("Hello, NTL!"))
-io.log("Decoded:     ", crypto.base64Decode(crypto.base64Encode("Hello, NTL!")))
+io.log("Base64:      ", crypto.base64Encode("Hello, Lunex!"))
+io.log("Decoded:     ", crypto.base64Decode(crypto.base64Encode("Hello, Lunex!")))

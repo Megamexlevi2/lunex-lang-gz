@@ -8,7 +8,7 @@ PostgreSQL database client with connection pooling and advanced query features.
 
 ## Import
 
-```ntl
+```lunex
 val postgres = @import("std.postgres")
 ```
 
@@ -21,7 +21,7 @@ val postgres = @import("std.postgres")
 Executes the `connect` operation with the given parameter (dsn).
 
 **Signature:**
-```ntl
+```lunex
 fn connect(dsn)
 ```
 

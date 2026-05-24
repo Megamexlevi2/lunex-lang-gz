@@ -32,7 +32,7 @@ val os = @import("std.os")
 
   io.log("")
   io.log("=== Paths ===")
-  val p = os.join(os.homeDir, "projects", "myapp", "main.ntl")
+  val p = os.join(os.homeDir, "projects", "myapp", "main.lx")
   io.log("join:    ", p)
   io.log("dirname: ", os.dirname(p))
   io.log("basename:", os.basename(p))
@@ -58,7 +58,7 @@ val os = @import("std.os")
 
   io.log("")
   io.log("=== tempFile ===")
-  val tmp = os.tempFile("ntl-test-")
+  val tmp = os.tempFile("lunex-test-")
   io.log("temp file:", tmp)
   os.remove(tmp)
 

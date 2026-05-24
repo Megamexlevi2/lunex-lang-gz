@@ -8,7 +8,7 @@ GraphQL client for querying GraphQL APIs with support for queries, mutations, an
 
 ## Import
 
-```ntl
+```lunex
 val graphql = @import("std.graphql")
 ```
 
@@ -21,7 +21,7 @@ val graphql = @import("std.graphql")
 Executes the `buildSchema` operation with the given parameter (options).
 
 **Signature:**
-```ntl
+```lunex
 fn buildSchema(options)
 ```
 
@@ -30,7 +30,7 @@ fn buildSchema(options)
 Executes the `execute` operation with the given parameters (schema, query, variables).
 
 **Signature:**
-```ntl
+```lunex
 fn execute(schema, query, variables)
 ```
 

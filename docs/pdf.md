@@ -8,7 +8,7 @@ PDF generation and manipulation utilities.
 
 ## Import
 
-```ntl
+```lunex
 val pdf = @import("std.pdf")
 ```
 
@@ -21,7 +21,7 @@ val pdf = @import("std.pdf")
 Executes the `create` operation with the given parameter (options).
 
 **Signature:**
-```ntl
+```lunex
 fn create(options)
 ```
 

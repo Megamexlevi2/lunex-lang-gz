@@ -8,7 +8,7 @@ XML parsing and generation utilities.
 
 ## Import
 
-```ntl
+```lunex
 val xml = @import("std.xml")
 ```
 
@@ -21,7 +21,7 @@ val xml = @import("std.xml")
 Executes the `parse` operation with the given parameter (data).
 
 **Signature:**
-```ntl
+```lunex
 fn parse(data)
 ```
 
@@ -30,7 +30,7 @@ fn parse(data)
 Executes the `stringify` operation with the given parameters (obj, root, options).
 
 **Signature:**
-```ntl
+```lunex
 fn stringify(obj, root, options)
 ```
 
@@ -39,7 +39,7 @@ fn stringify(obj, root, options)
 Executes the `validate` operation with the given parameter (data).
 
 **Signature:**
-```ntl
+```lunex
 fn validate(data)
 ```
 
@@ -48,7 +48,7 @@ fn validate(data)
 Executes the `query` operation with the given parameters (data, xpath).
 
 **Signature:**
-```ntl
+```lunex
 fn query(data, xpath)
 ```
 
@@ -57,7 +57,7 @@ fn query(data, xpath)
 Executes the `getAttribute` operation with the given parameters (element, name).
 
 **Signature:**
-```ntl
+```lunex
 fn getAttribute(element, name)
 ```
 
@@ -66,7 +66,7 @@ fn getAttribute(element, name)
 Executes the `getText` operation with the given parameter (element).
 
 **Signature:**
-```ntl
+```lunex
 fn getText(element)
 ```
 
@@ -75,7 +75,7 @@ fn getText(element)
 Executes the `readFile` operation with the given parameter (filePath).
 
 **Signature:**
-```ntl
+```lunex
 fn readFile(filePath)
 ```
 
@@ -84,7 +84,7 @@ fn readFile(filePath)
 Executes the `writeFile` operation with the given parameters (filePath, obj, root, options).
 
 **Signature:**
-```ntl
+```lunex
 fn writeFile(filePath, obj, root, options)
 ```
 
@@ -93,7 +93,7 @@ fn writeFile(filePath, obj, root, options)
 Executes the `fromJSON` operation with the given parameters (obj, root).
 
 **Signature:**
-```ntl
+```lunex
 fn fromJSON(obj, root)
 ```
 
@@ -102,7 +102,7 @@ fn fromJSON(obj, root)
 Executes the `toJSON` operation with the given parameter (data).
 
 **Signature:**
-```ntl
+```lunex
 fn toJSON(data)
 ```
 

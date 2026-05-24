@@ -1,0 +1,14 @@
+{
+  "name": "Lunex Lang",
+  "version": "0.4.0",
+  "author": "David Dev",
+  "github": "https://github.com/Megamexlevi2",
+  "repository": "https://github.com/Megamexlevi2/lunex-lang-gz",
+  "license": "Apache-2.0",
+  "year": "2026",
+  "buildDate": "2026-05-20",
+  "description": "Lunex is a fast, statically-scoped scripting language with a Go frontend and Zig backend.",
+  "languages": ["Lunex", "Go", "Zig", "C++"],
+  "minGo": "1.23",
+  "minZig": "0.17.0"
+}

@@ -8,7 +8,7 @@ In-memory caching with configurable TTL (Time To Live) for storing and retrievin
 
 ## Import
 
-```ntl
+```lunex
 val cache = @import("std.cache")
 ```
 
@@ -21,7 +21,7 @@ val cache = @import("std.cache")
 Creates a new cache instance with optional max size and TTL (in milliseconds).
 
 **Signature:**
-```ntl
+```lunex
 fn create(maxSize, ttl)
 ```
 
@@ -30,7 +30,7 @@ fn create(maxSize, ttl)
 Stores a value by key. Evicts the oldest entry if the cache is full.
 
 **Signature:**
-```ntl
+```lunex
 fn set(key, value)
 ```
 
@@ -39,7 +39,7 @@ fn set(key, value)
 Retrieves a value by key. Returns `null` if not found or expired.
 
 **Signature:**
-```ntl
+```lunex
 fn get(key)
 ```
 
@@ -48,7 +48,7 @@ fn get(key)
 Returns `true` if the key exists and has not expired.
 
 **Signature:**
-```ntl
+```lunex
 fn has(key)
 ```
 
@@ -57,7 +57,7 @@ fn has(key)
 Removes a key from the cache.
 
 **Signature:**
-```ntl
+```lunex
 fn del(key)
 ```
 
@@ -66,7 +66,7 @@ fn del(key)
 Removes all entries from the cache.
 
 **Signature:**
-```ntl
+```lunex
 fn clear()
 ```
 
@@ -75,7 +75,7 @@ fn clear()
 Returns the number of active (non-expired) entries.
 
 **Signature:**
-```ntl
+```lunex
 fn size()
 ```
 
@@ -84,7 +84,7 @@ fn size()
 Returns an array of all active keys.
 
 **Signature:**
-```ntl
+```lunex
 fn keys()
 ```
 
@@ -93,7 +93,7 @@ fn keys()
 Returns cache statistics: `{ hits, misses, size, hitRate }`.
 
 **Signature:**
-```ntl
+```lunex
 fn stats()
 ```
 
@@ -101,7 +101,7 @@ fn stats()
 
 ## Example
 
-```ntl
+```lunex
 val cache = @import("std.cache")
 
 val c = cache.create(500, 60000)  // max 500 entries, 60s TTL

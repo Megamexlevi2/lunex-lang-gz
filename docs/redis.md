@@ -8,7 +8,7 @@ Redis client for caching, data structures, and pub/sub operations.
 
 ## Import
 
-```ntl
+```lunex
 val redis = @import("std.redis")
 ```
 
@@ -21,7 +21,7 @@ val redis = @import("std.redis")
 Executes the `connect` operation with the given parameter (options).
 
 **Signature:**
-```ntl
+```lunex
 fn connect(options)
 ```
 

@@ -1,12 +1,12 @@
 #!/usr/bin/env sh
 set -eu
 
-REPO="https://github.com/Megamexlevi2/ntl-lang-gz/releases/latest/download"
+REPO="https://github.com/Megamexlevi2/lunex-lang-gz/releases/latest/download"
 
 while :; do
   clear 2>/dev/null || true
 
-  printf '%s\n' "NTL Installer"
+  printf '%s\n' "Lunex Installer"
   printf '\n'
   printf '%s\n' "1) Linux amd64"
   printf '%s\n' "2) Linux arm64"
@@ -21,27 +21,27 @@ while :; do
 
   case "$choice" in
     1)
-      asset="ntl-linux-amd64"
-      target="${HOME}/.local/bin/ntl"
+      asset="lunex-linux-amd64"
+      target="${HOME}/.local/bin/lunex"
       ;;
     2)
-      asset="ntl-linux-arm64"
-      target="${HOME}/.local/bin/ntl"
+      asset="lunex-linux-arm64"
+      target="${HOME}/.local/bin/lunex"
       ;;
     3)
-      asset="ntl-darwin-amd64"
-      target="${HOME}/.local/bin/ntl"
+      asset="lunex-darwin-amd64"
+      target="${HOME}/.local/bin/lunex"
       ;;
     4)
-      asset="ntl-darwin-arm64"
-      target="${HOME}/.local/bin/ntl"
+      asset="lunex-darwin-arm64"
+      target="${HOME}/.local/bin/lunex"
       ;;
     5)
-      asset="ntl-android-arm64"
+      asset="lunex-android-arm64"
       if [ -n "${PREFIX:-}" ]; then
-        target="${PREFIX}/bin/ntl"
+        target="${PREFIX}/bin/lunex"
       else
-        target="${HOME}/.local/bin/ntl"
+        target="${HOME}/.local/bin/lunex"
       fi
       ;;
     0)
@@ -54,7 +54,7 @@ while :; do
       ;;
   esac
 
-  tmp="$(mktemp 2>/dev/null || printf '%s\n' "/tmp/ntl-install.$$")"
+  tmp="$(mktemp 2>/dev/null || printf '%s\n' "/tmp/lunex-install.$$")"
   url="${REPO}/${asset}"
 
   if command -v curl >/dev/null 2>&1; then
@@ -74,6 +74,6 @@ while :; do
   printf '\n%s\n' "Installed successfully:"
   printf '%s\n' "$target"
   printf '\n%s\n' "Run:"
-  printf '%s\n' "ntl help"
+  printf '%s\n' "lunex help"
   break
 done

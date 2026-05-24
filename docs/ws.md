@@ -8,7 +8,7 @@ WebSocket client and server for real-time bidirectional communication.
 
 ## Import
 
-```ntl
+```lunex
 val ws = @import("std.ws")
 ```
 
@@ -21,7 +21,7 @@ val ws = @import("std.ws")
 Executes the `createServer` operation with the given parameters (port, options).
 
 **Signature:**
-```ntl
+```lunex
 fn createServer(port, options)
 ```
 
@@ -30,7 +30,7 @@ fn createServer(port, options)
 Executes the `on` operation with the given parameters (event, handler).
 
 **Signature:**
-```ntl
+```lunex
 fn on(event, handler)
 ```
 
@@ -39,7 +39,7 @@ fn on(event, handler)
 Executes the `send` operation with the given parameters (client, message).
 
 **Signature:**
-```ntl
+```lunex
 fn send(client, message)
 ```
 
@@ -48,7 +48,7 @@ fn send(client, message)
 Executes the `broadcast` operation with the given parameter (message).
 
 **Signature:**
-```ntl
+```lunex
 fn broadcast(message)
 ```
 
@@ -57,7 +57,7 @@ fn broadcast(message)
 Executes the `start` operation with the given parameter (callback).
 
 **Signature:**
-```ntl
+```lunex
 fn start(callback)
 ```
 
@@ -66,7 +66,7 @@ fn start(callback)
 Executes the `clientCount` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn clientCount()
 ```
 
@@ -75,7 +75,7 @@ fn clientCount()
 Executes the `stop` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn stop()
 ```
 
@@ -84,7 +84,7 @@ fn stop()
 Executes the `createClient` operation with the given parameter (url).
 
 **Signature:**
-```ntl
+```lunex
 fn createClient(url)
 ```
 
@@ -93,7 +93,7 @@ fn createClient(url)
 Executes the `on` operation with the given parameters (event, handler).
 
 **Signature:**
-```ntl
+```lunex
 fn on(event, handler)
 ```
 
@@ -102,7 +102,7 @@ fn on(event, handler)
 Executes the `connect` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn connect()
 ```
 
@@ -111,7 +111,7 @@ fn connect()
 Executes the `send` operation with the given parameter (message).
 
 **Signature:**
-```ntl
+```lunex
 fn send(message)
 ```
 
@@ -120,7 +120,7 @@ fn send(message)
 Executes the `close` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn close()
 ```
 

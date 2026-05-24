@@ -1,4 +1,4 @@
-// NTL 0.4.0 — structs replace classes
+// Lunex 0.4.0 — structs replace classes
 val io = @import("std.io")
 
 fn Shape(color) {

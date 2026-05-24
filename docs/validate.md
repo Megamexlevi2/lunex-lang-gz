@@ -8,7 +8,7 @@ Data validation schemas and validators for input validation.
 
 ## Import
 
-```ntl
+```lunex
 val validate = @import("std.validate")
 ```
 
@@ -21,7 +21,7 @@ val validate = @import("std.validate")
 Executes the `isString` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn isString(v)
 ```
 
@@ -30,7 +30,7 @@ fn isString(v)
 Executes the `isNumber` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn isNumber(v)
 ```
 
@@ -39,7 +39,7 @@ fn isNumber(v)
 Executes the `isBoolean` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn isBoolean(v)
 ```
 
@@ -48,7 +48,7 @@ fn isBoolean(v)
 Executes the `isArray` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn isArray(v)
 ```
 
@@ -57,7 +57,7 @@ fn isArray(v)
 Executes the `isObject` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn isObject(v)
 ```
 
@@ -66,7 +66,7 @@ fn isObject(v)
 Executes the `isNull` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn isNull(v)
 ```
 
@@ -75,7 +75,7 @@ fn isNull(v)
 Executes the `isDefined` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn isDefined(v)
 ```
 
@@ -84,7 +84,7 @@ fn isDefined(v)
 Executes the `isEmail` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn isEmail(v)
 ```
 
@@ -93,7 +93,7 @@ fn isEmail(v)
 Executes the `isUrl` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn isUrl(v)
 ```
 
@@ -102,7 +102,7 @@ fn isUrl(v)
 Executes the `isPhone` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn isPhone(v)
 ```
 
@@ -111,7 +111,7 @@ fn isPhone(v)
 Executes the `isUUID` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn isUUID(v)
 ```
 
@@ -120,7 +120,7 @@ fn isUUID(v)
 Executes the `isIPv4` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn isIPv4(v)
 ```
 
@@ -129,7 +129,7 @@ fn isIPv4(v)
 Executes the `isIPv6` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn isIPv6(v)
 ```
 
@@ -138,7 +138,7 @@ fn isIPv6(v)
 Executes the `isIP` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn isIP(v)
 ```
 
@@ -147,7 +147,7 @@ fn isIP(v)
 Executes the `isAlpha` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn isAlpha(v)
 ```
 
@@ -156,7 +156,7 @@ fn isAlpha(v)
 Executes the `isAlphanumeric` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn isAlphanumeric(v)
 ```
 
@@ -165,7 +165,7 @@ fn isAlphanumeric(v)
 Executes the `isNumeric` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn isNumeric(v)
 ```
 
@@ -174,7 +174,7 @@ fn isNumeric(v)
 Executes the `isHex` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn isHex(v)
 ```
 
@@ -183,7 +183,7 @@ fn isHex(v)
 Executes the `isBase64` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn isBase64(v)
 ```
 
@@ -192,7 +192,7 @@ fn isBase64(v)
 Executes the `isJSON` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn isJSON(v)
 ```
 
@@ -201,7 +201,7 @@ fn isJSON(v)
 Executes the `isCreditCard` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn isCreditCard(v)
 ```
 
@@ -210,7 +210,7 @@ fn isCreditCard(v)
 Executes the `isSlug` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn isSlug(v)
 ```
 
@@ -219,7 +219,7 @@ fn isSlug(v)
 Executes the `isDate` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn isDate(v)
 ```
 
@@ -228,7 +228,7 @@ fn isDate(v)
 Executes the `isStrongPassword` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn isStrongPassword(v)
 ```
 
@@ -237,7 +237,7 @@ fn isStrongPassword(v)
 Executes the `test` operation with the given parameters (v, pattern).
 
 **Signature:**
-```ntl
+```lunex
 fn test(v, pattern)
 ```
 
@@ -246,7 +246,7 @@ fn test(v, pattern)
 Executes the `schema` operation with the given parameter (definition).
 
 **Signature:**
-```ntl
+```lunex
 fn schema(definition)
 ```
 
@@ -255,7 +255,7 @@ fn schema(definition)
 Executes the `validate` operation with the given parameters (data, rules).
 
 **Signature:**
-```ntl
+```lunex
 fn validate(data, rules)
 ```
 
@@ -264,7 +264,7 @@ fn validate(data, rules)
 Executes the `required` operation with the given parameter (v).
 
 **Signature:**
-```ntl
+```lunex
 fn required(v)
 ```
 
@@ -273,7 +273,7 @@ fn required(v)
 Executes the `minLength` operation with the given parameters (v, n).
 
 **Signature:**
-```ntl
+```lunex
 fn minLength(v, n)
 ```
 
@@ -282,7 +282,7 @@ fn minLength(v, n)
 Executes the `maxLength` operation with the given parameters (v, n).
 
 **Signature:**
-```ntl
+```lunex
 fn maxLength(v, n)
 ```
 
@@ -291,7 +291,7 @@ fn maxLength(v, n)
 Executes the `inRange` operation with the given parameters (n, lo, hi).
 
 **Signature:**
-```ntl
+```lunex
 fn inRange(n, lo, hi)
 ```
 

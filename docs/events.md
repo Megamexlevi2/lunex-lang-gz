@@ -8,7 +8,7 @@ Event-driven programming with publish-subscribe and event emitter patterns.
 
 ## Import
 
-```ntl
+```lunex
 val events = @import("std.events")
 ```
 
@@ -21,7 +21,7 @@ val events = @import("std.events")
 Executes the `create` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn create()
 ```
 
@@ -30,7 +30,7 @@ fn create()
 Executes the `on` operation with the given parameters (event, listener).
 
 **Signature:**
-```ntl
+```lunex
 fn on(event, listener)
 ```
 
@@ -39,7 +39,7 @@ fn on(event, listener)
 Executes the `off` operation with the given parameters (event, listener).
 
 **Signature:**
-```ntl
+```lunex
 fn off(event, listener)
 ```
 
@@ -48,7 +48,7 @@ fn off(event, listener)
 Executes the `emit` operation with the given parameters (event, ...args).
 
 **Signature:**
-```ntl
+```lunex
 fn emit(event, ...args)
 ```
 
@@ -57,7 +57,7 @@ fn emit(event, ...args)
 Executes the `once` operation with the given parameters (event, listener).
 
 **Signature:**
-```ntl
+```lunex
 fn once(event, listener)
 ```
 
@@ -66,7 +66,7 @@ fn once(event, listener)
 Executes the `count` operation with the given parameter (event).
 
 **Signature:**
-```ntl
+```lunex
 fn count(event)
 ```
 
@@ -75,7 +75,7 @@ fn count(event)
 Executes the `names` operation with the given no arguments.
 
 **Signature:**
-```ntl
+```lunex
 fn names()
 ```
 

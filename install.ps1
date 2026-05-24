@@ -1,10 +1,10 @@
-$repo = "https://github.com/Megamexlevi2/ntl-lang-gz/releases/latest/download"
-$asset = "ntl-windows-amd64.exe"
-$target = Join-Path $env:LOCALAPPDATA "Programs\ntl\ntl.exe"
+$repo = "https://github.com/Megamexlevi2/lunex-lang-gz/releases/latest/download"
+$asset = "lunex-windows-amd64.exe"
+$target = Join-Path $env:LOCALAPPDATA "Programs\lunex\lunex.exe"
 
 while ($true) {
     Clear-Host
-    Write-Host "NTL Installer"
+    Write-Host "Lunex Installer"
     Write-Host ""
     Write-Host "Windows"
     Write-Host ""
@@ -53,6 +53,6 @@ while ($true) {
 
     Write-Host ""
     Write-Host "Installed: $target"
-    Write-Host "Run: ntl help"
+    Write-Host "Run: lunex help"
     break
 }

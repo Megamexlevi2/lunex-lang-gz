@@ -8,7 +8,7 @@ Stripe payment processing API client for handling payments and subscriptions.
 
 ## Import
 
-```ntl
+```lunex
 val stripe = @import("std.stripe")
 ```
 
@@ -21,7 +21,7 @@ val stripe = @import("std.stripe")
 Executes the `init` operation with the given parameter (apiKey).
 
 **Signature:**
-```ntl
+```lunex
 fn init(apiKey)
 ```
 
