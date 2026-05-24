@@ -1,0 +1,30 @@
+val native = @import("internal.native")
+val zip = native.zip
+
+fn create(output_path, files) {
+    zip.create(output_path, files)
+}
+
+fn extract(zip_path, dest_dir) {
+    zip.extract(zip_path, dest_dir)
+}
+
+fn list(zip_path) {
+    zip.list(zip_path)
+}
+
+fn read(zip_path, entry_name) {
+    zip.read(zip_path, entry_name)
+}
+
+fn addFile(zip_path, file_path, entry_name) {
+    zip.addFile(zip_path, file_path, entry_name)
+}
+
+fn packDir(src_dir, output_path) {
+    zip.packDir(src_dir, output_path)
+}
+
+fn fromBytes(raw) {
+    zip.fromBytes(raw)
+}

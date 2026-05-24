@@ -1,12 +1,12 @@
 # Input/Output Module
 
-Input/output operations including console logging, reading user input, and text formatting utilities.
+The Input/Output module provides functions for console logging, user input, and terminal text formatting.
 
-**Use case:** Log output, format console text, and read user input.
+**Use case:** print messages, format console output, and read user input.
 
 ---
 
-## Import
+# Import
 
 ```lunex
 val io = @import("std.io")
@@ -14,194 +14,337 @@ val io = @import("std.io")
 
 ---
 
-## Available Functions
+# Available Functions
 
-### `log(...args)`
+## log(...args)
 
-Executes the `log` operation with the given parameter (...args).
+Prints values to the console.
 
-**Signature:**
+### Example
+
 ```lunex
-fn log(...args)
+val io = @import("std.io")
+
+fn main() {
+  io.log("Hello, world!")
+}
 ```
 
-### `error(...args)`
+---
 
-Executes the `error` operation with the given parameter (...args).
+## error(...args)
 
-**Signature:**
+Prints an error message.
+
+### Example
+
 ```lunex
-fn error(...args)
+val io = @import("std.io")
+
+fn main() {
+  io.error("Something went wrong!")
+}
 ```
 
-### `warn(...args)`
+---
 
-Executes the `warn` operation with the given parameter (...args).
+## warn(...args)
 
-**Signature:**
+Prints a warning message.
+
+### Example
+
 ```lunex
-fn warn(...args)
+val io = @import("std.io")
+
+fn main() {
+  io.warn("Warning message!")
+}
 ```
 
-### `success(...args)`
+---
 
-Executes the `success` operation with the given parameter (...args).
+## success(...args)
 
-**Signature:**
+Prints a success message.
+
+### Example
+
 ```lunex
-fn success(...args)
+val io = @import("std.io")
+
+fn main() {
+  io.success("Operation completed!")
+}
 ```
 
-### `info(...args)`
+---
 
-Executes the `info` operation with the given parameter (...args).
+## info(...args)
 
-**Signature:**
+Prints an informational message.
+
+### Example
+
 ```lunex
-fn info(...args)
+val io = @import("std.io")
+
+fn main() {
+  io.info("Information message")
+}
 ```
 
-### `table(data, columns)`
+---
 
-Executes the `table` operation with the given parameters (data, columns).
+## table(data, columns)
 
-**Signature:**
+Displays a table.
+
+### Example
+
 ```lunex
-fn table(data, columns)
+val io = @import("std.io")
+
+fn main() {
+  val users = [
+    { name: "David", age: 18 },
+    { name: "Lucas", age: 20 }
+  ]
+
+  io.table(users, ["name", "age"])
+}
 ```
 
-### `progress(current, total, label)`
+---
 
-Executes the `progress` operation with the given parameters (current, total, label).
+## progress(current, total, label)
 
-**Signature:**
+Displays a progress bar.
+
+### Example
+
 ```lunex
-fn progress(current, total, label)
+val io = @import("std.io")
+
+fn main() {
+  io.progress(50, 100, "Loading")
+}
 ```
 
-### `spinner(message)`
+---
 
-Executes the `spinner` operation with the given parameter (message).
+## spinner(message)
 
-**Signature:**
+Displays a loading spinner.
+
+### Example
+
 ```lunex
-fn spinner(message)
+val io = @import("std.io")
+
+fn main() {
+  io.spinner("Loading...")
+}
 ```
 
-### `banner(text, color)`
+---
 
-Executes the `banner` operation with the given parameters (text, color).
+## banner(text, color)
 
-**Signature:**
+Displays a banner.
+
+### Example
+
 ```lunex
-fn banner(text, color)
+val io = @import("std.io")
+
+fn main() {
+  io.banner("Lunex Lang", "cyan")
+}
 ```
 
-### `hr(char, length)`
+---
 
-Executes the `hr` operation with the given parameters (char, length).
+## hr(char, length)
 
-**Signature:**
+Displays a horizontal line.
+
+### Example
+
 ```lunex
-fn hr(char, length)
+val io = @import("std.io")
+
+fn main() {
+  io.hr("-", 30)
+}
 ```
 
-### `readLine(prompt)`
+---
 
-Executes the `readLine` operation with the given parameter (prompt).
+## readLine(prompt)
 
-**Signature:**
+Reads text input from the user.
+
+### Example
+
 ```lunex
-fn readLine(prompt)
+val io = @import("std.io")
+
+fn main() {
+  val name = io.readLine("Your name: ")
+
+  io.log("Hello " + name)
+}
 ```
 
-### `readInt(prompt)`
+---
 
-Executes the `readInt` operation with the given parameter (prompt).
+## readInt(prompt)
 
-**Signature:**
+Reads an integer from the user.
+
+### Example
+
 ```lunex
-fn readInt(prompt)
+val io = @import("std.io")
+
+fn main() {
+  val age = io.readInt("Your age: ")
+
+  io.log(age)
+}
 ```
 
-### `clear()`
+---
 
-Executes the `clear` operation with the given no arguments.
+## clear()
 
-**Signature:**
+Clears the console.
+
+### Example
+
 ```lunex
-fn clear()
+val io = @import("std.io")
+
+fn main() {
+  io.clear()
+}
 ```
 
-### `red(text)`
+---
 
-Executes the `red` operation with the given parameter (text).
+# Color Helpers
 
-**Signature:**
+Color helpers should be used inside `io.log()`.
+
+---
+
+## red(text)
+
+### Example
+
 ```lunex
-fn red(text)
+val io = @import("std.io")
+
+fn main() {
+  io.log(io.red("Red text"))
+}
 ```
 
-### `green(text)`
+---
 
-Executes the `green` operation with the given parameter (text).
+## green(text)
 
-**Signature:**
+### Example
+
 ```lunex
-fn green(text)
+val io = @import("std.io")
+
+fn main() {
+  io.log(io.green("Green text"))
+}
 ```
 
-### `yellow(text)`
+---
 
-Executes the `yellow` operation with the given parameter (text).
+## yellow(text)
 
-**Signature:**
+### Example
+
 ```lunex
-fn yellow(text)
+val io = @import("std.io")
+
+fn main() {
+  io.log(io.yellow("Yellow text"))
+}
 ```
 
-### `blue(text)`
+---
 
-Executes the `blue` operation with the given parameter (text).
+## blue(text)
 
-**Signature:**
+### Example
+
 ```lunex
-fn blue(text)
+val io = @import("std.io")
+
+fn main() {
+  io.log(io.blue("Blue text"))
+}
 ```
 
-### `cyan(text)`
+---
 
-Executes the `cyan` operation with the given parameter (text).
+## cyan(text)
 
-**Signature:**
+### Example
+
 ```lunex
-fn cyan(text)
+val io = @import("std.io")
+
+fn main() {
+  io.log(io.cyan("Cyan text"))
+}
 ```
 
-### `magenta(text)`
+---
 
-Executes the `magenta` operation with the given parameter (text).
+## magenta(text)
 
-**Signature:**
+### Example
+
 ```lunex
-fn magenta(text)
+val io = @import("std.io")
+
+fn main() {
+  io.log(io.magenta("Magenta text"))
+}
 ```
 
-### `bold(text)`
+---
 
-Executes the `bold` operation with the given parameter (text).
+## bold(text)
 
-**Signature:**
+### Example
+
 ```lunex
-fn bold(text)
+val io = @import("std.io")
+
+fn main() {
+  io.log(io.bold("Bold text"))
+}
 ```
 
-### `dim(text)`
+---
 
-Executes the `dim` operation with the given parameter (text).
+## dim(text)
 
-**Signature:**
+### Example
+
 ```lunex
-fn dim(text)
-```
+val io = @import("std.io")
 
+fn main() {
+  io.log(io.dim("Dim text"))
+}
+```

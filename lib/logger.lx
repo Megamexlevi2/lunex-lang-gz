@@ -1,0 +1,161 @@
+val native = @import("internal.native")
+val LEVELS = { trace: 0, debug: 1, info: 2, warn: 3, error: 4, fatal: 5, silent: 6 }
+
+fn _levelLabel(level) {
+  if level === 0 { "\x1b[90m TRACE\x1b[0m" }
+  if level === 1 { "\x1b[34m DEBUG\x1b[0m" }
+  if level === 2 { "\x1b[36m INFO \x1b[0m" }
+  if level === 3 { "\x1b[33m WARN \x1b[0m" }
+  if level === 4 { "\x1b[31m ERROR\x1b[0m" }
+  if level === 5 { "\x1b[35m FATAL\x1b[0m" }
+  "SILENT"
+}
+
+fn _formatMeta(meta) {
+  if meta === undefined or meta === null { "" }
+  val keys = Object.keys(meta)
+  if keys.length === 0 { "" }
+  " " + JSON.stringify(meta)
+}
+
+fn create(name, options) {
+  var opts = options !== undefined ? options : {}
+  var levelStr = opts.level !== undefined ? opts.level : "info"
+  var currentLevel = LEVELS[levelStr] !== undefined ? LEVELS[levelStr] : 2
+  val prefix = name !== undefined ? "[" + name + "] " : ""
+  var handlersList = []
+  var entryCount = 0
+  var context = opts.context !== undefined ? opts.context : {}
+  var prettyPrint = opts.pretty !== false
+  var timestampEnabled = opts.timestamp !== false
+
+  fn _write(lvl, msg, meta) {
+    if lvl < currentLevel { null }
+    entryCount += 1
+    val ts = native.utils.now()
+    val allMeta = native.utils.merge(context, meta !== undefined ? meta : {})
+    val metaStr = _formatMeta(allMeta)
+    var line = ""
+    if prettyPrint {
+      val tsStr = timestampEnabled ? "\x1b[90m" + ts + "\x1b[0m " : ""
+      line = tsStr + _levelLabel(lvl) + " " + prefix + msg + metaStr
+    } else {
+      line = JSON.stringify({ level: lvl, ts: ts, name: name, msg: msg, meta: allMeta })
+    }
+    if handlersList.length > 0 {
+      each h in handlersList {
+        h({ level: lvl, message: msg, meta: allMeta, line: line, ts: ts })
+      }
+    } else {
+      native.io.log(line)
+    }
+  }
+
+  fn _setLevel(lvl) {
+    if LEVELS[lvl] !== undefined {
+      currentLevel = LEVELS[lvl]
+      levelStr = lvl
+    }
+  }
+
+  fn _getLevel() { levelStr }
+
+  fn _addHandler(h) { handlersList.push(h) }
+  fn _clearHandlers() { handlersList = [] }
+  fn _removeHandler(h) {
+    handlersList = handlersList.filter(fn(x) { x !== h })
+  }
+  fn _count() { entryCount }
+  fn _reset() { entryCount = 0 }
+
+  fn _trace(msg, meta) { _write(0, msg, meta) }
+  fn _debug(msg, meta) { _write(1, msg, meta) }
+  fn _info(msg, meta)  { _write(2, msg, meta) }
+  fn _warn(msg, meta)  { _write(3, msg, meta) }
+  fn _error(msg, meta) { _write(4, msg, meta) }
+  fn _fatal(msg, meta) { _write(5, msg, meta) }
+  fn _log(msg, meta)   { _write(2, msg, meta) }
+
+  fn _child(childName, extraCtx) {
+    val childContext = native.utils.merge(context, extraCtx !== undefined ? extraCtx : {})
+    val fullName = name !== undefined ? name + "." + childName : childName
+    create(fullName, { level: levelStr, context: childContext, pretty: prettyPrint, timestamp: timestampEnabled })
+  }
+
+  fn _withContext(ctx) {
+    val merged = native.utils.merge(context, ctx)
+    context = merged
+  }
+
+  fn _timed(label) {
+    val startMs = native.utils.now()
+    _info("start: " + label)
+    {
+      end: fn(extraMeta) {
+        val elapsed = native.utils.now() - startMs
+        _info("end: " + label, native.utils.merge({ durationMs: elapsed }, extraMeta !== undefined ? extraMeta : {}))
+      },
+      lap: fn(note) {
+        val elapsed = native.utils.now() - startMs
+        _debug("lap [" + label + "]" + (note !== undefined ? " " + note : ""), { durationMs: elapsed })
+      }
+    }
+  }
+
+  fn _group(label) {
+    _info("┌─ " + label)
+    {
+      end: fn() { _info("└─ " + label) },
+      step: fn(s) { _info("│  " + s) }
+    }
+  }
+
+  fn _assert(condition, msg, meta) {
+    if !condition { _error("Assertion failed: " + msg, meta) }
+  }
+
+  fn _fileHandler(path) {
+    fn(entry) { native.fs.appendFile(path, entry.line + "\n") }
+  }
+
+  fn _jsonHandler(path) {
+    fn(entry) {
+      val line = JSON.stringify({ level: entry.level, ts: entry.ts, msg: entry.message, meta: entry.meta })
+      native.fs.appendFile(path, line + "\n")
+    }
+  }
+
+  {
+    trace: _trace,
+    debug: _debug,
+    info: _info,
+    warn: _warn,
+    error: _error,
+    fatal: _fatal,
+    log: _log,
+    setLevel: _setLevel,
+    getLevel: _getLevel,
+    addHandler: _addHandler,
+    removeHandler: _removeHandler,
+    clearHandlers: _clearHandlers,
+    count: _count,
+    reset: _reset,
+    child: _child,
+    withContext: _withContext,
+    timed: _timed,
+    group: _group,
+    assert: _assert,
+    fileHandler: _fileHandler,
+    jsonHandler: _jsonHandler
+  }
+}
+
+val defaultLogger = create("app", { level: "info" })
+
+val trace = defaultLogger.trace
+val debug = defaultLogger.debug
+val info  = defaultLogger.info
+val warn  = defaultLogger.warn
+val error = defaultLogger.error
+val fatal = defaultLogger.fatal
+val log   = defaultLogger.info

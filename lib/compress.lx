@@ -1,0 +1,3 @@
+val native = @import("internal.native")
+
+val compress = native.compress

@@ -1,0 +1,80 @@
+val native = @import("internal.native")
+fn create(maxSize, ttl) {
+  var store = {}
+  var timestamps = {}
+  var order = []
+  val limit = maxSize !== undefined ? maxSize : 1000
+  val defaultTTL = ttl !== undefined ? ttl : 0
+  var hits = 0
+  var misses = 0
+
+  fn put(key, value) {
+    val k = "" + key
+    if store[k] === undefined {
+      order.push(k)
+    }
+    if order.length > limit {
+      val oldest = order.shift()
+      store[oldest] = undefined
+      timestamps[oldest] = undefined
+    }
+    store[k] = value
+    timestamps[k] = native.utils.now()
+  }
+
+  fn lookup(key) {
+    val k = "" + key
+    if store[k] === undefined {
+      misses += 1
+      null
+    }
+    if defaultTTL > 0 {
+      val age = native.utils.now() - timestamps[k]
+      if age > defaultTTL {
+        store[k] = undefined
+        timestamps[k] = undefined
+        misses += 1
+        null
+      }
+    }
+    hits += 1
+    store[k]
+  }
+
+  fn has(key) {
+    lookup(key) !== null
+  }
+
+  fn del(key) {
+    val k = "" + key
+    store[k] = undefined
+    timestamps[k] = undefined
+    order = order.filter(fn(x) { x !== k })
+  }
+
+  fn clear() {
+    store = {}
+    timestamps = {}
+    order = []
+  }
+
+  fn size() {
+    order.filter(fn(k) { store[k] !== undefined }).length
+  }
+
+  fn keys() {
+    order.filter(fn(k) { store[k] !== undefined })
+  }
+
+  fn stats() {
+    val total = hits + misses
+    {
+      hits: hits,
+      misses: misses,
+      size: size(),
+      hitRate: total > 0 ? hits / total : 0
+    }
+  }
+
+  { set: put, get: lookup, has: has, del: del, clear: clear, size: size, keys: keys, stats: stats }
+}

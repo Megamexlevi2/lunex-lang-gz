@@ -1,0 +1,12 @@
+val native = @import("internal.native")
+fn render(template, data) {
+  native.mustache.render(template, data)
+}
+
+fn renderFile(path, data) {
+  native.mustache.renderFile(path, data)
+}
+
+fn parse(template) {
+  native.mustache.parse(template)
+}

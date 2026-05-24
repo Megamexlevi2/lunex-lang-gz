@@ -1,0 +1,85 @@
+val native = @import("internal.native")
+fn createServer(port, options) {
+  var clients = []
+  var eventHandlers = {}
+  val opts = options !== undefined ? options : {}
+
+  fn on(event, handler) {
+    eventHandlers[event] = handler
+  }
+
+  fn send(client, message) {
+    val msg = typeof message === "string" ? message : JSON.stringify(message)
+    native.ws.send(client, msg)
+  }
+
+  fn broadcast(message) {
+    each client in clients {
+      send(client, message)
+    }
+  }
+
+  fn start(callback) {
+    native.ws.createServer(port, opts, fn(client) {
+      clients.push(client)
+      if eventHandlers.connection !== undefined {
+        eventHandlers.connection(client)
+      }
+      native.ws.onMessage(client, fn(msg) {
+        if eventHandlers.message !== undefined {
+          eventHandlers.message(client, msg)
+        }
+      })
+      native.ws.onClose(client, fn() {
+        clients = clients.filter(fn(c) { c !== client })
+        if eventHandlers.close !== undefined {
+          eventHandlers.close(client)
+        }
+      })
+    })
+    if callback !== undefined { callback() }
+  }
+
+  fn clientCount() {
+    clients.length
+  }
+
+  fn stop() {
+    native.ws.closeServer(null)
+  }
+
+  { on: on, send: send, broadcast: broadcast, start: start, stop: stop, clientCount: clientCount }
+}
+
+fn createClient(url) {
+  var conn = null
+  var eventHandlers = {}
+
+  fn on(event, handler) {
+    eventHandlers[event] = handler
+  }
+
+  fn connect() {
+    native.ws.connect(url, fn(c) {
+      conn = c
+      if eventHandlers.open !== undefined { eventHandlers.open() }
+    }, fn(msg) {
+      if eventHandlers.message !== undefined { eventHandlers.message(msg) }
+    }, fn() {
+      if eventHandlers.close !== undefined { eventHandlers.close() }
+    })
+  }
+
+  fn send(message) {
+    if conn !== null {
+      val msg = typeof message === "string" ? message : JSON.stringify(message)
+      native.ws.send(conn, msg)
+    }
+  }
+
+  fn close() {
+    if conn !== null { native.ws.closeClient(conn) }
+  }
+
+  { on: on, connect: connect, send: send, close: close }
+}

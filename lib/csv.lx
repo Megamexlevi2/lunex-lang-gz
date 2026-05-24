@@ -1,0 +1,16 @@
+val native = @import("internal.native")
+fn parse(content, options) {
+  native.csv.parse(content, options)
+}
+
+fn stringify(data, options) {
+  native.csv.stringify(data, options)
+}
+
+fn readFile(path, options) {
+  native.csv.readFile(path, options)
+}
+
+fn writeFile(path, data, options) {
+  native.csv.writeFile(path, data, options)
+}

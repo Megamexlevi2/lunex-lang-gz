@@ -2,7 +2,7 @@ Lunex Trademark Policy
 
 Copyright (c) 2026 David Dev
 
-The names "Lunex", "lunex-lang", official logos, icons, branding assets,
+The names "Lunex-lang", "lunex-lang", official logos, icons, branding assets,
 and visual identity associated with the Lunex project are trademarks of
 David Dev.
 

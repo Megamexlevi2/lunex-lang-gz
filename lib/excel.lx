@@ -1,0 +1,12 @@
+val native = @import("internal.native")
+fn create() {
+  native.excel.create()
+}
+
+fn open(path) {
+  native.excel.open(path)
+}
+
+fn columnName(number) {
+  native.excel.columnName(number)
+}

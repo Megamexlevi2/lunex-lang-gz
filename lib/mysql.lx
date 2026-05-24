@@ -1,0 +1,4 @@
+val native = @import("internal.native")
+fn connect(options) {
+  native.mysql.connect(options)
+}

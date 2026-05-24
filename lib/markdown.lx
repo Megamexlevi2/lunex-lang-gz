@@ -1,0 +1,16 @@
+val native = @import("internal.native")
+fn toHTML(content) {
+  native.markdown.toHTML(content)
+}
+
+fn parse(content) {
+  native.markdown.toHTML(content)
+}
+
+fn readFile(path) {
+  native.markdown.readFile(path)
+}
+
+fn renderFile(inputPath, outputPath) {
+  native.markdown.renderFile(inputPath, outputPath)
+}

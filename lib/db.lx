@@ -1,0 +1,28 @@
+val native = @import("internal.native")
+fn create(name) {
+  native.db.create(name)
+}
+
+fn open(name) {
+  native.db.open(name)
+}
+
+fn connect(name) {
+  native.db.connect(name)
+}
+
+fn table(name) {
+  native.db.table(name)
+}
+
+fn collection(name) {
+  native.db.collection(name)
+}
+
+fn drop(name) {
+  native.db.drop(name)
+}
+
+fn list() {
+  native.db.list()
+}

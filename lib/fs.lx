@@ -1,0 +1,101 @@
+val native = @import("internal.native")
+fn readFile(path, encoding) {
+  native.fs.readFile(path, encoding)
+}
+
+fn writeFile(path, content, options) {
+  native.fs.writeFile(path, content, options)
+}
+
+fn appendFile(path, content) {
+  native.fs.appendFile(path, content)
+}
+
+fn deleteFile(path) {
+  native.fs.delete(path)
+}
+
+fn exists(path) {
+  native.fs.exists(path)
+}
+
+fn stat(path) {
+  native.fs.stat(path)
+}
+
+fn mkdir(path, recursive) {
+  native.fs.mkdir(path, recursive)
+}
+
+fn rmdir(path, recursive) {
+  native.fs.rmdir(path, recursive)
+}
+
+fn list(path) {
+  native.fs.list(path)
+}
+
+fn listDir(path) {
+  native.fs.listDir(path)
+}
+
+fn copyFile(src, dest) {
+  native.fs.copyFile(src, dest)
+}
+
+fn moveFile(src, dest) {
+  native.fs.moveFile(src, dest)
+}
+
+fn join(...parts) {
+  native.fs.join(...parts)
+}
+
+fn basename(path, ext) {
+  native.fs.basename(path, ext)
+}
+
+fn dirname(path) {
+  native.fs.dirname(path)
+}
+
+fn extname(path) {
+  native.fs.extname(path)
+}
+
+fn resolve(...parts) {
+  native.fs.resolve(...parts)
+}
+
+fn isAbsolute(path) {
+  native.fs.isAbsolute(path)
+}
+
+fn isDir(path) {
+  val s = stat(path)
+  s !== null and s.isDir
+}
+
+fn isFile(path) {
+  val s = stat(path)
+  s !== null and s.isFile
+}
+
+fn readJSON(path) {
+  val content = readFile(path)
+  if content === null { null }
+  JSON.parse(content)
+}
+
+fn writeJSON(path, data, pretty) {
+  val content = pretty ? JSON.stringify(data, null, 2) : JSON.stringify(data)
+  writeFile(path, content)
+}
+
+fn glob(pattern) {
+  native.fs.glob(pattern)
+}
+
+fn watch(path, callback) {
+  native.fs.watch(path, callback)
+}

@@ -1,0 +1,188 @@
+// std.crypto — Lunex cryptography module
+// Wraps the native Go crypto backend.  All heavy lifting (hashing, PBKDF2,
+// bcrypt, AES-256-GCM, JWT HMAC-SHA256) is done in optimised Go code.
+// NOTE: In Lunex only the last *ExprStmt* in a function body is captured as
+// the return value — if/else blocks are IfStmt and therefore do NOT propagate
+// their value.  All conditional returns below must use ternary expressions.
+
+val native = @import("internal.native")
+
+// ── Hashing ──────────────────────────────────────────────────────────────────
+
+fn hash(algorithm, data) {
+  native.crypto.hash(algorithm, data)
+}
+
+fn md5(data) {
+  native.crypto.md5(data)
+}
+
+fn sha1(data) {
+  native.crypto.sha1(data)
+}
+
+fn sha256(data) {
+  native.crypto.sha256(data)
+}
+
+fn sha512(data) {
+  native.crypto.sha512(data)
+}
+
+// ── HMAC ─────────────────────────────────────────────────────────────────────
+
+fn hmac(algorithm, key, data) {
+  native.crypto.hmac(algorithm, key, data)
+}
+
+fn hmacSha256(key, data) {
+  native.crypto.hmac("sha256", key, data)
+}
+
+fn hmacSha512(key, data) {
+  native.crypto.hmac("sha512", key, data)
+}
+
+// ── Random ───────────────────────────────────────────────────────────────────
+
+fn randomBytes(n) {
+  native.crypto.randomBytes(n !== undefined ? n : 16)
+}
+
+fn randomHex(n) {
+  native.crypto.randomHex(n !== undefined ? n : 16)
+}
+
+fn randomUUID() {
+  native.crypto.randomUUID()
+}
+
+fn uuid() {
+  native.crypto.randomUUID()
+}
+
+// Secure random token of n bytes returned as a hex string.
+fn token(n) {
+  native.crypto.token(n !== undefined ? n : 32)
+}
+
+// ── Symmetric encryption (AES-256-GCM) ───────────────────────────────────────
+
+fn encrypt(data, key) {
+  native.crypto.encrypt(data, key)
+}
+
+fn decrypt(data, key) {
+  native.crypto.decrypt(data, key)
+}
+
+// Legacy aliases kept for backward compatibility.
+fn encryptAES(data, key) {
+  native.crypto.encrypt(data, key)
+}
+
+fn decryptAES(data, key) {
+  native.crypto.decrypt(data, key)
+}
+
+// ── Key derivation (PBKDF2-HMAC-SHA256) ───────────────────────────────────────
+
+// pbkdf2(password, salt, iterations?, keyLen?)
+// Returns a hex string of the derived key.
+// Defaults: 100 000 iterations, 32-byte key.
+// Pass -1 for iterations/keyLen to keep defaults.
+fn pbkdf2(password, salt, iterations, keyLen) {
+  native.crypto.pbkdf2(
+    password,
+    salt,
+    iterations !== undefined ? iterations : 100000,
+    keyLen !== undefined ? keyLen : 32
+  )
+}
+
+// ── Password hashing (bcrypt) ─────────────────────────────────────────────────
+
+// hashPassword(password, cost?)
+// cost defaults to 10.  Pass a lower value (e.g. 4) for tests.
+// Returns a bcrypt hash that embeds its own salt — store this directly.
+// IMPORTANT: last expression must be a plain call (ExprStmt), not if/else.
+fn hashPassword(password, cost) {
+  native.crypto.hashPassword(password, cost !== undefined ? cost : 10)
+}
+
+// verifyPassword(password, hash)
+// Returns true when password matches the bcrypt hash produced by hashPassword.
+fn verifyPassword(password, hash) {
+  native.crypto.verifyPassword(password, hash)
+}
+
+// ── JWT (HS256) ───────────────────────────────────────────────────────────────
+
+// jwt is an object with sign / verify / decode.
+val jwt = {
+  sign: fn(payload, secret, options) {
+    native.crypto.jwt.sign(payload, secret, options !== undefined ? options : {})
+  },
+  verify: fn(tok, secret) {
+    native.crypto.jwt.verify(tok, secret)
+  },
+  decode: fn(tok) {
+    native.crypto.jwt.decode(tok)
+  },
+}
+
+// Legacy function-style JWT wrappers.
+// signJWT uses a ternary (ExprStmt) so the result is captured.
+fn signJWT(payload, secret, expiresIn) {
+  expiresIn !== undefined
+    ? native.crypto.jwt.sign(payload, secret, { expiresIn: expiresIn })
+    : native.crypto.jwt.sign(payload, secret, {})
+}
+
+fn verifyJWT(tok, secret) {
+  native.crypto.jwt.verify(tok, secret)
+}
+
+fn jwtDecode(tok) {
+  native.crypto.jwt.decode(tok)
+}
+
+// ── Base64 ────────────────────────────────────────────────────────────────────
+
+fn base64Encode(data) {
+  native.crypto.base64Encode(data)
+}
+
+fn base64Decode(data) {
+  native.crypto.base64Decode(data)
+}
+
+fn base64UrlEncode(data) {
+  native.crypto.base64UrlEncode(data)
+}
+
+fn base64UrlDecode(data) {
+  native.crypto.base64UrlDecode(data)
+}
+
+// ── Hex ──────────────────────────────────────────────────────────────────────
+
+fn toHex(data) {
+  native.crypto.toHex(data)
+}
+
+fn fromHex(data) {
+  native.crypto.fromHex(data)
+}
+
+// ── Comparison ────────────────────────────────────────────────────────────────
+
+// compare(a, b) — constant-time comparison, safe against timing attacks.
+fn compare(a, b) {
+  native.crypto.compare(a, b)
+}
+
+// timingSafeEqual is a legacy alias for compare.
+fn timingSafeEqual(a, b) {
+  native.crypto.compare(a, b)
+}

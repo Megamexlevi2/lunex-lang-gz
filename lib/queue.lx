@@ -1,0 +1,84 @@
+fn create() {
+  var items = []
+  var processed = 0
+  var failed = 0
+
+  fn push(item) { items.push(item) }
+
+  fn pop() {
+    if items.length === 0 { undefined }
+    items.shift()
+  }
+
+  fn peek() {
+    if items.length === 0 { undefined }
+    items[0]
+  }
+
+  fn size() { items.length }
+  fn isEmpty() { items.length === 0 }
+  fn clear() { items = [] }
+
+  fn toArray() { items.slice(0) }
+
+  fn drain(handler) {
+    while items.length > 0 {
+      val item = pop()
+      try {
+        handler(item)
+        processed += 1
+      } catch err {
+        failed += 1
+      }
+    }
+  }
+
+  fn stats() {
+    { pending: items.length, processed: processed, failed: failed }
+  }
+
+  { push: push, pop: pop, peek: peek, size: size, isEmpty: isEmpty, clear: clear, toArray: toArray, drain: drain, stats: stats }
+}
+
+fn createPriority() {
+  var items = []
+
+  fn push(item, priority) {
+    val entry = { item: item, priority: priority !== undefined ? priority : 0 }
+    items.push(entry)
+    items.sort(fn(a, b) { b.priority - a.priority })
+  }
+
+  fn pop() {
+    if items.length === 0 { undefined }
+    items.shift().item
+  }
+
+  fn size() { items.length }
+  fn isEmpty() { items.length === 0 }
+  fn clear() { items = [] }
+
+  { push: push, pop: pop, size: size, isEmpty: isEmpty, clear: clear }
+}
+
+fn createDeque() {
+  var items = []
+
+  fn pushFront(item) { items.unshift(item) }
+  fn pushBack(item) { items.push(item) }
+  fn popFront() {
+    if items.length === 0 { undefined }
+    items.shift()
+  }
+  fn popBack() {
+    if items.length === 0 { undefined }
+    items.pop()
+  }
+  fn peekFront() { items.length > 0 ? items[0] : undefined }
+  fn peekBack() { items.length > 0 ? items[items.length - 1] : undefined }
+  fn size() { items.length }
+  fn isEmpty() { items.length === 0 }
+  fn clear() { items = [] }
+
+  { pushFront: pushFront, pushBack: pushBack, popFront: popFront, popBack: popBack, peekFront: peekFront, peekBack: peekBack, size: size, isEmpty: isEmpty, clear: clear }
+}

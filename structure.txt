@@ -1,0 +1,117 @@
+internal
+├── aot
+│   ├── aot.go
+│   └── targets.go
+├── asm
+│   └── asm.go
+├── ast
+│   └── ast.go
+├── bridge
+│   ├── client.go
+│   └── protocol.go
+├── buildfile
+│   └── buildfile.go
+├── builtin
+│   ├── builtin.go
+│   ├── builtin_ai.go
+│   ├── builtin_alloc.go
+│   ├── builtin_compress.go
+│   ├── builtin_crypto.go
+│   ├── builtin_datetime.go
+│   ├── builtin_db.go
+│   ├── builtin_env.go
+│   ├── builtin_excel.go
+│   ├── builtin_formats.go
+│   ├── builtin_fs.go
+│   ├── builtin_graphql.go
+│   ├── builtin_http.go
+│   ├── builtin_io.go
+│   ├── builtin_jwt.go
+│   ├── builtin_mail.go
+│   ├── builtin_math.go
+│   ├── builtin_mysql.go
+│   ├── builtin_oauth2.go
+│   ├── builtin_os.go
+│   ├── builtin_path.go
+│   ├── builtin_pdf.go
+│   ├── builtin_postgres.go
+│   ├── builtin_rabbitmq.go
+│   ├── builtin_redis.go
+│   ├── builtin_regex.go
+│   ├── builtin_runtime.go
+│   ├── builtin_stripe.go
+│   ├── builtin_utils.go
+│   ├── builtin_validate.go
+│   ├── builtin_ws.go
+│   ├── builtin_xml.go
+│   ├── builtin_zip.go
+│   └── register.go
+├── bytecode
+│   ├── cache.go
+│   ├── chunk.go
+│   ├── compiler.go
+│   ├── export.go
+│   ├── format.go
+│   ├── nax.go
+│   ├── ntz.go
+│   ├── opcode.go
+│   └── vm.go
+├── codegen
+│   └── codegen.go
+├── compiler
+│   └── compiler.go
+├── debug
+│   └── debug.go
+├── editor
+│   └── editor.go
+├── enfs
+│   └── enfs.go
+├── errfmt
+│   ├── catalog.go
+│   ├── codes.go
+│   └── errfmt.go
+├── firstrun
+│   └── firstrun.go
+├── ide
+│   ├── autocomplete.go
+│   ├── diagnostics.go
+│   ├── format.go
+│   ├── highlight.go
+│   ├── ide.go
+│   ├── model.go
+│   ├── runner.go
+│   └── theme.go
+├── jit
+│   ├── jit.go
+│   ├── jitcache.go
+│   └── native
+│       ├── mcache.go
+│       └── native.go
+├── lexer
+│   └── lexer.go
+├── meta
+│   ├── guard.go
+│   ├── meta.go
+│   └── shard.go
+├── ntir
+│   ├── builder.go
+│   ├── flat.go
+│   └── ir.go
+├── parser
+│   ├── parse_error.go
+│   └── parser.go
+├── pkg
+│   └── pkg.go
+├── repl
+│   └── repl.go
+├── runtime
+│   ├── bridge.go
+│   ├── env.go
+│   ├── interpreter.go
+│   ├── protection.go
+│   └── value.go
+└── zigrt
+    ├── extract.go
+    └── launch.go
+
+26 directories, 89 files

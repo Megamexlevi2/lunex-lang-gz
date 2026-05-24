@@ -1,0 +1,49 @@
+fn create() {
+  var handlers = {}
+
+  fn on(event, listener) {
+    if handlers[event] === undefined {
+      handlers[event] = []
+    }
+    handlers[event].push(listener)
+  }
+
+  fn off(event, listener) {
+    if handlers[event] !== undefined {
+      if listener !== undefined {
+        handlers[event] = handlers[event].filter(fn(l) { l !== listener })
+      } else {
+        handlers[event] = []
+      }
+    }
+  }
+
+  fn emit(event, ...args) {
+    if handlers[event] !== undefined {
+      val list = handlers[event].slice(0)
+      each listener in list {
+        listener(...args)
+      }
+    }
+  }
+
+  fn once(event, listener) {
+    var wrapper = null
+    wrapper = fn(...args) {
+      listener(...args)
+      off(event, wrapper)
+    }
+    on(event, wrapper)
+  }
+
+  fn count(event) {
+    if handlers[event] === undefined { 0 }
+    handlers[event].length
+  }
+
+  fn names() {
+    Object.keys(handlers)
+  }
+
+  { on: on, off: off, emit: emit, once: once, count: count, names: names }
+}

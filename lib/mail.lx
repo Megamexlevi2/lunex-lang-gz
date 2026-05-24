@@ -1,0 +1,42 @@
+val native = @import("internal.native")
+fn createMailer(config) {
+  val cfg = config !== undefined ? config : {}
+  val transport = native.mail.createTransport(cfg)
+
+  fn send(options) {
+    native.mail.send(transport, options)
+  }
+
+  fn sendText(to, subject, text) {
+    send({ to: to, subject: subject, text: text })
+  }
+
+  fn sendHTML(to, subject, html) {
+    send({ to: to, subject: subject, html: html })
+  }
+
+  fn sendTemplate(to, subject, html, vars) {
+    var body = html
+    each key in Object.keys(vars) {
+      body = body.split("{{" + key + "}}").join(vars[key])
+    }
+    sendHTML(to, subject, body)
+  }
+
+  { send: send, sendText: sendText, sendHTML: sendHTML, sendTemplate: sendTemplate }
+}
+
+fn send(config, options) {
+  val m = createMailer(config)
+  m.send(options)
+}
+
+fn sendText(config, to, subject, text) {
+  val m = createMailer(config)
+  m.sendText(to, subject, text)
+}
+
+fn sendHTML(config, to, subject, html) {
+  val m = createMailer(config)
+  m.sendHTML(to, subject, html)
+}

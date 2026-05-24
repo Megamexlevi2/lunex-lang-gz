@@ -1,0 +1,20 @@
+val native = @import("internal.native")
+fn sign(payload, secret, options) {
+  native.jwt.sign(payload, secret, options)
+}
+
+fn verify(token, secret) {
+  native.jwt.verify(token, secret)
+}
+
+fn decode(token) {
+  native.jwt.decode(token)
+}
+
+fn isExpired(token) {
+  native.jwt.isExpired(token)
+}
+
+fn refresh(token, secret, expiresIn) {
+  native.jwt.refresh(token, secret, expiresIn)
+}

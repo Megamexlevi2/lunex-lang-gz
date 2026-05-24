@@ -1,0 +1,95 @@
+val native = @import("internal.native")
+fn complete(prompt, options) {
+  native.ai.complete(prompt, options)
+}
+
+fn chat(messages, options) {
+  native.ai.chat(messages, options)
+}
+
+fn embed(text) {
+  native.ai.embed(text)
+}
+
+fn classify(text, labels) {
+  native.ai.classify(text, labels)
+}
+
+fn moderate(text) {
+  native.ai.moderate(text)
+}
+
+fn similarity(a, b) {
+  native.ai.similarity(a, b)
+}
+
+fn create(options) {
+  native.ai.create(options)
+}
+
+fn summarize(text, options) {
+  complete("Summarize the following text concisely:\n\n" + text, options)
+}
+
+fn translate(text, targetLang, options) {
+  complete("Translate the following text to " + targetLang + ":\n\n" + text, options)
+}
+
+fn sentiment(text) {
+  complete("Analyze the sentiment of this text. Reply with one word: positive, negative, or neutral.\n\n" + text, null)
+}
+
+fn extract(text, schema, options) {
+  val prompt = "Extract information from the following text as JSON matching this schema: " + JSON.stringify(schema) + "\n\nText: " + text + "\n\nRespond with only valid JSON."
+  val result = complete(prompt, options)
+  try {
+    JSON.parse(result)
+  } catch e {
+    null
+  }
+}
+
+fn createAssistant(systemPrompt, options) {
+  val system = systemPrompt !== undefined ? systemPrompt : "You are a helpful assistant."
+  val opts = options !== undefined ? options : {}
+  var history = []
+
+  fn ask(userMessage) {
+    history.push({ role: "user", content: userMessage })
+    val messages = [{ role: "system", content: system }].concat(history)
+    val response = chat(messages, opts)
+    val reply = response !== null and response.content !== undefined ? response.content : ""
+    history.push({ role: "assistant", content: reply })
+    reply
+  }
+
+  fn reset() {
+    history = []
+  }
+
+  fn getHistory() {
+    history.slice(0)
+  }
+
+  { ask: ask, reset: reset, history: getHistory }
+}
+
+fn findMostSimilar(query, documents) {
+  val queryEmbed = embed(query)
+  var bestScore = -1
+  var bestDoc = null
+  var bestIdx = -1
+  var i = 0
+  each doc in documents {
+    val docText = typeof doc === "string" ? doc : JSON.stringify(doc)
+    val docEmbed = embed(docText)
+    val score = similarity(queryEmbed, docEmbed)
+    if score > bestScore {
+      bestScore = score
+      bestDoc = doc
+      bestIdx = i
+    }
+    i += 1
+  }
+  { document: bestDoc, score: bestScore, index: bestIdx }
+}
