@@ -13,10 +13,11 @@ while ($true) {
     Write-Host ""
 
     $choice = Read-Host "Select an option"
+    $install = $false
 
     switch ($choice) {
         "1" {
-            break
+            $install = $true
         }
         "0" {
             exit 0
@@ -24,18 +25,22 @@ while ($true) {
         default {
             Write-Host "Invalid option."
             Start-Sleep -Seconds 1
-            continue
         }
     }
 
-    $tmp = [System.IO.Path]::GetTempFileName() + ".exe"
+    if (-not $install) {
+        continue
+    }
+
+    $tempName = [System.IO.Path]::GetRandomFileName() + ".exe"
+    $tmp = Join-Path ([System.IO.Path]::GetTempPath()) $tempName
     $url = "$repo/$asset"
 
     Write-Host "Downloading $url ..."
     try {
-        Invoke-WebRequest -Uri $url -OutFile $tmp -UseBasicParsing
+        Invoke-WebRequest -Uri $url -OutFile $tmp
     } catch {
-        Write-Host "Download failed: $_"
+        Write-Host "Download failed: $($_.Exception.Message)"
         Remove-Item -Force $tmp -ErrorAction SilentlyContinue
         exit 1
     }
@@ -44,9 +49,15 @@ while ($true) {
     New-Item -ItemType Directory -Force -Path $dir | Out-Null
     Move-Item -Force $tmp $target
 
-    $userPath = [Environment]::GetEnvironmentVariable("PATH", "User")
-    if ($userPath -notlike "*$dir*") {
-        [Environment]::SetEnvironmentVariable("PATH", "$userPath;$dir", "User")
+    $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+    $paths = @()
+    if ($userPath) {
+        $paths = $userPath -split ';' | Where-Object { $_ -and $_.Trim() }
+    }
+
+    if ($paths -notcontains $dir) {
+        $newPath = ($paths + $dir) -join ';'
+        [Environment]::SetEnvironmentVariable("Path", $newPath, "User")
         Write-Host "Added $dir to your user PATH."
         Write-Host "Restart your terminal to apply the change."
     }
