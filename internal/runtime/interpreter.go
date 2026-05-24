@@ -2097,9 +2097,21 @@ func (interp *Interpreter) execImport(node *ast.Node, env *Environment) (*Value,
 
 // resolveModulePath normalises module paths to their canonical name.
 // Supports both dot notation ("std.io") and slash notation ("std/io").
-// "std.io" -> "io", "std/io" -> "io", "internal.native" -> "native", etc.
+// "std.io" -> "io", "std/io" -> "io", "internal.native" -> "native".
+//
+// Local file paths ("hello.lx", "./utils/math.lx") are returned unchanged
+// so that the local-file resolution in loadModule can handle them.
 func resolveModulePath(path string) string {
-        // Convert dot notation to slash notation first
+        // Preserve local file paths: anything with a .lx extension or a
+        // relative/absolute prefix must not be dot-to-slash converted.
+        if strings.HasSuffix(path, ".lx") ||
+                strings.HasPrefix(path, "./") ||
+                strings.HasPrefix(path, "../") ||
+                strings.HasPrefix(path, "/") {
+                return path
+        }
+
+        // Convert dot notation to slash notation for module names only.
         slashPath := strings.ReplaceAll(path, ".", "/")
         for _, prefix := range []string{"std/", "core/", "internal/"} {
                 if strings.HasPrefix(slashPath, prefix) {
@@ -2211,11 +2223,17 @@ func (interp *Interpreter) evalModuleSourceFile(src, cacheKey, displayPath strin
 }
 
 func (interp *Interpreter) evalModuleSource(src, name string) (*Value, error) {
-        toks, err := lexer.Tokenize(src, name+".lx")
+        // Use name as-is for display if it already ends with .lx (local file path),
+        // otherwise append .lx for stdlib module names.
+        displayName := name
+        if !strings.HasSuffix(name, ".lx") {
+                displayName = name + ".lx"
+        }
+        toks, err := lexer.Tokenize(src, displayName)
         if err != nil {
                 return nil, interp.runtimeError(errfmt.KindImport, "E0011", fmt.Sprintf("failed to tokenize module '%s': %v", name, err), nil, nil)
         }
-        prog, err := parser.Parse(toks, name+".lx")
+        prog, err := parser.Parse(toks, displayName)
         if err != nil {
                 return nil, interp.runtimeError(errfmt.KindImport, "E0012", fmt.Sprintf("failed to parse module '%s': %v", name, err), nil, nil)
         }

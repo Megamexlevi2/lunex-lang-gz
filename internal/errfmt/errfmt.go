@@ -263,6 +263,26 @@ func getSuggestions(code, name, msg string, similar []string) []string {
 
 	switch code {
 	case "E0001":
+		// If the undefined name matches a known stdlib module, suggest importing it.
+		knownStdlib := map[string]string{
+			"io": "std.io", "fs": "std.fs", "http": "std.http",
+			"crypto": "std.crypto", "db": "std.db", "env": "std.env",
+			"ws": "std.ws", "mail": "std.mail", "ai": "std.ai",
+			"utils": "std.utils", "validate": "std.validate", "os": "std.os",
+			"jwt": "std.jwt", "redis": "std.redis", "postgres": "std.postgres",
+			"mysql": "std.mysql", "stripe": "std.stripe", "oauth2": "std.oauth2",
+			"graphql": "std.graphql", "rabbitmq": "std.rabbitmq", "excel": "std.excel",
+			"pdf": "std.pdf", "csv": "std.csv", "yaml": "std.yaml", "toml": "std.toml",
+			"markdown": "std.markdown", "mustache": "std.mustache", "xml": "std.xml",
+			"alloc": "std.alloc", "zip": "std.zip", "regex": "std.regex",
+			"math": "std.math", "datetime": "std.datetime", "path": "std.path",
+			"compress": "std.compress", "cache": "std.cache", "logger": "std.logger",
+			"queue": "std.queue", "test": "std.test",
+		}
+		if stdlibName, ok := knownStdlib[name]; ok {
+			sugs = append(sugs, "add this import at the top of your file:  val "+name+" = @import(\""+stdlibName+"\")")
+			return sugs
+		}
 		sugs = append(sugs, "declare `"+name+"` before using it, or check for a typo in the name")
 		if len(similar) > 0 {
 			sugs = append(sugs, "did you mean `"+similar[0]+"`?")
