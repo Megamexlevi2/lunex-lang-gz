@@ -99,8 +99,7 @@
   | `array` | Ordered list of values |
   | `object` | Key/value map |
   | `function` | First-class function |
-  | `class` | Class definition |
-  | `instance` | Class instance |
+  | `struct` | Named value type (via `struct { ... }`) |
   | `regex` | Regular expression |
   | `channel` | Async channel |
   | `error` | Error value |
@@ -270,8 +269,8 @@
   // do ... while
   do { } while condition
 
-  // guard (early return)
-  guard x > 0 else { return }
+  // guard (early return pattern)
+  guard x > 0 else { throw "x must be positive" }
 
   // defer
   defer io.log("cleanup")
@@ -280,31 +279,31 @@
   ### 4.5 Functions
 
   ```lunex
-  // Named function
+  // Named function — last expression is the result
   fn add(a, b) {
       a + b
   }
 
-  // Arrow / anonymous
-  var double = fn(x) { return x * 2 }
-  var greet = fn(name) { return "Hello, " + name }
+  // Arrow / anonymous — same implicit-result rule
+  var double = fn(x) { x * 2 }
+  var greet = fn(name) { "Hello, " + name }
 
   // Default parameters
   fn connect(host, port = 3000) { }
 
   // Rest parameters
   fn sum(...nums) {
-      nums.reduce(fn(acc, n) { return acc + n }, 0)
+      nums.reduce(fn(acc, n) { acc + n }, 0)
   }
 
   // Closures
   fn counter() {
       var n = 0
-      fn() { n += 1; return n }
+      fn() { n += 1; n }
   }
 
   // Immediately invoked
-  var result = fn(x) { return x * x }(5)
+  var result = fn(x) { x * x }(5)
   ```
 
   ### 4.6 Structs (No Classes)
@@ -1639,8 +1638,8 @@
   // Build schema from Lunex functions
   var schema = graphql.buildSchema({
       query: {
-          hello: fn(args) { return "Hello, " + (args.input ?? "world") },
-          user:  fn(args) { return users.findOne({ id: args.input }) }
+          hello: fn(args) { "Hello, " + (args.input ?? "world") },
+          user:  fn(args) { users.findOne({ id: args.input }) }
       },
       mutation: {
           createUser: fn(args) {

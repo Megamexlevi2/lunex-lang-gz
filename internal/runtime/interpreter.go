@@ -26,6 +26,7 @@ import (
         "sync"
         "time"
         "unicode/utf8"
+        "sort"
 )
 
 type breakSignal struct{}
@@ -344,7 +345,10 @@ func (interp *Interpreter) execNode(node *ast.Node, env *Environment) (*Value, e
                 interp.defers = append(interp.defers, deferEntry{node: node, env: env})
                 return Undefined, nil
         case ast.SpawnStmt:
-                go interp.evalExpr(node.Expr, env)
+                go func() {
+                        defer func() { recover() }()
+                        interp.evalExpr(node.Expr, env)
+                }()
                 return Undefined, nil
         case ast.AssertStmt:
                 return interp.execAssert(node, env)
@@ -887,6 +891,23 @@ func (interp *Interpreter) evalCall(node *ast.Node, env *Environment) (*Value, e
                 } else {
                         key, _ := node.Callee.Prop.(string)
                         fnVal = obj.Get(key)
+                        // Channel method dispatch: send, recv, close
+                        if (fnVal == nil || fnVal.Tag == TypeUndefined) && obj.Tag == TypeChannel {
+                                ch := obj.ChanVal
+                                switch key {
+                                case "send":
+                                        fnVal = FuncVal(&Function{Name: "send", Native: func(args []*Value, _ *Value) (*Value, error) {
+                                                if len(args) > 0 {
+                                                        ch.Send(args[0])
+                                                }
+                                                return Undefined, nil
+                                        }})
+                                case "recv":
+                                        fnVal = FuncVal(&Function{Name: "recv", Native: func(args []*Value, _ *Value) (*Value, error) {
+                                                return ch.Receive(), nil
+                                        }})
+                                }
+                        }
                         // Detect missing method and give a rich error with suggestions
                         if fnVal == nil || fnVal.Tag == TypeUndefined {
                                 similar := errfmt.FindSimilar(key, objKeys(obj))
@@ -1043,7 +1064,9 @@ func (interp *Interpreter) callUserFunction(fn *Function, args []*Value, thisVal
                                 execErr = e
                                 break
                         }
-                        if i == len(stmts)-1 && (stmt.Type == ast.ExprStmt || stmt.Type == ast.MatchStmt) {
+                        if i == len(stmts)-1 && (stmt.Type == ast.ExprStmt || stmt.Type == ast.MatchStmt ||
+                                stmt.Type == ast.IfStmt || stmt.Type == ast.UnlessStmt ||
+                                stmt.Type == ast.TryStmt || stmt.Type == ast.Block) {
                                 result = val
                         }
                 }
@@ -2857,7 +2880,11 @@ func (interp *Interpreter) execMatch(node *ast.Node, env *Environment) (*Value, 
 }
 
 func (interp *Interpreter) execTry(node *ast.Node, env *Environment) (*Value, error) {
-        _, err := interp.execNode(node.Body, env)
+        tryResult, err := interp.execNode(node.Body, env)
+        if tryResult == nil {
+                tryResult = Undefined
+        }
+        result := tryResult
         if err != nil {
                 if te, ok := err.(*throwError); ok {
                         if node.CatchBlock != nil {
@@ -2865,13 +2892,16 @@ func (interp *Interpreter) execTry(node *ast.Node, env *Environment) (*Value, er
                                 if node.CatchParam != "" {
                                         catchEnv.Define(node.CatchParam, te.val, false)
                                 }
-                                _, catchErr := interp.execNode(node.CatchBlock, catchEnv)
+                                catchResult, catchErr := interp.execNode(node.CatchBlock, catchEnv)
                                 if catchErr != nil {
                                         // Propagate the catch error even if there is a finally block.
                                         if node.FinallyBlock != nil {
                                                 interp.execNode(node.FinallyBlock, env)
                                         }
                                         return nil, catchErr
+                                }
+                                if catchResult != nil {
+                                        result = catchResult
                                 }
                         }
                 } else if re, ok := err.(*returnError); ok {
@@ -2886,17 +2916,22 @@ func (interp *Interpreter) execTry(node *ast.Node, env *Environment) (*Value, er
                                         errMsg := err.Error()
                                         errObj := ObjectVal(map[string]*Value{
                                                 "message": StringVal(errMsg),
+                                                "name":    StringVal("Error"),
+                                                "stack":   StringVal("Error: " + errMsg),
                                         })
                                         catchEnv.Define(node.CatchParam, errObj, false)
                                 }
-                                interp.execNode(node.CatchBlock, catchEnv)
+                                catchResult, _ := interp.execNode(node.CatchBlock, catchEnv)
+                                if catchResult != nil {
+                                        result = catchResult
+                                }
                         }
                 }
         }
         if node.FinallyBlock != nil {
                 interp.execNode(node.FinallyBlock, env)
         }
-        return Undefined, nil
+        return result, nil
 }
 
 func (interp *Interpreter) execGuard(node *ast.Node, env *Environment) (*Value, error) {
@@ -3474,12 +3509,19 @@ func (interp *Interpreter) registerBuiltins() {
                 }
                 fn := args[0]
                 ms := int(args[1].ToNumber())
+                if ms < 0 {
+                        ms = 0
+                }
                 go func() {
                         time.Sleep(time.Duration(ms) * time.Millisecond)
                         interp.callFunctionValue(fn, nil, nil)
                 }()
                 return NumberVal(0), nil
         }}), false)
+
+        var intervalMu sync.Mutex
+        intervalMap := make(map[float64]*time.Ticker)
+        var intervalIDCounter float64
 
         g.Define("setInterval", FuncVal(&Function{Name: "setInterval", Native: func(args []*Value, this *Value) (*Value, error) {
                 if len(args) < 2 {
@@ -3491,12 +3533,17 @@ func (interp *Interpreter) registerBuiltins() {
                         ms = 1
                 }
                 ticker := time.NewTicker(time.Duration(ms) * time.Millisecond)
+                intervalMu.Lock()
+                intervalIDCounter++
+                id := intervalIDCounter
+                intervalMap[id] = ticker
+                intervalMu.Unlock()
                 go func() {
                         for range ticker.C {
                                 interp.callFunctionValue(fn, nil, nil)
                         }
                 }()
-                return NumberVal(0), nil
+                return NumberVal(id), nil
         }}), false)
 
         g.Define("clearTimeout", FuncVal(&Function{Name: "clearTimeout", Native: func(args []*Value, this *Value) (*Value, error) {
@@ -3504,6 +3551,16 @@ func (interp *Interpreter) registerBuiltins() {
         }}), false)
 
         g.Define("clearInterval", FuncVal(&Function{Name: "clearInterval", Native: func(args []*Value, this *Value) (*Value, error) {
+                if len(args) == 0 {
+                        return Undefined, nil
+                }
+                id := args[0].ToNumber()
+                intervalMu.Lock()
+                if ticker, ok := intervalMap[id]; ok {
+                        ticker.Stop()
+                        delete(intervalMap, id)
+                }
+                intervalMu.Unlock()
                 return Undefined, nil
         }}), false)
 
@@ -3564,7 +3621,7 @@ func (interp *Interpreter) registerBuiltins() {
                 if len(args) == 0 {
                         return StringVal("undefined"), nil
                 }
-                return StringVal(encodeURIComponent(args[0].ToString())), nil
+                return StringVal(encodeURI(args[0].ToString())), nil
         }}), false)
 
         g.Define("decodeURI", FuncVal(&Function{Name: "decodeURI", Native: func(args []*Value, this *Value) (*Value, error) {
@@ -3915,11 +3972,18 @@ func jsonStringify(val *Value, indent string, depth int) string {
                 if len(val.ObjVal) == 0 {
                         return "{}"
                 }
-                var parts []string
+                // Sort keys for stable, deterministic output.
+                keys := make([]string, 0, len(val.ObjVal))
                 for k, v := range val.ObjVal {
                         if v == nil || v.Tag == TypeFunction {
                                 continue
                         }
+                        keys = append(keys, k)
+                }
+                sort.Strings(keys)
+                var parts []string
+                for _, k := range keys {
+                        v := val.ObjVal[k]
                         key := fmt.Sprintf("%q", k)
                         parts = append(parts, key+":"+jsonStringify(v, indent, depth+1))
                 }
@@ -4141,6 +4205,24 @@ func encodeURIComponent(s string) string {
         for _, r := range s {
                 if (r >= 'A' && r <= 'Z') || (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') ||
                         r == '-' || r == '_' || r == '.' || r == '!' || r == '~' || r == '*' || r == '\'' || r == '(' || r == ')' {
+                        buf.WriteRune(r)
+                } else {
+                        for _, b := range []byte(string(r)) {
+                                buf.WriteString(fmt.Sprintf("%%%02X", b))
+                        }
+                }
+        }
+        return buf.String()
+}
+
+// encodeURI encodes a full URI, preserving characters that are legal URI syntax.
+func encodeURI(s string) string {
+        var buf strings.Builder
+        for _, r := range s {
+                if (r >= 'A' && r <= 'Z') || (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') ||
+                        r == '-' || r == '_' || r == '.' || r == '!' || r == '~' || r == '*' || r == '\'' || r == '(' || r == ')' ||
+                        r == ';' || r == ',' || r == '/' || r == '?' || r == ':' || r == '@' || r == '&' ||
+                        r == '=' || r == '+' || r == '$' || r == '#' {
                         buf.WriteRune(r)
                 } else {
                         for _, b := range []byte(string(r)) {

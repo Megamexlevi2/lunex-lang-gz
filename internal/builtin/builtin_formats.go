@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"lunex/internal/runtime"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/BurntSushi/toml"
@@ -93,6 +94,17 @@ func CSVModule() *runtime.Value {
 			var buf bytes.Buffer
 			w := csv.NewWriter(&buf)
 			w.Comma = separator
+			// Collect column order from the first object row (stable, sorted)
+			var objKeys []string
+			for _, rowVal := range args[0].ArrVal {
+				if rowVal.Tag == runtime.TypeObject && objKeys == nil {
+					objKeys = make([]string, 0, len(rowVal.ObjVal))
+					for k := range rowVal.ObjVal {
+						objKeys = append(objKeys, k)
+					}
+					sort.Strings(objKeys)
+				}
+			}
 			for _, rowVal := range args[0].ArrVal {
 				if rowVal.Tag == runtime.TypeArray {
 					row := make([]string, len(rowVal.ArrVal))
@@ -101,13 +113,19 @@ func CSVModule() *runtime.Value {
 					}
 					w.Write(row)
 				} else if rowVal.Tag == runtime.TypeObject {
-					keys := make([]string, 0, len(rowVal.ObjVal))
-					for k := range rowVal.ObjVal {
-						keys = append(keys, k)
+					keys := objKeys
+					if keys == nil {
+						keys = make([]string, 0, len(rowVal.ObjVal))
+						for k := range rowVal.ObjVal {
+							keys = append(keys, k)
+						}
+						sort.Strings(keys)
 					}
 					row := make([]string, len(keys))
 					for i, k := range keys {
-						row[i] = rowVal.ObjVal[k].ToString()
+						if v, ok := rowVal.ObjVal[k]; ok {
+							row[i] = v.ToString()
+						}
 					}
 					w.Write(row)
 				}

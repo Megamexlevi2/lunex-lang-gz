@@ -1,16 +1,19 @@
+// Lunex 0.4.2 — Simple HTTP server
 val io   = @import("std.io")
 val http = @import("std.http")
 
 fn main() {
   val server = http.createServer(fn(req, res) {
     if req.url == "/" {
-      res.send("Hello from Lunex 0.4.0!")
+      http.text(res, "Hello from Lunex 0.4.2!", 200)
     } else if req.url == "/ping" {
-      res.json({ status: "ok", version: "0.4.0" })
+      http.json(res, { status: "ok", version: "0.4.2" }, 200)
     } else {
-      res.status(404).send("Not found")
+      http.json(res, { error: "not found" }, 404)
     }
   })
-  io.log("Listening on :3000")
-  server.listen(3000)
+
+  http.listen(server, 3000, "0.0.0.0", fn() {
+    io.log(io.green("Server listening on port 3000"))
+  })
 }

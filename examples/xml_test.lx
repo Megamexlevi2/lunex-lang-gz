@@ -1,51 +1,40 @@
-val io = @import("std.io")
+// Lunex 0.4.2 — XML module demo
+val io  = @import("std.io")
 val xml = @import("std.xml")
-  val src = `
-  <catalog>
-    <book id="1" genre="fiction">
-      <title>The Lunex Way</title>
-      <author>David Dev</author>
-      <price>29.99</price>
-    </book>
-    <book id="2" genre="technical">
-      <title>Go Internals</title>
-      <author>Jane Smith</author>
-      <price>39.99</price>
-    </book>
-  </catalog>
-  `
 
-  io.log("=== Parse + getAttribute ===")
-  val books = xml.query(src, "book")
-  each b in books {
-    io.log("ID: " + xml.getAttribute(b, "id") + " | Genre: " + xml.getAttribute(b, "genre"))
-    io.log("  Title:  " + xml.getText(b.title))
-    io.log("  Author: " + xml.getText(b.author))
-    io.log("  Price:  " + xml.getText(b.price))
-  }
+val src = `
+<catalog>
+  <book id="1" genre="fiction">
+    <title>The Lunex Way</title>
+    <author>David Dev</author>
+    <price>29.99</price>
+  </book>
+  <book id="2" genre="technical">
+    <title>Go Internals</title>
+    <author>Jane Smith</author>
+    <price>39.99</price>
+  </book>
+</catalog>
+`
 
-  io.log("")
-  io.log("=== Validate ===")
-  io.log("Valid XML:   " + xml.validate(src))
-  io.log("Invalid XML: " + xml.validate("<unclosed>"))
+io.log("=== Parse + getAttribute ===")
+val books = xml.query(src, "book")
+each b in books {
+  io.log("ID: " + xml.getAttribute(b, "id") + " | Genre: " + xml.getAttribute(b, "genre"))
+  io.log("  Title:  " + xml.getText(b.title))
+  io.log("  Author: " + xml.getText(b.author))
+  io.log("  Price:  " + xml.getText(b.price))
+}
 
-  io.log("")
-  io.log("=== Stringify ===")
-  val data = { host: "localhost", port: "8080", debug: "true" }
-  val xmlStr = xml.stringify(data, "config", { pretty: true })
-  io.log(xmlStr)
+io.log("")
+io.log("=== Validate ===")
+io.log("Valid XML:   " + xml.validate(src))
+io.log("Invalid XML: " + xml.validate("<unclosed>"))
 
-  io.log("")
-  io.log("=== WriteFile + ReadFile ===")
-  xml.writeFile("/tmp/config.xml", data, "config")
-  val loaded = xml.readFile("/tmp/config.xml")
-  io.log("host from file: " + xml.getText(loaded.host))
+io.log("")
+io.log("=== Stringify ===")
+val data = { host: "localhost", port: "8080", debug: "true" }
+val xmlStr = xml.stringify(data, "config", { pretty: true })
+io.log(xmlStr)
 
-  io.log("")
-  io.log("=== Aliases: toJSON / fromJSON ===")
-  val obj  = xml.toJSON(`<person name="Alice"><age>30</age></person>`)
-  val back = xml.fromJSON(obj, "person")
-  io.log(back)
-
-  io.log("All tests passed.")
-  
+io.log("All done.")

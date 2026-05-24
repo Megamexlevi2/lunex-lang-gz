@@ -1,0 +1,55 @@
+// Lunex 0.4.2 — struct pattern (Lunex has no class keyword)
+val io = @import("std.io")
+
+fn Shape(color) {
+  val self = struct {
+    color = color
+    fn area()      { 0.0 }
+    fn perimeter() { 0.0 }
+    fn describe() {
+      "Shape color=" + self.color +
+      " area=" + self.area() +
+      " perimeter=" + self.perimeter()
+    }
+  }
+  self
+}
+
+fn Circle(color, radius) {
+  val PI = 3.14159265358979
+  val self = struct {
+    color  = color
+    radius = radius
+    fn area()      { PI * self.radius * self.radius }
+    fn perimeter() { 2.0 * PI * self.radius }
+    fn describe()  {
+      "Circle r=" + self.radius + " area=" + self.area()
+    }
+  }
+  self
+}
+
+fn Rectangle(color, w, h) {
+  val self = struct {
+    color  = color
+    width  = w
+    height = h
+    fn area()      { self.width * self.height }
+    fn perimeter() { 2 * (self.width + self.height) }
+    fn describe() {
+      "Rectangle " + self.width + "x" + self.height +
+      " area=" + self.area()
+    }
+  }
+  self
+}
+
+fn main() {
+  val shapes = [
+    Circle("red",  5),
+    Rectangle("blue", 4, 6),
+  ]
+  each s in shapes {
+    io.log(s.describe())
+  }
+}

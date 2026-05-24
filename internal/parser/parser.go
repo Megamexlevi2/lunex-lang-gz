@@ -145,14 +145,23 @@ func (p *Parser) parseBlock() (*ast.Node, error) {
 
 func (p *Parser) parseStmt() (*ast.Node, error) {
         t := p.current()
+        // Catch common mistakes: 'return' and 'class' are not part of Lunex.
+        if t.Type == lexer.IDENTIFIER {
+                switch t.StrVal() {
+                case "return":
+                        p.advance()
+                        return nil, p.errorf(t, "Lunex does not use 'return' — the last expression in a function is its result automatically\n  hint: remove 'return' and leave the value as the final expression")
+                case "class":
+                        p.advance()
+                        return nil, p.errorf(t, "Lunex does not support 'class' — use 'val TypeName = struct { ... }' instead\n  hint: struct groups fields and functions into a named value")
+                }
+        }
         if t.Type == lexer.KEYWORD {
                 switch t.StrVal() {
                 case "var", "val", "let", "const":
                         return p.parseVarDecl()
                 case "fn":
                         return p.parseFnDecl()
-                case "class":
-                        return nil, p.errorf(t, "Lunex does not support 'class' — use 'val TypeName = struct { ... }' instead\n  hint: struct groups fields and functions into a named value")
                 case "enum":
                         return p.parseEnumDecl()
                 case "namespace":
@@ -185,9 +194,6 @@ func (p *Parser) parseStmt() (*ast.Node, error) {
                         return p.parseMatch()
                 case "try":
                         return p.parseTry()
-                case "return":
-                        t2 := p.advance()
-                        return nil, p.errorf(t2, "Lunex does not recognize 'return' — the last expression in a function is its result automatically\n  hint: remove 'return' and leave the value as the final expression")
                 case "throw", "raise":
                         return p.parseThrow()
                 case "break":
@@ -198,8 +204,6 @@ func (p *Parser) parseStmt() (*ast.Node, error) {
                         p.advance()
                         p.eatSemi()
                         return &ast.Node{Type: ast.ContinueStmt, Line: t.Line, Col: t.Col}, nil
-                case "log":
-                        return p.parseLog()
                 case "guard":
                         return p.parseGuard()
                 case "defer":
@@ -238,6 +242,12 @@ func (p *Parser) parseStmt() (*ast.Node, error) {
                 } else {
                         return p.parseDecorated()
                 }
+        }
+
+        // Handle 'log' as a built-in statement keyword even though it is now an IDENTIFIER
+        // (removed from keywords so modules can use it as a variable name).
+        if t.Type == lexer.IDENTIFIER && t.StrVal() == "log" {
+                return p.parseLog()
         }
 
         expr, err := p.parseExpr()
@@ -1589,8 +1599,9 @@ func (p *Parser) parseDecorated() (*ast.Node, error) {
 
 func (p *Parser) parseExprAsBlock() (*ast.Node, error) {
         t := p.current()
-        stmtKws := map[string]bool{"log": true, "assert": true, "return": true, "throw": true, "raise": true, "break": true, "continue": true}
-        if stmtKws[t.StrVal()] && t.Type == lexer.KEYWORD {
+        stmtKws := map[string]bool{"assert": true, "throw": true, "raise": true, "break": true, "continue": true}
+        isLogIdent := t.Type == lexer.IDENTIFIER && t.StrVal() == "log"
+        if (stmtKws[t.StrVal()] && t.Type == lexer.KEYWORD) || isLogIdent {
                 stmt, err := p.parseStmt()
                 if err != nil {
                         return nil, err
@@ -2140,9 +2151,6 @@ func (p *Parser) parsePrimary() (*ast.Node, error) {
                                 return nil, err
                         }
                         return &ast.Node{Type: ast.VoidExpr, Arg: arg, Line: t.Line, Col: t.Col}, nil
-                case "log":
-                        p.advance()
-                        return &ast.Node{Type: ast.Identifier, Name: "log", Line: t.Line, Col: t.Col}, nil
                 case "assert":
                         p.advance()
                         return &ast.Node{Type: ast.Identifier, Name: "assert", Line: t.Line, Col: t.Col}, nil
@@ -2170,6 +2178,17 @@ func (p *Parser) parsePrimary() (*ast.Node, error) {
                         }
                         p.eat(lexer.PUNCTUATION, ")")
                         return &ast.Node{Type: ast.SleepExpr, Ms: ms, Line: t.Line, Col: t.Col}, nil
+                case "try":
+                        p.advance()
+                        if p.check(lexer.OPERATOR, "?") {
+                                p.advance()
+                                expr, err := p.parseExpr()
+                                if err != nil {
+                                        return nil, err
+                                }
+                                return &ast.Node{Type: ast.TrySafeExpr, Expr: expr, Line: t.Line, Col: t.Col}, nil
+                        }
+                        return nil, p.errorf(t, "unexpected 'try' in expression — use 'try? expr' or a 'try { }' block as a statement")
                 case "typeof":
                         p.advance()
                         arg, err := p.parseUnary()
@@ -2513,9 +2532,12 @@ func (p *Parser) parseArrowBody() (*ast.Node, error) {
         t := p.current()
         if t.Type == lexer.KEYWORD {
                 switch t.StrVal() {
-                case "log", "if", "unless", "return", "throw", "raise", "var", "val", "let", "const":
+                case "if", "unless", "throw", "raise", "var", "val", "let", "const":
                         return p.parseStmt()
                 }
+        }
+        if t.Type == lexer.IDENTIFIER && t.StrVal() == "log" {
+                return p.parseStmt()
         }
         return p.parseExpr()
 }

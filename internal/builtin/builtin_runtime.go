@@ -87,7 +87,7 @@ func RuntimeModule(interp interface {
 		"version": runtime.FuncVal(&runtime.Function{
 			Name: "version",
 			Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-				return runtime.StringVal("0.4.0"), nil
+				return runtime.StringVal("0.4.1"), nil
 			},
 		}),
 	})

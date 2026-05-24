@@ -113,6 +113,14 @@ func FsModule() *runtime.Value {
 			return runtime.BoolVal(err == nil), nil
 		}}),
 
+		"moveFile": runtime.FuncVal(&runtime.Function{Name: "moveFile", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+			if len(args) < 2 {
+				return runtime.False, nil
+			}
+			err := os.Rename(args[0].ToString(), args[1].ToString())
+			return runtime.BoolVal(err == nil), nil
+		}}),
+
 		"copy": runtime.FuncVal(&runtime.Function{Name: "copy", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			if len(args) < 2 {
 				return runtime.False, nil
@@ -123,6 +131,29 @@ func FsModule() *runtime.Value {
 			}
 			defer src.Close()
 			dst, err := os.Create(args[1].ToString())
+			if err != nil {
+				return runtime.False, nil
+			}
+			defer dst.Close()
+			_, err = io.Copy(dst, src)
+			return runtime.BoolVal(err == nil), nil
+		}}),
+
+		"copyFile": runtime.FuncVal(&runtime.Function{Name: "copyFile", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+			if len(args) < 2 {
+				return runtime.False, nil
+			}
+			src, err := os.Open(args[0].ToString())
+			if err != nil {
+				return runtime.False, nil
+			}
+			defer src.Close()
+			// Preserve permissions from source
+			srcInfo, err := src.Stat()
+			if err != nil {
+				return runtime.False, nil
+			}
+			dst, err := os.OpenFile(args[1].ToString(), os.O_CREATE|os.O_WRONLY|os.O_TRUNC, srcInfo.Mode())
 			if err != nil {
 				return runtime.False, nil
 			}

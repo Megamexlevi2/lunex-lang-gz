@@ -36,13 +36,6 @@ curl -fsSL https://raw.githubusercontent.com/Megamexlevi2/lunex-lang-gz/main/ins
 iwr https://raw.githubusercontent.com/Megamexlevi2/lunex-lang-gz/main/install.ps1 -UseBasicParsing | iex
 ```
 
-Manual installers:
-
-```text
-install.ps1
-install.sh
-```
-
 </div>
 
 # Source Code
@@ -62,9 +55,9 @@ install.sh
 
 ## Language Notes
 
-- **No `return`** — the last expression in a function body is its result automatically.
-- **No `class`** — use constructor functions + `struct { ... }` for named types.
-- A `main()` function is required as the program entry point.
+- **No `return`** — Lunex does not have a `return` keyword. The last expression in a function body is its result automatically. Using `return` is a parse error.
+- **No `class`** — Lunex does not have a `class` keyword. Use constructor functions + `struct { ... }` for named types. Using `class` is a parse error.
+- A `main()` function is the conventional entry point for programs.
 
 
 ---

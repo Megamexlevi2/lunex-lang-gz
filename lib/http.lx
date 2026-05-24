@@ -1,3 +1,4 @@
+val io = @import("std.io")
 val native = @import("internal.native")
 fn createServer(handler) { native.http.createServer(handler) }
 fn listen(server, port, host, callback) { native.http.listen(server, port, host, callback) }
@@ -23,7 +24,7 @@ fn serve(port, handler) {
     }
   })
   listen(server, port, "0.0.0.0", fn() {
-    native.io.log("listening on port " + port)
+    io.log("listening on port " + port)
   })
   server
 }

@@ -1,21 +1,30 @@
-val os = @import("std.os")
-  use io
+// Lunex 0.4.2 — Spawn (concurrency) demo
+val io = @import("std.io")
 
-  io.log("=== spawn background process ===")
-  val proc = os.spawn("sleep 2")
-  io.log("spawned PID:", proc.pid)
+io.log("=== Concurrent workers ===")
 
-  io.log("doing other work while process runs...")
+val ch = channel()
 
-  val code = proc.wait()
-  io.log("process exited with code:", code)
+fn worker(id) {
+  val sum = 0
+  val i = 0
+  while i < 1000 {
+    sum = sum + i
+    i = i + 1
+  }
+  ch.send({ id: id, sum: sum })
+}
 
-  io.log("")
-  io.log("=== spawn with kill ===")
-  val server = os.spawn("sleep 60")
-  io.log("started long-running process PID:", server.pid)
-  server.kill()
-  io.log("killed")
+spawn worker(1)
+spawn worker(2)
+spawn worker(3)
 
-  io.success("Done")
-  
+val r1 = ch.recv()
+val r2 = ch.recv()
+val r3 = ch.recv()
+
+io.log("worker", r1.id, "sum:", r1.sum)
+io.log("worker", r2.id, "sum:", r2.sum)
+io.log("worker", r3.id, "sum:", r3.sum)
+
+io.success("All workers done")
