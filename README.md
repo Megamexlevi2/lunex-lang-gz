@@ -27,13 +27,13 @@ bash install.sh
 Or install directly using curl:
 
 ```bash
-curl -fsSL https://github.com/Megamexlevi2/lunex-lang-gz/blob/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Megamexlevi2/lunex-lang-gz/main/install.sh | bash
 ```
 
 ## Windows
 
 ```powershell
-iwr https://github.com/Megamexlevi2/lunex-lang-gz/blob/main/install.ps1 -useb | iex
+iwr https://raw.githubusercontent.com/Megamexlevi2/lunex-lang-gz/main/install.ps1 -UseBasicParsing | iex
 ```
 
 Manual installers:
