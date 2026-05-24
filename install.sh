@@ -12,14 +12,52 @@ read_choice() {
   printf '%s' "$choice"
 }
 
+format_bytes() {
+  bytes="$1"
+  awk -v b="$bytes" 'BEGIN {
+    split("B KB MB GB TB", u, " ")
+    i = 1
+    while (b >= 1024 && i < 5) {
+      b /= 1024
+      i++
+    }
+    printf "%.2f %s", b, u[i]
+  }'
+}
+
 download_file() {
   url="$1"
   out="$2"
 
   if command -v curl >/dev/null 2>&1; then
-    curl -fsSL "$url" -o "$out"
+    stats="$(curl -L --fail --progress-bar -o "$out" "$url" -w '%{size_download} %{speed_download}')"
+    set -- $stats
+    bytes="${1:-0}"
+    speed_bps="${2:-0}"
+
+    downloaded="$(format_bytes "$bytes")"
+    speed="$(format_bytes "$speed_bps")/s"
+
+    printf '\n%s\n' "Downloaded: $downloaded"
+    printf '%s\n' "Speed: $speed"
   elif command -v wget >/dev/null 2>&1; then
-    wget -qO "$out" "$url"
+    start="$(date +%s)"
+    wget --show-progress -O "$out" "$url"
+    end="$(date +%s)"
+
+    bytes="$(wc -c < "$out" | tr -d ' ')"
+    elapsed="$((end - start))"
+
+    if [ "$elapsed" -le 0 ]; then
+      elapsed=1
+    fi
+
+    speed_bps=$((bytes / elapsed))
+    downloaded="$(format_bytes "$bytes")"
+    speed="$(format_bytes "$speed_bps")/s"
+
+    printf '\n%s\n' "Downloaded: $downloaded"
+    printf '%s\n' "Speed: $speed"
   else
     printf '%s\n' "Error: curl or wget is required."
     exit 1
@@ -79,6 +117,7 @@ while :; do
   tmp="$(mktemp "$tmpdir/lunex-install.XXXXXX" 2>/dev/null || printf '%s\n' "$tmpdir/lunex-install.$$")"
   url="${REPO}/${asset}"
 
+  printf '\n%s\n' "Downloading $asset..."
   download_file "$url" "$tmp"
 
   mkdir -p "$(dirname "$target")"
