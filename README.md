@@ -48,7 +48,6 @@ install.sh
 # Source Code
 
 [Open Source Page](https://megamexlevi2.github.io/lunex-lang-gz/source/index.html)
-The result is a single binary: `./lunex`.
 
 ---
 
