@@ -406,7 +406,6 @@ val ws       = @import("std.ws")
 val mail     = @import("std.mail")
 val ai       = @import("std.ai")
 val utils    = @import("std.utils")
-val test     = @import("std.test")
 ```
 
 ### Packages (installed via `lunex add`)
@@ -432,8 +431,7 @@ val github  = @import("lunex-github")
 | `ws`       | `@import("std.ws")`      | WebSocket server and client                   | [docs/ws.md](docs/ws.md)                     |
 | `mail`     | `@import("std.mail")`    | SMTP email with HTML                          | [docs/mail.md](docs/mail.md)                 |
 | `ai`       | `@import("std.ai")`      | AI/LLM client (OpenAI-compatible)             | [docs/ai.md](docs/ai.md)                     |
-| `utils`    | `@import("std.utils")`   | Array, string, math utilities                 | [docs/utils.md](docs/utils.md)               |
-| `test`     | `@import("std.test")`    | Unit testing framework                        | [docs/test.md](docs/test.md)                 |
+| `utils`    | `@import("std.utils")`   | Array, string, math utilities                 | [docs/utils.md](docs/utils.md)               |         |
 | `xml`      | `@import("std.xml")`     | XML parse / build                             | [docs/xml.md](docs/xml.md)                   |
 | `os`       | `@import("std.os")`      | Process, signals, platform info               | [docs/os.md](docs/os.md)                     |
 | `redis`    | `@import("std.redis")`   | Redis client                                  | [docs/redis.md](docs/redis.md)               |
@@ -449,15 +447,6 @@ val github  = @import("lunex-github")
 | `alloc`    | `@import("std.alloc")`   | Manual memory allocation                      | [docs/alloc.md](docs/alloc.md)               |
 
 ---
-
-## Build Options
-
-```bash
-./build.sh              # build for current platform
-./build.sh cross        # cross-compile for all platforms
-./build.sh test         # run tests
-./build.sh clean        # remove artifacts
-```
 
 ### Requirements
 
