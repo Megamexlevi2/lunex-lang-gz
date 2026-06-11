@@ -6,9 +6,7 @@ Lunex runs on **Linux**, **macOS**, **Windows**, and **Android (Termux)**.
 
 ## Installation
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/Megamexlevi2/lunex-lang-gz/main/install.sh | sh
-```
+Download the latest version from the release. 
 
 ## Quick Start
 
