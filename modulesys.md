@@ -291,6 +291,10 @@ Output:
 100
 ```
 
+### use of external modules 
+val lune-xml = @import("lunex-lang-gz/lune-xml")
+./lunex install github.com/Megamexlevi2/lunex-lang-gz/lune-xml
+
 ---
 
 ## `.nax` File Format
