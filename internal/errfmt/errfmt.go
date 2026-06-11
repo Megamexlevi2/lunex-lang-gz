@@ -1,4 +1,4 @@
-// Lunex lang
+// Lunex lang — Error Formatting Engine
 // Created by David Dev · GitHub: https://github.com/Megamexlevi2
 // (c) David Dev 2026. License.
 
@@ -10,52 +10,210 @@ import (
 	"strings"
 )
 
+// ── Terminal color support ────────────────────────────────────────────────────
+
 var useColor = os.Getenv("NO_COLOR") == "" && os.Getenv("TERM") != "dumb"
 
-func c(code, t string) string {
+func esc(code, t string) string {
 	if !useColor {
 		return t
 	}
 	return "\x1b[" + code + "m" + t + "\x1b[0m"
 }
 
-func bold(t string) string   { return c("1", t) }
-func dim(t string) string    { return c("2", t) }
-func red(t string) string    { return c("31", t) }
-func green(t string) string  { return c("32", t) }
-func yellow(t string) string { return c("33", t) }
-func blue(t string) string   { return c("34", t) }
-func cyan(t string) string   { return c("36", t) }
-func white(t string) string  { return c("37", t) }
-func gray(t string) string   { return c("90", t) }
+// Base colors
+func bold(t string) string    { return esc("1", t) }
+func dim(t string) string     { return esc("2", t) }
+func italic(t string) string  { return esc("3", t) }
+func underline(t string) string { return esc("4", t) }
+
+// Foreground colors
+func red(t string) string     { return esc("31", t) }
+func green(t string) string   { return esc("32", t) }
+func yellow(t string) string  { return esc("33", t) }
+func blue(t string) string    { return esc("34", t) }
+func magenta(t string) string { return esc("35", t) }
+func cyan(t string) string    { return esc("36", t) }
+func white(t string) string   { return esc("37", t) }
+func gray(t string) string    { return esc("90", t) }
+
+// Bright foreground colors
+func brightRed(t string) string     { return esc("91", t) }
+func brightGreen(t string) string   { return esc("92", t) }
+func brightYellow(t string) string  { return esc("93", t) }
+func brightBlue(t string) string    { return esc("94", t) }
+func brightMagenta(t string) string { return esc("95", t) }
+func brightCyan(t string) string    { return esc("96", t) }
+func brightWhite(t string) string   { return esc("97", t) }
+
+// Severity-specific color sets
+func errColor(t string) string  { return bold(brightRed(t)) }
+func warnColor(t string) string { return bold(brightYellow(t)) }
+func infoColor(t string) string { return bold(brightCyan(t)) }
+func hintColor(t string) string { return bold(brightGreen(t)) }
+
+// ── Error kinds & metadata ────────────────────────────────────────────────────
 
 type ErrorKind string
+type Severity string
 
 const (
-	KindSyntax    ErrorKind = "SyntaxError"
-	KindType      ErrorKind = "TypeError"
-	KindReference ErrorKind = "ReferenceError"
-	KindRuntime   ErrorKind = "RuntimeError"
-	KindImport    ErrorKind = "ImportError"
-	KindAssertion ErrorKind = "AssertionError"
-	KindRange     ErrorKind = "RangeError"
-	KindIO        ErrorKind = "IOError"
-	KindLex       ErrorKind = "LexError"
-	KindParse     ErrorKind = "ParseError"
+	SeverityError   Severity = "error"
+	SeverityWarning Severity = "warning"
+	SeverityInfo    Severity = "info"
+	SeverityHint    Severity = "hint"
 )
 
-var phaseLabel = map[ErrorKind]string{
-	KindLex:       "error[lex]",
-	KindParse:     "error[parse]",
-	KindSyntax:    "error[syntax]",
-	KindType:      "error[type]",
-	KindRuntime:   "error[runtime]",
-	KindReference: "error[scope]",
-	KindImport:    "error[module]",
-	KindIO:        "error[io]",
-	KindAssertion: "error[assertion]",
-	KindRange:     "error[range]",
+const (
+	KindSyntax       ErrorKind = "SyntaxError"
+	KindType         ErrorKind = "TypeError"
+	KindReference    ErrorKind = "ReferenceError"
+	KindRuntime      ErrorKind = "RuntimeError"
+	KindImport       ErrorKind = "ImportError"
+	KindAssertion    ErrorKind = "AssertionError"
+	KindRange        ErrorKind = "RangeError"
+	KindIO           ErrorKind = "IOError"
+	KindLex          ErrorKind = "LexError"
+	KindParse        ErrorKind = "ParseError"
+	KindPermission   ErrorKind = "PermissionError"
+	KindOverflow     ErrorKind = "OverflowError"
+	KindArithmetic   ErrorKind = "ArithmeticError"
+	KindAttribute    ErrorKind = "AttributeError"
+	KindMemory       ErrorKind = "MemoryError"
+	KindTimeout      ErrorKind = "TimeoutError"
+	KindNetwork      ErrorKind = "NetworkError"
+	KindEncoding     ErrorKind = "EncodingError"
+	KindRecursion    ErrorKind = "RecursionError"
+	KindConcurrency  ErrorKind = "ConcurrencyError"
+	KindDeprecated   ErrorKind = "DeprecationWarning"
+	KindStyle        ErrorKind = "StyleWarning"
+	KindSuspect      ErrorKind = "SuspectError"
+)
+
+// kindMeta holds display information for each error kind.
+type kindMeta struct {
+	label    string
+	severity Severity
+	color    func(string) string
+	icon     string
 }
+
+var kindRegistry = map[ErrorKind]kindMeta{
+	KindLex:         {"error[lex]", SeverityError, errColor, "✗"},
+	KindParse:       {"error[parse]", SeverityError, errColor, "✗"},
+	KindSyntax:      {"error[syntax]", SeverityError, errColor, "✗"},
+	KindType:        {"error[type]", SeverityError, errColor, "✗"},
+	KindRuntime:     {"error[runtime]", SeverityError, errColor, "✗"},
+	KindReference:   {"error[scope]", SeverityError, errColor, "✗"},
+	KindImport:      {"error[module]", SeverityError, errColor, "✗"},
+	KindIO:          {"error[io]", SeverityError, errColor, "✗"},
+	KindAssertion:   {"error[assertion]", SeverityError, errColor, "✗"},
+	KindRange:       {"error[range]", SeverityError, errColor, "✗"},
+	KindPermission:  {"error[permission]", SeverityError, errColor, "✗"},
+	KindOverflow:    {"error[overflow]", SeverityError, errColor, "✗"},
+	KindArithmetic:  {"error[arithmetic]", SeverityError, errColor, "✗"},
+	KindAttribute:   {"error[attribute]", SeverityError, errColor, "✗"},
+	KindMemory:      {"error[memory]", SeverityError, errColor, "✗"},
+	KindTimeout:     {"error[timeout]", SeverityError, errColor, "✗"},
+	KindNetwork:     {"error[network]", SeverityError, errColor, "✗"},
+	KindEncoding:    {"error[encoding]", SeverityError, errColor, "✗"},
+	KindRecursion:   {"error[recursion]", SeverityError, errColor, "✗"},
+	KindConcurrency: {"error[concurrency]", SeverityError, errColor, "✗"},
+	KindDeprecated:  {"warning[deprecated]", SeverityWarning, warnColor, "⚠"},
+	KindStyle:       {"warning[style]", SeverityWarning, warnColor, "⚠"},
+	KindSuspect:     {"error[suspect]", SeverityError, warnColor, "⚠"},
+}
+
+// ── Error code display catalog (internal) ────────────────────────────────────
+
+// codeDisplay holds rendering metadata for the source-view underline label.
+// This is separate from the public ErrorCode in codes.go, which holds the
+// human-readable title and fix suggestion.
+type codeDisplay struct {
+	Code      string
+	Short     string
+	Underline string
+}
+
+var codeRegistry = map[string]codeDisplay{
+	// Reference errors
+	"E0001": {"E0001", "undefined variable", "not found in scope"},
+	"E0002": {"E0002", "undefined method on object", "method not found on this type"},
+	"E0003": {"E0003", "value is not callable", "not a function — cannot call"},
+	"E0004": {"E0004", "null/undefined property access", "null access — property does not exist"},
+	"E0005": {"E0005", "cannot reassign immutable binding", "declared as `val` — immutable"},
+	"E0006": {"E0006", "undefined field on struct/object", "field not found on this type"},
+	// Import / module errors
+	"E0010": {"E0010", "module not found", "unresolved module path"},
+	"E0011": {"E0011", "module parse failed", "syntax error in module"},
+	"E0012": {"E0012", "circular import detected", "circular dependency — cycle in import graph"},
+	"E0013": {"E0013", "module execution failed", "error while loading module"},
+	"E0014": {"E0014", "module access denied", "internal module — cannot be imported by user code"},
+	"E0015": {"E0015", "binary module load failed", "cannot decode .nax or .nc file"},
+	// Type errors
+	"E0020": {"E0020", "type mismatch", "incompatible types"},
+	"E0021": {"E0021", "wrong number of arguments", "arity mismatch"},
+	"E0022": {"E0022", "argument type is invalid", "expected different type here"},
+	"E0023": {"E0023", "return type mismatch", "returned type does not match signature"},
+	"E0024": {"E0024", "operator not defined for type", "no operator implementation for this type"},
+	"E0025": {"E0025", "cannot coerce value to target type", "implicit coercion failed"},
+	// Arithmetic / numeric errors
+	"E0030": {"E0030", "division by zero", "divisor is zero — undefined behavior"},
+	"E0031": {"E0031", "integer overflow", "value exceeds numeric bounds"},
+	"E0032": {"E0032", "float is NaN or Inf", "not-a-number or infinite result"},
+	// Range / bounds errors
+	"E0040": {"E0040", "index out of bounds", "index exceeds array/string length"},
+	"E0041": {"E0041", "slice range is invalid", "start > end or negative index"},
+	// Syntax / parse errors
+	"E0050": {"E0050", "unexpected token", "token not expected here"},
+	"E0051": {"E0051", "unexpected end of file", "file ended before expression was complete"},
+	"E0052": {"E0052", "missing closing delimiter", "unclosed bracket, paren, or brace"},
+	"E0053": {"E0053", "invalid escape sequence in string", "unrecognized escape sequence"},
+	"E0054": {"E0054", "invalid number literal", "malformed numeric literal"},
+	"E0055": {"E0055", "duplicate key in object literal", "key already defined"},
+	// Runtime errors
+	"E0060": {"E0060", "stack overflow — max call depth reached", "call stack depth exceeded"},
+	"E0061": {"E0061", "assertion failed", "assertion expression evaluated to false"},
+	"E0062": {"E0062", "panic: explicit runtime panic", "user-triggered panic"},
+	"E0063": {"E0063", "I/O operation failed", "I/O error"},
+	"E0064": {"E0064", "permission denied", "insufficient permissions"},
+	"E0065": {"E0065", "operation timed out", "deadline exceeded"},
+	"E0066": {"E0066", "network error", "network unreachable or connection refused"},
+	"E0067": {"E0067", "encoding error", "byte sequence is not valid UTF-8"},
+	"E0068": {"E0068", "memory allocation failed", "out of memory"},
+	"E0069": {"E0069", "concurrent write detected", "data race on shared value"},
+	// Deprecated / warning
+	"W0001": {"W0001", "use of deprecated symbol", "deprecated — will be removed in a future release"},
+	"W0002": {"W0002", "shadowed variable", "this declaration shadows an outer binding"},
+	"W0003": {"W0003", "unreachable code", "code after this point is never executed"},
+	"W0004": {"W0004", "unused variable", "declared but never used"},
+	"W0005": {"W0005", "implicit type coercion", "implicit coercion may lose precision"},
+	"W0006": {"W0006", "multiple statements on one line", "split each statement onto its own line"},
+	"W0007": {"W0007", "missing spacing", "add spaces around operators and after commas"},
+	"W0008": {"W0008", "missing space before `{`", "add a space before the opening brace"},
+	"W0009": {"W0009", "semicolon as statement separator", "use newlines instead of semicolons"},
+	"W0010": {"W0010", "minified / single-line program", "expand the program across multiple lines"},
+	"E0070": {"E0070", "missing entry point", "`fn main()` is required"},
+	"E0071": {"E0071", "top-level statement not allowed", "only declarations are allowed at the top level"},
+	"E0072": {"E0072", "explicit main() call not allowed", "`main` is called automatically by the runtime"},
+	// Informal / non-standard codes used internally
+	"UNDEF_VAR":    {"UNDEF_VAR", "undefined variable", "not declared in this scope"},
+	"UNDEF_FUNC":   {"UNDEF_FUNC", "undefined function", "not defined in this scope"},
+	"UNDEF_MOD":    {"UNDEF_MOD", "unresolved module", "module not found"},
+	"CONST_REASSIGN": {"CONST_REASSIGN", "assignment to immutable binding", "`val` binding — cannot reassign"},
+	"NOT_FUNCTION": {"NOT_FUNCTION", "not a callable value", "not a function"},
+	"NULL_ACCESS":  {"NULL_ACCESS", "null dereference", "value is null or undefined"},
+	// Suspect / suspicious-pattern codes
+	"S0001": {"S0001", "for-of over non-iterable", "value is not iterable"},
+	"S0002": {"S0002", "match produced no result", "no arm matched — add a default case"},
+	"S0003": {"S0003", "arithmetic produced NaN", "operand is not a valid number"},
+	"S0004": {"S0004", "array index out of bounds", "index outside valid range"},
+	"S0005": {"S0005", "spread of non-iterable", "value cannot be spread"},
+	"S0006": {"S0006", "spread of null/undefined", "spread target is null or undefined"},
+	"S0007": {"S0007", "call on undefined return", "function returned undefined"},
+}
+
+// ── Data structures ───────────────────────────────────────────────────────────
 
 type StackFrame struct {
 	FnName string
@@ -64,22 +222,40 @@ type StackFrame struct {
 	Col    int
 }
 
+// SecondaryLabel is an additional labeled span shown in the source view.
+type SecondaryLabel struct {
+	Line    int
+	Col     int
+	Message string
+}
+
 type LunexError struct {
-	Message    string
-	File       string
-	Line       int
-	Col        int
-	Phase      string
-	Kind       ErrorKind
-	Suggestion string
-	Source     string
-	Lines      []string
-	Stack      []StackFrame
-	Notes      []string
-	Similar    []string
-	Code       string
-	ExBad      string
-	ExGood     string
+	// Core fields
+	Message string
+	File    string
+	Line    int
+	Col     int
+	Kind    ErrorKind
+	Code    string // "E0001", "UNDEF_VAR", "W0002", etc.
+
+	// Source display
+	Lines           []string        // all lines of the source file
+	SecondaryLabels []SecondaryLabel // additional underlines (e.g. "declared here")
+
+	// Suggestions / help
+	Suggestion string   // overrides auto-generated suggestions when set
+	Notes      []string // informational lines rendered below the error
+	Similar    []string // similar names found in scope (for spell-check suggestions)
+
+	// Bad/good code example
+	ExBad  string
+	ExGood string
+
+	// Call stack
+	Stack []StackFrame
+
+	// Internal / legacy
+	Phase string // used only when Kind has no registry entry
 }
 
 func (e *LunexError) Error() string { return e.Message }
@@ -93,6 +269,19 @@ func (e *LunexError) WithStack(frames []StackFrame) *LunexError {
 	e.Stack = frames
 	return e
 }
+
+func (e *LunexError) WithSecondary(line, col int, msg string) *LunexError {
+	e.SecondaryLabels = append(e.SecondaryLabels, SecondaryLabel{line, col, msg})
+	return e
+}
+
+func (e *LunexError) WithExample(bad, good string) *LunexError {
+	e.ExBad = bad
+	e.ExGood = good
+	return e
+}
+
+// ── Levenshtein / fuzzy matching ─────────────────────────────────────────────
 
 func levenshtein(a, b string) int {
 	m, n := len(a), len(b)
@@ -130,6 +319,15 @@ func minInt(a, b int) int {
 	return b
 }
 
+func maxInt(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+// FindSimilar returns up to 3 names from `names` that are similar to `name`
+// using Levenshtein distance and shared prefix heuristics.
 func FindSimilar(name string, names []string) []string {
 	nl := strings.ToLower(name)
 	type scored struct {
@@ -143,21 +341,20 @@ func FindSimilar(name string, names []string) []string {
 		}
 		nl2 := strings.ToLower(n)
 		dist := levenshtein(nl, nl2)
-		maxLen := len(nl)
-		if len(nl2) > maxLen {
-			maxLen = len(nl2)
-		}
+		maxLen := maxInt(len(nl), len(nl2))
 		threshold := maxLen / 2
 		if threshold < 3 {
 			threshold = 3
 		}
+		prefixLen := minInt(4, minInt(len(nl), len(nl2)))
 		shareStart := len(nl) >= 3 && len(nl2) >= 3 &&
-			(strings.HasPrefix(nl, nl2[:minInt(4, len(nl2))]) ||
-				strings.HasPrefix(nl2, nl[:minInt(4, len(nl))]))
+			(strings.HasPrefix(nl, nl2[:prefixLen]) ||
+				strings.HasPrefix(nl2, nl[:prefixLen]))
 		if dist <= threshold || shareStart {
 			results = append(results, scored{n, dist})
 		}
 	}
+	// Insertion sort (stable, good enough for small N)
 	for i := 1; i < len(results); i++ {
 		for j := i; j > 0 && results[j].dist < results[j-1].dist; j-- {
 			results[j], results[j-1] = results[j-1], results[j]
@@ -173,19 +370,57 @@ func FindSimilar(name string, names []string) []string {
 	return out
 }
 
+// ── Source view rendering ─────────────────────────────────────────────────────
+
 func isIdentChar(c byte) bool {
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
 		(c >= '0' && c <= '9') || c == '_'
 }
 
-func buildSourceView(lines []string, line, col int, underlineLabel string) string {
+func tokenEndCol(src string, col int) int {
+	end := col
+	for end < len(src) && isIdentChar(src[end]) {
+		end++
+	}
+	if end-col < 1 {
+		end = col + 1
+	}
+	return end
+}
+
+// buildSourceView renders a mini source window around `line` with a primary
+// caret underline at `col` and optional secondary labels.
+func buildSourceView(
+	lines []string,
+	line, col int,
+	primaryLabel string,
+	secondary []SecondaryLabel,
+	severity Severity,
+) string {
 	if len(lines) == 0 || line < 1 || line > len(lines) {
 		return ""
 	}
-	w := len(fmt.Sprintf("%d", line+1))
+
+	// Choose caret/label color based on severity
+	caretColor := red
+	labelColor := yellow
+	switch severity {
+	case SeverityWarning:
+		caretColor = yellow
+		labelColor = brightYellow
+	case SeverityInfo:
+		caretColor = blue
+		labelColor = cyan
+	case SeverityHint:
+		caretColor = green
+		labelColor = brightGreen
+	}
+
+	w := len(fmt.Sprintf("%d", line+2))
 	if w < 3 {
 		w = 3
 	}
+
 	numFmt := func(n int, active bool) string {
 		s := fmt.Sprintf("%*d", w, n)
 		if active {
@@ -194,173 +429,459 @@ func buildSourceView(lines []string, line, col int, underlineLabel string) strin
 		return gray(" "+s+" │")
 	}
 	blank := blue(" " + strings.Repeat(" ", w) + " │")
+	sep := blue(" " + strings.Repeat("─", w+2) + "┤")
 
 	var rows []string
-	if line > 2 {
-		rows = append(rows, dim(numFmt(line-2, false)+" "+lines[line-3]))
+
+	// Context lines before
+	contextBefore := 2
+	for i := maxInt(1, line-contextBefore); i < line; i++ {
+		rows = append(rows, dim(numFmt(i, false)+" "+lines[i-1]))
 	}
-	if line > 1 {
-		rows = append(rows, dim(numFmt(line-1, false)+" "+lines[line-2]))
-	}
+
+	// The error line itself
 	rows = append(rows, numFmt(line, true)+" "+white(lines[line-1]))
 
-	safeCol := col - 1
-	if safeCol < 0 {
-		safeCol = 0
-	}
+	// Primary caret
+	safeCol := maxInt(0, col-1)
 	srcLine := lines[line-1]
-	tokenLen := safeCol
-	for tokenLen < len(srcLine) && isIdentChar(srcLine[tokenLen]) {
-		tokenLen++
-	}
-	tokenLen = tokenLen - safeCol
-	if tokenLen < 3 {
-		tokenLen = 3
-	}
-	caret := red("┬" + strings.Repeat("─", tokenLen-1))
-	label := red("╰── ") + yellow(underlineLabel)
+	tokEnd := tokenEndCol(srcLine, safeCol)
+	spanLen := maxInt(1, tokEnd-safeCol)
+	caret := caretColor("^" + strings.Repeat("~", spanLen-1))
+	labelLine := caretColor("╰── ") + labelColor(primaryLabel)
 	rows = append(rows, blank+" "+strings.Repeat(" ", safeCol)+caret)
-	rows = append(rows, blank+" "+strings.Repeat(" ", safeCol)+label)
+	rows = append(rows, blank+" "+strings.Repeat(" ", safeCol)+labelLine)
 
-	if line < len(lines) {
-		rows = append(rows, dim(numFmt(line+1, false)+" "+lines[line]))
+	// Context lines after
+	contextAfter := 1
+	for i := line + 1; i <= minInt(len(lines), line+contextAfter); i++ {
+		rows = append(rows, dim(numFmt(i, false)+" "+lines[i-1]))
+	}
+
+	// Secondary labeled spans (shown after a separator)
+	if len(secondary) > 0 {
+		rows = append(rows, sep)
+		for _, sl := range secondary {
+			if sl.Line < 1 || sl.Line > len(lines) {
+				continue
+			}
+			rows = append(rows, dim(numFmt(sl.Line, false)+" "+lines[sl.Line-1]))
+			sc := maxInt(0, sl.Col-1)
+			rows = append(rows, blank+" "+strings.Repeat(" ", sc)+cyan("^"))
+			rows = append(rows, blank+" "+strings.Repeat(" ", sc)+cyan("╰── ")+dim(sl.Message))
+		}
 	}
 
 	return strings.Join(rows, "\n")
 }
 
-func getUnderlineLabel(code, msg, name string) string {
-	switch code {
-	case "E0001", "UNDEF_VAR":
-		return "`" + name + "` not found in scope"
-	case "E0002":
-		return "method not found"
-	case "E0003", "NOT_FUNCTION":
-		return "not callable"
-	case "E0004", "NULL_ACCESS":
-		return "null/undefined — cannot read property"
-	case "UNDEF_FUNC":
-		return "not defined in this scope"
-	case "CONST_REASSIGN":
-		return "`" + name + "` is immutable (val)"
+// ── Underline label resolution ────────────────────────────────────────────────
+
+func resolveUnderlineLabel(code, msg, name string) string {
+	if ec, ok := codeRegistry[code]; ok && ec.Underline != "" {
+		// Inject name if the underline message references it
+		ul := ec.Underline
+		if name != "" && strings.Contains(ul, "this") {
+			ul = "`" + name + "` — " + ul
+		}
+		return ul
 	}
 	lower := strings.ToLower(msg)
-	if strings.Contains(lower, "not defined") || strings.Contains(lower, "not declared") {
+	switch {
+	case strings.Contains(lower, "not defined") || strings.Contains(lower, "not declared"):
 		return "not declared in this scope"
-	}
-	if strings.Contains(lower, "is not a function") || strings.Contains(lower, "not callable") {
-		return "not a function"
-	}
-	if strings.Contains(lower, "type") {
+	case strings.Contains(lower, "is not a function") || strings.Contains(lower, "not callable"):
+		return "not a function — cannot invoke"
+	case strings.Contains(lower, "immutable") || strings.Contains(lower, "cannot reassign"):
+		return "immutable binding — declared with `val`"
+	case strings.Contains(lower, "null") || strings.Contains(lower, "undefined"):
+		return "may be null or undefined"
+	case strings.Contains(lower, "type"):
 		return "type error originates here"
+	case strings.Contains(lower, "expected"):
+		return "unexpected token here"
 	}
 	return "error originates here"
 }
 
-func getSuggestions(code, name, msg string, similar []string) []string {
-	var sugs []string
-	lower := strings.ToLower(msg)
+// ── Suggestion engine ─────────────────────────────────────────────────────────
 
-	switch code {
-	case "E0001":
-		// If the undefined name matches a known stdlib module, suggest importing it.
-		knownStdlib := map[string]string{
-			"io": "std.io", "fs": "std.fs", "http": "std.http",
-			"crypto": "std.crypto", "db": "std.db", "env": "std.env",
-			"ws": "std.ws", "mail": "std.mail", "ai": "std.ai",
-			"utils": "std.utils", "validate": "std.validate", "os": "std.os",
-			"jwt": "std.jwt", "redis": "std.redis", "postgres": "std.postgres",
-			"mysql": "std.mysql", "stripe": "std.stripe", "oauth2": "std.oauth2",
-			"graphql": "std.graphql", "rabbitmq": "std.rabbitmq", "excel": "std.excel",
-			"pdf": "std.pdf", "csv": "std.csv", "yaml": "std.yaml", "toml": "std.toml",
-			"markdown": "std.markdown", "mustache": "std.mustache", "xml": "std.xml",
-			"alloc": "std.alloc", "zip": "std.zip", "regex": "std.regex",
-			"math": "std.math", "datetime": "std.datetime", "path": "std.path",
-			"compress": "std.compress", "cache": "std.cache", "logger": "std.logger",
-			"queue": "std.queue", "test": "std.test",
-		}
-		if stdlibName, ok := knownStdlib[name]; ok {
-			sugs = append(sugs, "add this import at the top of your file:  val "+name+" = @import(\""+stdlibName+"\")")
-			return sugs
-		}
-		sugs = append(sugs, "declare `"+name+"` before using it, or check for a typo in the name")
-		if len(similar) > 0 {
-			sugs = append(sugs, "did you mean `"+similar[0]+"`?")
-		}
-		return sugs
-	case "E0002":
-		if len(similar) > 0 {
-			sugs = append(sugs, "did you mean `"+similar[0]+"`?")
-		} else {
-			sugs = append(sugs, "check the spelling and verify the module exports this method")
-		}
-		return sugs
-	case "E0003":
-		sugs = append(sugs, "only values declared with `fn` are callable")
-		sugs = append(sugs, "check the value is not null/undefined before calling it")
-		return sugs
-	case "E0004":
-		sugs = append(sugs, "guard against null before accessing properties: if "+name+" != null { ... }")
-		sugs = append(sugs, "use optional chaining: "+name+"?.property")
-		return sugs
-	case "E0010", "E0011", "E0012", "E0013", "E0014":
-		sugs = append(sugs, "for local files: use @import(\"./file.lx\") or @import(\"file.lx\") — the file must be in the same directory")
-		sugs = append(sugs, "for stdlib modules: use @import(\"std.io\"), @import(\"std.fs\"), etc.")
-		sugs = append(sugs, "for external packages: run `lunex add <module>` to install it")
-		return sugs
-	case "UNDEF_VAR":
-		sugs = append(sugs, "declare it first:  val "+name+" = <value>")
-		if len(similar) > 0 {
-			quoted := make([]string, minInt(2, len(similar)))
-			for i := range quoted {
-				quoted[i] = "'" + similar[i] + "'"
-			}
-			sugs = append(sugs, "did you mean "+strings.Join(quoted, " or ")+"?")
-		}
-		return sugs
-	case "CONST_REASSIGN":
-		sugs = append(sugs, "use var instead:  var "+name+" = <value>")
-		sugs = append(sugs, "or create a new binding:  val "+name+"2 = newValue")
-		return sugs
-	case "NOT_FUNCTION":
-		sugs = append(sugs, "'"+name+"' is not a function — check what it actually holds")
-		sugs = append(sugs, "if it comes from a module, make sure the module exports it as a function")
-		return sugs
-	case "NULL_ACCESS":
-		sugs = append(sugs, "guard first:  if "+name+" != null { ... }")
-		sugs = append(sugs, "use optional chaining:  "+name+"?.property")
-		sugs = append(sugs, "provide a fallback:  "+name+" ?? defaultValue")
-		return sugs
-	}
-
-	if strings.Contains(lower, "is not a function") || strings.Contains(lower, "not callable") {
-		sugs = append(sugs, "make sure the value is declared as a function with 'fn' before calling it")
-	} else if strings.Contains(lower, "is not defined") || strings.Contains(lower, "not declared") {
-		sugs = append(sugs, "declare the variable before use, or check for typos in the name")
-		if len(similar) > 0 {
-			sugs = append(sugs, "did you mean '"+similar[0]+"'?")
-		}
-	} else if strings.Contains(lower, "cannot reassign") || strings.Contains(lower, "immutable") {
-		sugs = append(sugs, "use 'var' instead of 'val' if you need a mutable variable")
-	} else if strings.Contains(lower, "unexpected token") {
-		sugs = append(sugs, "check for missing brackets, colons, or keywords near this position")
-	} else if strings.Contains(lower, "division by zero") {
-		sugs = append(sugs, "guard the denominator with an 'if' check before dividing")
-	} else if strings.Contains(lower, "cannot resolve module") {
-		sugs = append(sugs, "run 'lunex add <module>' to install, or verify the module name in the stdlib list")
-	} else if strings.Contains(lower, "stack overflow") || strings.Contains(lower, "recursion") {
-		sugs = append(sugs, "add a base case to your recursive function to stop infinite recursion")
-	} else if strings.Contains(lower, "index out of range") || strings.Contains(lower, "out of bounds") {
-		sugs = append(sugs, "check the array length before accessing an index: 'if i < arr.length'")
-	} else if strings.Contains(lower, "null") || strings.Contains(lower, "undefined") {
-		sugs = append(sugs, "guard the value:  if x != null { ... }")
-		sugs = append(sugs, "use optional chaining:  x?.property")
-	}
-	return sugs
+// knownStdlib maps bare names to their stdlib import path.
+var knownStdlib = map[string]string{
+	"http":     "std.http",
+	"https":    "std.http",
+	"fs":       "std.fs",
+	"io":       "std.io",
+	"crypto":   "std.crypto",
+	"db":       "std.db",
+	"ws":       "std.ws",
+	"jwt":      "std.jwt",
+	"math":     "std.math",
+	"datetime": "std.datetime",
+	"time":     "std.datetime",
+	"os":       "std.os",
+	"regex":    "std.regex",
+	"re":       "std.regex",
+	"env":      "std.env",
+	"utils":    "std.utils",
+	"json":     "std.json",
+	"path":     "std.path",
+	"url":      "std.url",
+	"process":  "std.process",
+	"rand":     "std.rand",
+	"fmt":      "std.fmt",
+	"bytes":    "std.bytes",
+	"strings":  "std.strings",
+	"net":      "std.net",
+	"test":     "std.test",
+	"assert":   "std.assert",
 }
 
+func buildSuggestions(code, name, msg string, similar []string) []string {
+	var out []string
+	lower := strings.ToLower(msg)
+
+	add := func(s string) { out = append(out, s) }
+
+	switch code {
+	// ── Reference / scope ──
+	case "E0001", "UNDEF_VAR":
+		if stdlib, ok := knownStdlib[strings.ToLower(name)]; ok {
+			add("import it at the top of your file:  val " + name + " = @import(\"" + stdlib + "\")")
+			return out
+		}
+		// If it looks like a function call (common pattern), give function-specific help.
+		if strings.Contains(lower, "variable") && !strings.Contains(lower, "val ") {
+			add("if `" + name + "` is a function, declare it with:  fn " + name + "(...) { ... }")
+			add("functions declared inside `main` are hoisted — but only within the same block")
+		} else {
+			add("declare it before using it:  val " + name + " = <value>")
+		}
+		if len(similar) > 0 {
+			add("did you mean `" + similar[0] + "`?")
+		}
+		return out
+
+	case "E0002":
+		if len(similar) > 0 {
+			add("did you mean `" + similar[0] + "`?")
+		} else {
+			add("verify the method name and check the module's exported API")
+		}
+		add("use `@inspect(value)` to see available methods at runtime")
+		return out
+
+	case "E0003", "NOT_FUNCTION":
+		add("`" + name + "` holds a non-function value — only `fn`-declared values are callable")
+		add("check that it was not accidentally overwritten or shadowed")
+		return out
+
+	case "E0004", "NULL_ACCESS":
+		add("guard the value before accessing it:  if " + name + " != null { ... }")
+		add("use optional chaining:  " + name + "?.property")
+		add("provide a fallback with the nullish operator:  " + name + " ?? defaultValue")
+		return out
+
+	case "E0005", "CONST_REASSIGN":
+		add("use `var` instead of `val` to declare a mutable binding:  var " + name + " = <value>")
+		add("or introduce a new binding:  val " + name + "2 = newValue")
+		return out
+
+	case "E0006":
+		add("check the field name against the struct/object definition")
+		if len(similar) > 0 {
+			add("did you mean `" + similar[0] + "`?")
+		}
+		return out
+
+	// ── Import / module ──
+	case "E0010", "UNDEF_MOD":
+		add("for local files:   @fimport(\"./file.lx\") — source")
+		add("                   @fimport(\"./file.nax\") — compiled archive")
+		add("                   @fimport(\"./file.nc\")  — bytecode")
+		add("for stdlib:        @import(\"std.io\"), @import(\"std.fs\"), @import(\"std.http\"), ...")
+		add("for packages:      run `lunex add <module>` then use @import(\"<module>\")")
+		return out
+
+	case "E0011":
+		add("the module file has a syntax error — fix it before importing")
+		add("run `lunex run <module-file>` directly to see the full parse error")
+		return out
+
+	case "E0012":
+		add("module A imports B, and B imports A — break the cycle")
+		add("consider splitting shared code into a third module that both can import")
+		return out
+
+	case "E0013":
+		add("the module loaded but failed during execution — check the module's own code for errors")
+		return out
+
+	case "E0014":
+		add("this is an internal Lunex module — it cannot be imported by user code")
+		add("use the public standard library instead: @import(\"std.io\"), @import(\"std.fs\"), ...")
+		return out
+
+	case "E0015":
+		add("the file exists but could not be decoded as a Lunex binary module")
+		add("accepted formats: .nax (archive built with `lunex pack`), .nc (built with `lunex build`)")
+		add("rebuild the archive with `lunex pack <directory>` if it may be outdated")
+		return out
+
+	// ── Type errors ──
+	case "E0020":
+		add("add an explicit cast:  as<TargetType>(value)")
+		add("verify the value's actual type with `@typeOf(value)`")
+		return out
+
+	case "E0021":
+		add("check the function signature — count the required parameters")
+		add("use `@arity(fn)` to inspect the expected argument count at runtime")
+		return out
+
+	case "E0022":
+		add("pass the correct type; use `as<T>(value)` to convert explicitly")
+		return out
+
+	case "E0023":
+		add("adjust the return type annotation in the function signature")
+		add("or wrap the return value in a cast:  return as<ExpectedType>(value)")
+		return out
+
+	case "E0024":
+		add("define an operator overload for this type, or convert to a compatible type first")
+		return out
+
+	// ── Arithmetic ──
+	case "E0030":
+		add("guard the divisor:  if denominator != 0 { result = a / denominator }")
+		add("use `math.safeDivide(a, b, fallback)` from std.math")
+		return out
+
+	case "E0031":
+		add("use a wider integer type or check bounds before the operation")
+		add("consider using `math.checkedAdd(a, b)` which returns null on overflow")
+		return out
+
+	case "E0032":
+		add("check for division by zero or operations on infinities before the expression")
+		add("use `math.isFinite(x)` to guard NaN/Inf results")
+		return out
+
+	// ── Range / bounds ──
+	case "E0040":
+		add("check `arr.length` before indexing:  if i < arr.length { ... }")
+		add("use `arr.get(i)` which returns null instead of panicking on bad index")
+		return out
+
+	case "E0041":
+		add("ensure start ≤ end and both are non-negative:  arr[start:end]")
+		return out
+
+	// ── Syntax / parse ──
+	case "E0050":
+		add("check for missing brackets `{}`, parentheses `()`, or colons `:` near this line")
+		add("look for an unclosed string or comment above this line")
+		return out
+
+	case "E0051":
+		add("the file ended unexpectedly — check for unclosed `fn`, `if`, `for`, `{`, or `(`")
+		return out
+
+	case "E0052":
+		add("find the opening `(`, `[`, or `{` and add its matching closing delimiter")
+		return out
+
+	case "E0053":
+		add("valid escape sequences: \\n  \\t  \\r  \\\\  \\\"  \\0  \\uXXXX")
+		return out
+
+	case "E0054":
+		add("numeric literals: 42  3.14  0xFF  0b1010  0o777  1_000_000")
+		return out
+
+	case "E0055":
+		add("remove the duplicate key, or rename one of them")
+		return out
+
+	// ── Runtime ──
+	case "E0060":
+		add("add a base case to your recursive function to stop infinite recursion")
+		add("consider converting deep recursion to an iterative loop")
+		return out
+
+	case "E0061":
+		add("review the condition that triggered the assertion failure")
+		add("use `@debug(value)` to inspect intermediate state before the assertion")
+		return out
+
+	case "E0063":
+		add("check that the file path exists and the process has read/write permissions")
+		add("wrap I/O operations in error handling:  val result = try fs.read(path)")
+		return out
+
+	case "E0064":
+		add("run with elevated permissions, or adjust file/directory ownership")
+		return out
+
+	case "E0065":
+		add("increase the timeout limit, or add cancellation handling")
+		return out
+
+	case "E0066":
+		add("check the network interface is up and the remote host is reachable")
+		add("handle connection errors:  val resp = try http.get(url)")
+		return out
+
+	case "E0067":
+		add("ensure the byte sequence is valid UTF-8, or use bytes.readRaw() for binary data")
+		return out
+
+	case "E0068":
+		add("reduce allocations, or increase the available heap limit")
+		return out
+
+	case "E0069":
+		add("protect shared state with a Mutex or Channel before concurrent access")
+		add("avoid sharing mutable values across goroutines/fibers without synchronization")
+		return out
+
+	// ── Warnings ──
+	case "W0001":
+		add("replace with the updated API — check the migration guide in the docs")
+		return out
+
+	case "W0002":
+		add("rename the inner variable to avoid confusion:  var " + name + "2 = ...")
+		return out
+
+	case "W0003":
+		add("remove the unreachable code, or check for an early `return` / `break` above")
+		return out
+
+	case "W0004":
+		add("remove `" + name + "` if it is not needed, or prefix with `_` to suppress:  val _" + name + " = ...")
+		return out
+
+	case "W0005":
+		add("use an explicit cast to make the conversion intentional:  as<TargetType>(value)")
+		return out
+
+	case "W0006":
+		add("put each statement on its own line — one statement per line is standard Lunex style")
+		return out
+
+	case "W0007":
+		add("add spaces around `=` and after `,`:  fn soma(a, b) { ... }  /  val x = 1")
+		return out
+
+	case "W0008":
+		add("add a space before `{`:  fn main() {  not  fn main(){")
+		return out
+
+	case "W0009":
+		add("replace `;` with a newline — Lunex separates statements with line breaks, not semicolons")
+		return out
+
+	case "W0010":
+		add("expand the program: put each import, function, and statement on its own line")
+		add("minified code produces inaccurate error locations and is hard to debug")
+		return out
+
+	case "E0070":
+		add("every Lunex executable must define `fn main()` as its entry point")
+		add("move your top-level code inside main:\n\n  fn main() {\n    // your code here\n  }")
+		return out
+
+	case "E0071":
+		add("move this code inside `fn main() { ... }`")
+		add("top-level scope only allows: `fn`, `val`, `var`, `class`, `@import`, `@fimport`")
+		return out
+
+	case "E0072":
+		add("remove the `main()` call — Lunex invokes it automatically when the program starts")
+		return out
+
+	// ── UNDEF_FUNC ──
+	case "UNDEF_FUNC":
+		add("define the function before calling it:  fn " + name + "(...) { ... }")
+		if len(similar) > 0 {
+			add("did you mean `" + similar[0] + "`?")
+		}
+		return out
+
+	// ── Suspect / suspicious patterns ──
+	case "S0001":
+		add("only arrays, strings, and objects are iterable with `for ... of`")
+		add("check the value type with `@typeOf(value)` before iterating")
+		return out
+
+	case "S0002":
+		add("add a default (catch-all) arm to handle unmatched subjects:")
+		add("  _ => { /* handle unexpected value */ }")
+		return out
+
+	case "S0003":
+		add("inspect the operands with `@typeOf(x)` — one of them is likely undefined, null, or a non-numeric string")
+		add("use explicit conversion:  Number(x)  or guard:  if @typeOf(x) == \"number\" { ... }")
+		return out
+
+	case "S0004":
+		add("check the array length before indexing:  if i >= 0 && i < arr.length { arr[i] }")
+		add("negative indices are not supported — use arr.length - 1 for the last element")
+		return out
+
+	case "S0005":
+		add("spread (...) works on arrays and objects only")
+		add("wrap in an array if needed:  [...[value]]  or convert first")
+		return out
+
+	case "S0006":
+		add("guard the value before spreading:  if src != null { ...src }")
+		return out
+
+	case "S0007":
+		add("make sure the function actually returns a value — a missing `return` produces undefined")
+		add("check for optional chaining `?.` that may have short-circuited to undefined")
+		return out
+	}
+
+	// ── Fallback: message-based heuristics ──
+	switch {
+	case strings.Contains(lower, "is not a function") || strings.Contains(lower, "not callable"):
+		add("make sure the value is declared as a function with `fn` before calling it")
+	case strings.Contains(lower, "is not defined") || strings.Contains(lower, "not declared"):
+		add("declare the variable before use, or check for a typo in the name")
+		if len(similar) > 0 {
+			add("did you mean `" + similar[0] + "`?")
+		}
+	case strings.Contains(lower, "cannot reassign") || strings.Contains(lower, "immutable"):
+		add("use `var` instead of `val` to declare a mutable binding")
+	case strings.Contains(lower, "unexpected token"):
+		add("check for missing brackets, colons, or keywords near this position")
+	case strings.Contains(lower, "division by zero"):
+		add("guard the denominator with an `if` check before dividing")
+	case strings.Contains(lower, "cannot resolve module"):
+		add("run `lunex add <module>` to install, or verify the module name in the stdlib list")
+	case strings.Contains(lower, "stack overflow") || strings.Contains(lower, "recursion"):
+		add("add a base case to your recursive function to stop infinite recursion")
+	case strings.Contains(lower, "index out of range") || strings.Contains(lower, "out of bounds"):
+		add("check the array length before accessing an index:  if i < arr.length { ... }")
+	case strings.Contains(lower, "null") || strings.Contains(lower, "undefined"):
+		add("guard the value:  if x != null { ... }")
+		add("use optional chaining:  x?.property")
+	case strings.Contains(lower, "type"):
+		add("verify the value's type with `@typeOf(value)` and convert explicitly if needed")
+	case strings.Contains(lower, "expected"):
+		add("review the syntax here — a keyword or delimiter may be missing")
+	}
+	return out
+}
+
+// ── Name extraction from message ─────────────────────────────────────────────
+
 func extractName(msg string) string {
-	for _, q := range []byte{'\'', '"'} {
+	for _, q := range []byte{'\'', '"', '`'} {
 		start := strings.IndexByte(msg, q)
 		if start >= 0 {
 			end := strings.IndexByte(msg[start+1:], q)
@@ -372,44 +893,67 @@ func extractName(msg string) string {
 	return ""
 }
 
+// ── Main formatter ────────────────────────────────────────────────────────────
+
+// Format renders a LunexError as a styled, human-readable string.
 func Format(err *LunexError) string {
 	if err == nil {
 		return ""
 	}
-	label, ok := phaseLabel[err.Kind]
-	if !ok {
-		label = err.Phase
-		if label == "" {
-			label = "error"
+
+	// Resolve display metadata
+	meta, hasMeta := kindRegistry[err.Kind]
+	if !hasMeta {
+		meta = kindMeta{
+			label:    err.Phase,
+			severity: SeverityError,
+			color:    errColor,
+			icon:     "✗",
 		}
-	}
-	// Prepend error code (E0001, E0002, …) when present
-	if err.Code != "" && len(err.Code) == 5 && err.Code[0] == 'E' {
-		// Insert code into label: "error[scope]" → "error[E0001][scope]"
-		bracketIdx := strings.Index(label, "[")
-		if bracketIdx >= 0 {
-			label = label[:bracketIdx] + "[" + err.Code + "]" + label[bracketIdx:]
-		} else {
-			label = label + "[" + err.Code + "]"
+		if meta.label == "" {
+			meta.label = "error"
 		}
-	}
-	msg := err.Message
-	// 'name' is the identifier extracted from the message (used for suggestions/underlines)
-	// It is NOT the error code (E0001 etc.) which is already embedded in the label above
-	name := extractName(msg)
-	if name == "" && err.Code != "" && len(err.Code) > 5 {
-		name = err.Code // fallback for codes like "UNDEF_VAR"
 	}
 
-	sugs := getSuggestions(err.Code, name, msg, err.Similar)
+	label := meta.label
+
+	// Inject error code into the label when present
+	if err.Code != "" {
+		if ec, ok := codeRegistry[err.Code]; ok && ec.Code != "" {
+			// Insert numeric codes (E0001, W0001) but not symbolic ones (UNDEF_VAR)
+			if len(ec.Code) == 5 && (ec.Code[0] == 'E' || ec.Code[0] == 'W') {
+				bracketIdx := strings.Index(label, "[")
+				if bracketIdx >= 0 {
+					label = label[:bracketIdx] + "[" + ec.Code + "]" + label[bracketIdx:]
+				} else {
+					label = label + "[" + ec.Code + "]"
+				}
+			}
+		}
+	}
+
+	msg := err.Message
+	name := extractName(msg)
+	// Fallback: use symbolic code as name when the message has no quotes
+	if name == "" && err.Code != "" && len(err.Code) > 5 {
+		name = err.Code
+	}
+
+	sugs := buildSuggestions(err.Code, name, msg, err.Similar)
 	if err.Suggestion != "" {
 		sugs = []string{err.Suggestion}
 	}
 
-	var out []string
-	out = append(out, "")
-	out = append(out, bold(red(label))+bold(": "+msg))
+	ulLabel := resolveUnderlineLabel(err.Code, msg, name)
 
+	var out []string
+
+	// ── Header ───────────────────────────────────────────────────────────────
+	out = append(out, "")
+	headerIcon := meta.icon + " "
+	out = append(out, meta.color(bold(headerIcon+label))+bold(": "+msg))
+
+	// ── Location arrow ────────────────────────────────────────────────────────
 	if err.File != "" || err.Line > 0 {
 		parts := []string{}
 		if err.File != "" && err.File != "<unknown>" {
@@ -421,71 +965,85 @@ func Format(err *LunexError) string {
 		if err.Col > 1 {
 			parts = append(parts, fmt.Sprintf("%d", err.Col))
 		}
-		out = append(out, blue("  --> ")+strings.Join(parts, ":"))
+		out = append(out, blue("  ──▶ ")+white(strings.Join(parts, ":")))
 	}
 
+	// ── Source view ───────────────────────────────────────────────────────────
 	if len(err.Lines) > 0 && err.Line > 0 {
 		out = append(out, "")
-		ulLabel := getUnderlineLabel(err.Code, msg, name)
-		view := buildSourceView(err.Lines, err.Line, err.Col, ulLabel)
+		view := buildSourceView(err.Lines, err.Line, err.Col, ulLabel, err.SecondaryLabels, meta.severity)
 		if view != "" {
 			out = append(out, view)
 		}
 	}
 
+	// ── Suggestions / help ────────────────────────────────────────────────────
 	if len(sugs) > 0 {
 		out = append(out, "")
 		for i, s := range sugs {
-			prefix := green("  help: ")
-			if i > 0 {
-				prefix = green("     or: ")
+			var prefix string
+			if i == 0 {
+				prefix = hintColor("  help: ")
+			} else {
+				prefix = hintColor("     or: ")
 			}
 			out = append(out, prefix+s)
 		}
 	}
 
+	// ── Similar names ─────────────────────────────────────────────────────────
 	if len(err.Similar) > 0 {
 		out = append(out, "")
 		out = append(out, yellow("  note: ")+"similar names in scope:")
 		for _, s := range err.Similar {
-			out = append(out, "        "+cyan(s))
+			out = append(out, "        "+cyan("• ")+brightCyan(s))
 		}
 	}
 
-	if err.ExBad != "" && err.ExGood != "" {
+	// ── Bad / good code example ───────────────────────────────────────────────
+	if err.ExBad != "" || err.ExGood != "" {
 		out = append(out, "")
-		out = append(out, red("  bad:  ")+dim(err.ExBad))
-		out = append(out, green("  good: ")+green(err.ExGood))
+		if err.ExBad != "" {
+			out = append(out, red("  ✗ avoid: ")+dim(err.ExBad))
+		}
+		if err.ExGood != "" {
+			out = append(out, green("  ✓ use:   ")+brightGreen(err.ExGood))
+		}
 	}
 
+	// ── Stack trace ───────────────────────────────────────────────────────────
 	if len(err.Stack) > 0 {
 		out = append(out, "")
 		out = append(out, gray("  stack trace:"))
 		for i, frame := range err.Stack {
-			if i >= 8 {
-				out = append(out, fmt.Sprintf("    %s", gray(fmt.Sprintf("... %d more frames", len(err.Stack)-i))))
+			if i >= 12 {
+				out = append(out, fmt.Sprintf("  %s", gray(fmt.Sprintf("    ··· %d more frames omitted", len(err.Stack)-i))))
 				break
 			}
 			fn := frame.FnName
 			if fn == "" {
 				fn = "<anonymous>"
 			}
-			line := "    " + gray("at") + " " + yellow(fn)
+			frameStr := "    " + gray("at") + " " + brightYellow(fn)
 			if frame.File != "" {
-				line += " " + gray("("+frame.File)
+				frameStr += " " + gray("(") + dim(frame.File)
 				if frame.Line > 0 {
-					line += gray(fmt.Sprintf(":%d", frame.Line))
+					frameStr += gray(fmt.Sprintf(":%d", frame.Line))
+					if frame.Col > 0 {
+						frameStr += gray(fmt.Sprintf(":%d", frame.Col))
+					}
 				}
-				line += gray(")")
+				frameStr += gray(")")
 			}
-			out = append(out, line)
+			out = append(out, frameStr)
 		}
 	}
 
+	// ── Notes ─────────────────────────────────────────────────────────────────
 	if len(err.Notes) > 0 {
 		out = append(out, "")
 		for _, note := range err.Notes {
-			out = append(out, yellow("  note: ")+note)
+			out = append(out, brightMagenta("  note: ")+note)
 		}
 	}
 
@@ -493,8 +1051,23 @@ func Format(err *LunexError) string {
 	return strings.Join(out, "\n") + "\n"
 }
 
+// Print writes Format(err) to stderr.
 func Print(err *LunexError) {
 	fmt.Fprint(os.Stderr, Format(err))
+}
+
+// ── Convenience constructors ──────────────────────────────────────────────────
+
+func New(kind ErrorKind, code, msg, file string, line, col int, lines []string) *LunexError {
+	return &LunexError{
+		Kind:    kind,
+		Code:    code,
+		Message: msg,
+		File:    file,
+		Line:    line,
+		Col:     col,
+		Lines:   lines,
+	}
 }
 
 func FormatSimple(msg, file string, line, col int) string {
@@ -507,17 +1080,6 @@ func FormatSimple(msg, file string, line, col int) string {
 	})
 }
 
-func New(kind ErrorKind, msg, file string, line, col int, lines []string) *LunexError {
-	return &LunexError{
-		Message: msg,
-		File:    file,
-		Line:    line,
-		Col:     col,
-		Kind:    kind,
-		Lines:   lines,
-	}
-}
-
 func SyntaxError(msg, suggestion, file string, line, col int, lines []string) *LunexError {
 	return &LunexError{
 		Message:    msg,
@@ -525,8 +1087,21 @@ func SyntaxError(msg, suggestion, file string, line, col int, lines []string) *L
 		Line:       line,
 		Col:        col,
 		Kind:       KindSyntax,
+		Code:       "E0050",
 		Suggestion: suggestion,
 		Lines:      lines,
+	}
+}
+
+func ParseError(msg, file string, line, col int, lines []string) *LunexError {
+	return &LunexError{
+		Message: msg,
+		File:    file,
+		Line:    line,
+		Col:     col,
+		Kind:    KindParse,
+		Code:    "E0050",
+		Lines:   lines,
 	}
 }
 
@@ -534,45 +1109,111 @@ func NewTypeError(msg, suggestion string) *LunexError {
 	return &LunexError{
 		Message:    msg,
 		Kind:       KindType,
+		Code:       "E0020",
 		Suggestion: suggestion,
+	}
+}
+
+func TypeError(msg, file string, line, col int, lines []string) *LunexError {
+	return &LunexError{
+		Message: msg,
+		File:    file,
+		Line:    line,
+		Col:     col,
+		Kind:    KindType,
+		Code:    "E0020",
+		Lines:   lines,
 	}
 }
 
 func ReferenceError(name, file string, line, col int, lines []string) *LunexError {
 	return &LunexError{
-		Message:    fmt.Sprintf("'%s' is not defined", name),
-		File:       file,
-		Line:       line,
-		Col:        col,
-		Kind:       KindReference,
-		Code:       "UNDEF_VAR",
-		Suggestion: fmt.Sprintf("declare it with 'val %s = ...' or 'var %s = ...' before use", name, name),
-		Lines:      lines,
+		Message: fmt.Sprintf("'%s' is not defined", name),
+		File:    file,
+		Line:    line,
+		Col:     col,
+		Kind:    KindReference,
+		Code:    "E0001",
+		Lines:   lines,
 	}
 }
 
 func ReferenceErrorWithSimilar(name, file string, line, col int, lines []string, similar []string) *LunexError {
 	return &LunexError{
-		Message:    fmt.Sprintf("'%s' is not defined", name),
-		File:       file,
-		Line:       line,
-		Col:        col,
-		Kind:       KindReference,
-		Code:       "UNDEF_VAR",
-		Suggestion: fmt.Sprintf("declare it with 'val %s = ...' or 'var %s = ...' before use", name, name),
-		Lines:      lines,
-		Similar:    similar,
+		Message: fmt.Sprintf("'%s' is not defined", name),
+		File:    file,
+		Line:    line,
+		Col:     col,
+		Kind:    KindReference,
+		Code:    "E0001",
+		Lines:   lines,
+		Similar: similar,
+	}
+}
+
+func ConstReassignError(name, file string, line, col int, lines []string) *LunexError {
+	return &LunexError{
+		Message: fmt.Sprintf("cannot reassign immutable binding '%s'", name),
+		File:    file,
+		Line:    line,
+		Col:     col,
+		Kind:    KindReference,
+		Code:    "E0005",
+		Lines:   lines,
+	}
+}
+
+func NotCallableError(name, file string, line, col int, lines []string) *LunexError {
+	return &LunexError{
+		Message: fmt.Sprintf("'%s' is not a function", name),
+		File:    file,
+		Line:    line,
+		Col:     col,
+		Kind:    KindType,
+		Code:    "E0003",
+		Lines:   lines,
+	}
+}
+
+func NullAccessError(name, file string, line, col int, lines []string) *LunexError {
+	return &LunexError{
+		Message: fmt.Sprintf("cannot read property of null: '%s'", name),
+		File:    file,
+		Line:    line,
+		Col:     col,
+		Kind:    KindRuntime,
+		Code:    "E0004",
+		Lines:   lines,
 	}
 }
 
 func ImportError(mod, file string, line int) *LunexError {
 	return &LunexError{
-		Message:    fmt.Sprintf("cannot resolve module '%s'", mod),
-		File:       file,
-		Line:       line,
-		Kind:       KindImport,
-		Code:       "UNDEF_MOD",
-		Suggestion: fmt.Sprintf("check that '%s' is installed with 'lunex add %s' or is a valid stdlib module", mod, mod),
+		Message: fmt.Sprintf("cannot resolve module '%s'", mod),
+		File:    file,
+		Line:    line,
+		Kind:    KindImport,
+		Code:    "E0010",
+	}
+}
+
+func ImportNoExportError(mod, export, file string, line int) *LunexError {
+	return &LunexError{
+		Message: fmt.Sprintf("module '%s' has no export named '%s'", mod, export),
+		File:    file,
+		Line:    line,
+		Kind:    KindImport,
+		Code:    "E0011",
+	}
+}
+
+func CircularImportError(mod, file string, line int) *LunexError {
+	return &LunexError{
+		Message: fmt.Sprintf("circular import detected: '%s' is already being loaded", mod),
+		File:    file,
+		Line:    line,
+		Kind:    KindImport,
+		Code:    "E0012",
 	}
 }
 
@@ -582,35 +1223,106 @@ func AssertionError(expr, file string, line int, lines []string) *LunexError {
 		File:    file,
 		Line:    line,
 		Kind:    KindAssertion,
+		Code:    "E0061",
 		Lines:   lines,
 	}
 }
+
+func DivisionByZeroError(file string, line, col int, lines []string) *LunexError {
+	return &LunexError{
+		Message: "division by zero",
+		File:    file,
+		Line:    line,
+		Col:     col,
+		Kind:    KindArithmetic,
+		Code:    "E0030",
+		Lines:   lines,
+	}
+}
+
+func IndexOutOfBoundsError(index, length int, file string, line, col int, lines []string) *LunexError {
+	return &LunexError{
+		Message: fmt.Sprintf("index %d out of bounds for length %d", index, length),
+		File:    file,
+		Line:    line,
+		Col:     col,
+		Kind:    KindRange,
+		Code:    "E0040",
+		Lines:   lines,
+	}
+}
+
+func StackOverflowError(depth int, file string, line int) *LunexError {
+	return &LunexError{
+		Message: fmt.Sprintf("maximum call stack depth exceeded (%d frames)", depth),
+		File:    file,
+		Line:    line,
+		Kind:    KindRecursion,
+		Code:    "E0060",
+	}
+}
+
+func DeprecationWarning(name, replacement, file string, line, col int, lines []string) *LunexError {
+	e := &LunexError{
+		Message: fmt.Sprintf("'%s' is deprecated", name),
+		File:    file,
+		Line:    line,
+		Col:     col,
+		Kind:    KindDeprecated,
+		Code:    "W0001",
+		Lines:   lines,
+	}
+	if replacement != "" {
+		e.Notes = []string{"use `" + replacement + "` instead"}
+	}
+	return e
+}
+
+func UnusedVariableWarning(name, file string, line, col int, lines []string) *LunexError {
+	return &LunexError{
+		Message: fmt.Sprintf("variable '%s' is declared but never used", name),
+		File:    file,
+		Line:    line,
+		Col:     col,
+		Kind:    KindDeprecated,
+		Code:    "W0004",
+		Lines:   lines,
+	}
+}
+
+// ── SuggestForMessage — standalone suggestion from a raw message ──────────────
 
 func SuggestForMessage(msg string) string {
 	lower := strings.ToLower(msg)
 	switch {
 	case strings.Contains(lower, "is not a function") || strings.Contains(lower, "not callable"):
-		return "make sure the value is declared as a function with 'fn' before calling it"
+		return "make sure the value is declared as a function with `fn` before calling it"
 	case strings.Contains(lower, "is not defined") || strings.Contains(lower, "not declared"):
 		return "declare the variable before use, or check for typos in the name"
 	case strings.Contains(lower, "cannot reassign") || strings.Contains(lower, "immutable"):
-		return "use 'var' instead of 'val' if you need a mutable variable"
+		return "use `var` instead of `val` if you need a mutable binding"
 	case strings.Contains(lower, "unexpected token"):
 		return "check for missing brackets, colons, or keywords near this position"
 	case strings.Contains(lower, "expected"):
 		return "review the syntax here — a keyword or delimiter may be missing"
 	case strings.Contains(lower, "division by zero"):
-		return "guard the denominator with an 'if' check before dividing"
+		return "guard the denominator with an `if` check before dividing"
 	case strings.Contains(lower, "null") || strings.Contains(lower, "undefined"):
-		return "use 'if x != null' or optional chaining 'x?.prop' to safely access nullable values"
+		return "use `if x != null` or optional chaining `x?.prop` to safely access nullable values"
 	case strings.Contains(lower, "cannot resolve module"):
-		return "run 'lunex add <module>' to install, or check the module name in the stdlib list"
+		return "run `lunex add <module>` to install, or check the module name in the stdlib list"
 	case strings.Contains(lower, "stack overflow") || strings.Contains(lower, "recursion"):
 		return "add a base case to your recursive function to stop infinite recursion"
 	case strings.Contains(lower, "index out of range") || strings.Contains(lower, "out of bounds"):
-		return "check the array length before accessing an index: 'if i < arr.length'"
+		return "check the array length before accessing an index:  if i < arr.length { ... }"
 	case strings.Contains(lower, "cannot read"):
 		return "the value may be null or undefined — use optional chaining (?.) or a guard check"
+	case strings.Contains(lower, "timeout"):
+		return "increase the timeout limit or add cancellation/retry logic"
+	case strings.Contains(lower, "permission"):
+		return "check file ownership and process permissions"
+	case strings.Contains(lower, "encoding") || strings.Contains(lower, "utf"):
+		return "ensure the input is valid UTF-8, or use bytes.readRaw() for binary data"
 	}
 	return ""
 }

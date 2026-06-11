@@ -5,64 +5,58 @@
 package bytecode
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
-	"fmt"
-	"os"
-	"path/filepath"
-	"strconv"
+        "fmt"
+        "lunex/internal/adaptor"
 )
 
+// CacheDir returns the platform-resolved bytecode cache directory.
+// Delegates entirely to the adaptor so that platform quirks (Termux, Android,
+// noexec mounts, missing home directory) are handled in one place.
 func CacheDir() string {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return filepath.Join(os.TempDir(), ".lx", "cache")
-	}
-	return filepath.Join(home, ".lx", "cache")
+        return adaptor.CacheDir()
 }
 
+// CacheKey returns a deterministic hex key for the given source file,
+// incorporating path + mtime + size.
 func CacheKey(absPath string) (string, error) {
-	info, err := os.Stat(absPath)
-	if err != nil {
-		return "", err
-	}
-	h := sha256.New()
-	h.Write([]byte(absPath))
-	h.Write([]byte(strconv.FormatInt(info.ModTime().UnixNano(), 16)))
-	h.Write([]byte(strconv.FormatInt(info.Size(), 16)))
-	return hex.EncodeToString(h.Sum(nil)), nil
+        key, err := adaptor.MemCacheKey(absPath)
+        if err != nil {
+                return "", fmt.Errorf("cache key error: %w", err)
+        }
+        return key, nil
 }
 
+// CacheLookup checks both disk and in-memory cache for compiled bytecode.
 func CacheLookup(absPath string) ([]byte, bool) {
-	key, err := CacheKey(absPath)
-	if err != nil {
-		return nil, false
-	}
-	cachePath := filepath.Join(CacheDir(), key+".nc")
-	data, err := os.ReadFile(cachePath)
-	if err != nil {
-		return nil, false
-	}
-	return data, true
+        return adaptor.CacheLookup(absPath)
 }
 
+// CacheStore writes bytecode to disk (best-effort) and always to the
+// in-memory cache so execution is never blocked by filesystem restrictions.
 func CacheStore(absPath string, ncData []byte) error {
-	key, err := CacheKey(absPath)
-	if err != nil {
-		return fmt.Errorf("cache key error: %w", err)
-	}
-	dir := CacheDir()
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return err
-	}
-	cachePath := filepath.Join(dir, key+".nc")
-	return os.WriteFile(cachePath, ncData, 0600)
+        adaptor.CacheStore(absPath, ncData)
+        return nil
 }
 
+// CacheInvalidate removes the entry for absPath from disk and memory.
 func CacheInvalidate(absPath string) {
-	key, err := CacheKey(absPath)
-	if err != nil {
-		return
-	}
-	os.Remove(filepath.Join(CacheDir(), key+".nc"))
+        adaptor.CacheInvalidate(absPath)
+}
+
+// overrideCacheDir holds a user-specified cache directory, or "" to use the
+// platform default from adaptor.CacheDir().
+var overrideCacheDir string
+
+// SetCacheDir changes the on-disk bytecode cache directory for this process.
+// Pass dir="" to revert to the platform default.  The caller is responsible for
+// creating the directory before calling SetCacheDir.
+func SetCacheDir(dir string) error {
+        overrideCacheDir = dir
+        return nil
+}
+
+// UnpackNAX decodes the .nax archive in data and writes every entry as a file
+// under outDir.  It returns the number of files written and any error.
+func UnpackNAX(data []byte, outDir string) (int, error) {
+        return unpackNAXData(data, outDir)
 }

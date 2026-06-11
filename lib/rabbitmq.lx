@@ -1,4 +1,0 @@
-val native = @import("internal.native")
-fn connect(url) {
-  native.rabbitmq.connect(url)
-}

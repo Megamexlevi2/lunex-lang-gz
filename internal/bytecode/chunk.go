@@ -5,7 +5,6 @@
 package bytecode
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -22,8 +21,17 @@ func NewChunk(name string) *Chunk {
 
 func (c *Chunk) Disassemble() string {
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("=== module: %s ===\n", c.Name))
-	sb.WriteString(fmt.Sprintf("source: %s\n", c.SourceFile))
-	sb.WriteString(fmt.Sprintf("size: %d bytes (encoded)\n", len(c.SourceText)))
+
+	sb.WriteString(c.SourceText)
+	sb.WriteString("\n")
+
 	return sb.String()
+}
+
+func indent(text, pad string) string {
+	lines := strings.Split(text, "\n")
+	for i := range lines {
+		lines[i] = pad + lines[i]
+	}
+	return strings.Join(lines, "\n")
 }

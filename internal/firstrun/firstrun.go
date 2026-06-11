@@ -1,9 +1,12 @@
+//go:build !js
+
 // Created by David Dev · GitHub: https://github.com/Megamexlevi2
 // Package firstrun handles the first-run welcome animation for Lunex.
 package firstrun
 
 import (
         "fmt"
+        "lunex/internal/adaptor"
         "os"
         "path/filepath"
         "runtime"
@@ -95,42 +98,8 @@ func ensureWritableDir(dir string) bool {
         return canWriteDir(dir)
 }
 
-func resolveLunexDir() (string, bool) {
-        if home, err := os.UserHomeDir(); err == nil {
-                dir := filepath.Join(home, ".lx")
-                if ensureWritableDir(dir) {
-                        return dir, true
-                }
-        }
-
-        if cacheDir, err := os.UserCacheDir(); err == nil {
-                dir := filepath.Join(cacheDir, "lunex")
-                if ensureWritableDir(dir) {
-                        return dir, true
-                }
-        }
-
-        userToken := os.Getenv("USER")
-        if userToken == "" {
-                userToken = os.Getenv("USERNAME")
-        }
-        if userToken == "" {
-                userToken = fmt.Sprintf("pid%d", os.Getpid())
-        }
-        tmpDir := filepath.Join(os.TempDir(), "ntl_"+clampStr(userToken, 16))
-        if ensureWritableDir(tmpDir) {
-                return tmpDir, true
-        }
-
-        return "", false
-}
-
 func markerPath() (string, bool) {
-        dir, ok := resolveLunexDir()
-        if !ok {
-                return "", false
-        }
-        return filepath.Join(dir, ".initialized"), true
+        return adaptor.MarkerPath()
 }
 
 func isFirstRun() (bool, string) {
@@ -251,7 +220,11 @@ func showWelcomeAnimation(version string, useColor bool) {
         arch := runtime.GOARCH
         goos := runtime.GOOS
 
-        ntlDir, _ := resolveLunexDir()
+        ntlDir, _ := adaptor.MarkerPath()
+        // MarkerPath returns the .initialized file path; get its directory for display.
+        if ntlDir != "" {
+                ntlDir = filepath.Dir(ntlDir)
+        }
         cacheDisplay := "~/.lx/cache"
         if ntlDir != "" {
                 cacheDisplay = shortenHome(filepath.Join(ntlDir, "cache"))
@@ -259,7 +232,7 @@ func showWelcomeAnimation(version string, useColor bool) {
 
         animateStep("Detecting OS / architecture", goos+"/"+arch, useColor)
         animateStep("Initializing bytecode cache", cacheDisplay, useColor)
-        animateStep("Loading standard library", "42 modules ready", useColor)
+        animateStep("Loading standard library", "13 modules ready", useColor)
         animateStep("Configuring JIT runtime", detectJITLabel(), useColor)
 
         fmt.Println()

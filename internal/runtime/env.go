@@ -7,124 +7,170 @@
 package runtime
 
 import (
-        "fmt"
-        "strings"
+	"lunex/internal/errfmt"
+	"strings"
+	"sync"
 )
 
 type Environment struct {
-        vars   map[string]*Value
-        consts map[string]bool
-        parent *Environment
+	vars    map[string]*Value
+	consts  map[string]bool
+	parent  *Environment
+	escaped bool
+}
+
+// envPool recycles Environment objects to cut GC pressure in tight loops.
+var envPool = sync.Pool{
+	New: func() any {
+		return &Environment{
+			vars:   make(map[string]*Value, 8),
+			consts: make(map[string]bool, 4),
+		}
+	},
 }
 
 func NewEnvironment(parent *Environment) *Environment {
-        return &Environment{
-                vars:   make(map[string]*Value, 8),
-                consts: make(map[string]bool),
-                parent: parent,
-        }
+	e := envPool.Get().(*Environment)
+	// Clear maps without re-allocating (keep capacity, reset length).
+	for k := range e.vars {
+		delete(e.vars, k)
+	}
+	for k := range e.consts {
+		delete(e.consts, k)
+	}
+	e.parent = parent
+	return e
+}
+
+// ReleaseEnvironment returns an environment back to the pool.
+// Call this only when you are sure no live reference to the environment
+// (or its values) remains — typically at the end of a function call or
+// block scope. Forgetting to call it is safe but wastes memory.
+func ReleaseEnvironment(e *Environment) {
+	if e == nil {
+		return
+	}
+	if e.escaped {
+		return
+	}
+	for k := range e.vars {
+		delete(e.vars, k)
+	}
+	for k := range e.consts {
+		delete(e.consts, k)
+	}
+	e.parent = nil
+	envPool.Put(e)
+}
+
+// MarkEscaped marks this environment and all its ancestors as escaped
+// (not eligible for pooling). Call this whenever a closure captures env.
+func MarkEscaped(e *Environment) {
+	for cur := e; cur != nil; cur = cur.parent {
+		if cur.escaped {
+			break
+		}
+		cur.escaped = true
+	}
 }
 
 func (e *Environment) Define(name string, val *Value, isConst bool) {
-        e.vars[name] = val
-        if isConst {
-                e.consts[name] = true
-        }
+	e.vars[name] = val
+	if isConst {
+		e.consts[name] = true
+	}
 }
 
 func (e *Environment) SetLocal(name string, val *Value) {
-        e.vars[name] = val
+	e.vars[name] = val
 }
 
 func (e *Environment) GetLocal(name string) (*Value, bool) {
-        v, ok := e.vars[name]
-        return v, ok
+	v, ok := e.vars[name]
+	return v, ok
 }
 
 func (e *Environment) Set(name string, val *Value) error {
-        if _, ok := e.vars[name]; ok {
-                if e.consts[name] {
-                        return fmt.Errorf("TypeError: cannot reassign constant '%s' — use 'var' instead of 'val' if you need a mutable variable", name)
-                }
-                e.vars[name] = val
-                return nil
-        }
-        if e.parent != nil {
-                if _, ok := e.parent.vars[name]; ok {
-                        if e.parent.consts[name] {
-                                return fmt.Errorf("TypeError: cannot reassign constant '%s' — use 'var' instead of 'val' if you need a mutable variable", name)
-                        }
-                        e.parent.vars[name] = val
-                        return nil
-                }
-                if e.parent.parent != nil {
-                        env := e.parent.parent.find(name)
-                        if env != nil {
-                                if env.consts[name] {
-                                        return fmt.Errorf("TypeError: cannot reassign constant '%s' — use 'var' instead of 'val' if you need a mutable variable", name)
-                                }
-                                env.vars[name] = val
-                                return nil
-                        }
-                }
-        }
-        return fmt.Errorf("ReferenceError: '%s' is not defined — declare it with 'var' or 'val' first", name)
+	if _, ok := e.vars[name]; ok {
+		if e.consts[name] {
+			return errfmt.ConstReassignError(name, "", 0, 0, nil)
+		}
+		e.vars[name] = val
+		return nil
+	}
+	if e.parent != nil {
+		if _, ok := e.parent.vars[name]; ok {
+			if e.parent.consts[name] {
+				return errfmt.ConstReassignError(name, "", 0, 0, nil)
+			}
+			e.parent.vars[name] = val
+			return nil
+		}
+		if e.parent.parent != nil {
+			env := e.parent.parent.find(name)
+			if env != nil {
+				if env.consts[name] {
+					return errfmt.ConstReassignError(name, "", 0, 0, nil)
+				}
+				env.vars[name] = val
+				return nil
+			}
+		}
+	}
+	return errfmt.ReferenceError(name, "", 0, 0, nil)
 }
 
 func (e *Environment) Get(name string) (*Value, bool) {
-        if v, ok := e.vars[name]; ok {
-                return v, true
-        }
-        if e.parent != nil {
-                if v, ok := e.parent.vars[name]; ok {
-                        return v, true
-                }
-                if e.parent.parent != nil {
-                        env := e.parent.parent.find(name)
-                        if env != nil {
-                                return env.vars[name], true
-                        }
-                }
-        }
-        return Undefined, false
+	if v, ok := e.vars[name]; ok {
+		return v, true
+	}
+	if e.parent != nil {
+		if v, ok := e.parent.vars[name]; ok {
+			return v, true
+		}
+		if e.parent.parent != nil {
+			env := e.parent.parent.find(name)
+			if env != nil {
+				return env.vars[name], true
+			}
+		}
+	}
+	return Undefined, false
 }
 
 func (e *Environment) find(name string) *Environment {
-        if _, ok := e.vars[name]; ok {
-                return e
-        }
-        if e.parent != nil {
-                return e.parent.find(name)
-        }
-        return nil
+	cur := e
+	for cur != nil {
+		if _, ok := cur.vars[name]; ok {
+			return cur
+		}
+		cur = cur.parent
+	}
+	return nil
 }
 
 func (e *Environment) Has(name string) bool {
-        return e.find(name) != nil
+	return e.find(name) != nil
 }
 
 func (e *Environment) Parent() *Environment {
-        return e.parent
+	return e.parent
 }
 
 func (e *Environment) AllNames() []string {
-        seen := make(map[string]bool)
-        var collect func(env *Environment)
-        collect = func(env *Environment) {
-                if env == nil {
-                        return
-                }
-                for k := range env.vars {
-                        if !strings.HasPrefix(k, "__") {
-                                seen[k] = true
-                        }
-                }
-                collect(env.parent)
-        }
-        collect(e)
-        names := make([]string, 0, len(seen))
-        for k := range seen {
-                names = append(names, k)
-        }
-        return names
+	seen := make(map[string]bool)
+	cur := e
+	for cur != nil {
+		for k := range cur.vars {
+			if !strings.HasPrefix(k, "__") {
+				seen[k] = true
+			}
+		}
+		cur = cur.parent
+	}
+	names := make([]string, 0, len(seen))
+	for k := range seen {
+		names = append(names, k)
+	}
+	return names
 }

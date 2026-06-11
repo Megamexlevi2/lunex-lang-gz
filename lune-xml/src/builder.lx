@@ -1,0 +1,77 @@
+val nodeLib = @fimport("./node.lx")
+
+fn _escapeXml(s) {
+  var r = s
+  r = r.replace("&",  "&amp;")
+  r = r.replace("<",  "&lt;")
+  r = r.replace(">",  "&gt;")
+  r = r.replace("\"", "&quot;")
+  r = r.replace("'",  "&apos;")
+  r
+}
+
+fn _attrsToString(attrs) {
+  var result = ""
+  val keys = Object.keys(attrs)
+  each k in keys {
+    result = result + " " + k + "=\"" + _escapeXml(str(attrs[k])) + "\""
+  }
+  result
+}
+
+fn _indent(depth) {
+  var s = ""
+  var i = 0
+  while i < depth {
+    s = s + "  "
+    i = i + 1
+  }
+  s
+}
+
+fn _serialize(n, depth) {
+  val pad     = _indent(depth)
+  val attrStr = _attrsToString(n.attrs)
+
+  if n.hasChildren() {
+    var inner = ""
+    each child in n.children {
+      inner = inner + "\n" + _serialize(child, depth + 1)
+    }
+    pad + "<" + n.tag + attrStr + ">" + inner + "\n" + pad + "</" + n.tag + ">"
+  } else if n.text.length > 0 {
+    pad + "<" + n.tag + attrStr + ">" + _escapeXml(n.text) + "</" + n.tag + ">"
+  } else {
+    pad + "<" + n.tag + attrStr + " />"
+  }
+}
+
+// Serialize to full XML document string (with <?xml header)
+fn build(root) {
+  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + _serialize(root, 0)
+}
+
+// Serialize without <?xml header — useful for embedding fragments
+fn buildFragment(n) {
+  _serialize(n, 0)
+}
+
+// Create an empty element
+fn createElement(tag) {
+  nodeLib.newNode(tag)
+}
+
+// Create an element with text content
+fn createTextElement(tag, text) {
+  nodeLib.newTextNode(tag, text)
+}
+
+// Create an element and set multiple attributes at once
+fn createElementWithAttrs(tag, attrs) {
+  val n    = nodeLib.newNode(tag)
+  val keys = Object.keys(attrs)
+  each k in keys {
+    n.setAttribute(k, attrs[k])
+  }
+  n
+}

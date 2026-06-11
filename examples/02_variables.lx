@@ -1,20 +1,37 @@
-val io  = @import("std.io")
-val math = @import("std.math")
+// Example 02 — Variables and destructuring
+val io = @import("std.io")
 
 fn main() {
-  val name   = "Alice"
+  // val = immutable, var = mutable
+  val name   = "Lunex"
   val age    = 30
   val height = 1.75
   val active = true
 
-  io.log("Name:   " + name)
-  io.log("Age:    " + age)
-  io.log("Height: " + height)
-  io.log("Active: " + active)
+  io.log("name:  ", name)
+  io.log("age:   ", age)
+  io.log("height:", height)
+  io.log("active:", active)
 
-  val square = fn(x) { x * x }
-  io.log("5^2 = " + square(5))
+  // var allows reassignment
+  var counter = 0
+  counter = counter + 1
+  io.log("counter:", counter)
 
-  val pi = math.PI
-  io.log("PI = " + pi)
+  // Struct destructuring
+  val user = struct {
+    name = "Alice"
+    role = "admin"
+  }
+  val { name: uname, role } = user
+  io.log("user:", uname, "role:", role)
+
+  // Array destructuring
+  val items = ["first", "second", "third"]
+  val [first, second] = items
+  io.log("first:", first, "second:", second)
+
+  // Template strings
+  val msg = `Hello, ${name}! You are ${age} years old.`
+  io.log(msg)
 }

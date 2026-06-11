@@ -114,13 +114,13 @@ func IoModule() *runtime.Value {
                 for _, c := range cols {
                         sep += strings.Repeat("-", widths[c]+2) + "+"
                 }
-                fmt.Println(sep)
+                runtime.PrintLn(sep)
                 header := "|"
                 for _, c := range cols {
                         header += " " + c + strings.Repeat(" ", widths[c]-len(c)) + " |"
                 }
-                fmt.Println(header)
-                fmt.Println(sep)
+                runtime.PrintLn(header)
+                runtime.PrintLn(sep)
                 for _, row := range data.ArrVal {
                         line := "|"
                         for _, c := range cols {
@@ -132,25 +132,17 @@ func IoModule() *runtime.Value {
                                 }
                                 line += " " + s + strings.Repeat(" ", widths[c]-len(s)) + " |"
                         }
-                        fmt.Println(line)
+                        runtime.PrintLn(line)
                 }
-                fmt.Println(sep)
+                runtime.PrintLn(sep)
         }
 
         return runtime.ObjectVal(map[string]*runtime.Value{
                 "log": runtime.FuncVal(&runtime.Function{Name: "log", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-                        fmt.Println(sprintArgs(args))
+                        runtime.PrintLn(sprintArgs(args))
                         return runtime.Undefined, nil
                 }}),
-                "print": runtime.FuncVal(&runtime.Function{Name: "print", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-                        fmt.Print(sprintArgs(args))
-                        return runtime.Undefined, nil
-                }}),
-                "println": runtime.FuncVal(&runtime.Function{Name: "println", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-                        fmt.Println(sprintArgs(args))
-                        return runtime.Undefined, nil
-                }}),
-                "error": runtime.FuncVal(&runtime.Function{Name: "error", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+                "err": runtime.FuncVal(&runtime.Function{Name: "err", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
                         fmt.Fprintln(os.Stderr, colorize("red", sprintArgs(args)))
                         return runtime.Undefined, nil
                 }}),
@@ -159,16 +151,16 @@ func IoModule() *runtime.Value {
                         return runtime.Undefined, nil
                 }}),
                 "info": runtime.FuncVal(&runtime.Function{Name: "info", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-                        fmt.Println(colorize("cyan", sprintArgs(args)))
+                        runtime.PrintLn(colorize("cyan", sprintArgs(args)))
                         return runtime.Undefined, nil
                 }}),
                 "success": runtime.FuncVal(&runtime.Function{Name: "success", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-                        fmt.Println(colorize("green", "✔ "+sprintArgs(args)))
+                        runtime.PrintLn(colorize("green", "✔ "+sprintArgs(args)))
                         return runtime.Undefined, nil
                 }}),
                 "read": runtime.FuncVal(&runtime.Function{Name: "read", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
                         if len(args) > 0 {
-                                fmt.Print(args[0].ToString())
+                                runtime.Print(args[0].ToString())
                         }
                         line, err := stdin.ReadString('\n')
                         if err != nil {
@@ -178,7 +170,7 @@ func IoModule() *runtime.Value {
                 }}),
                 "readLine": runtime.FuncVal(&runtime.Function{Name: "readLine", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
                         if len(args) > 0 {
-                                fmt.Print(args[0].ToString())
+                                runtime.Print(args[0].ToString())
                         }
                         line, err := stdin.ReadString('\n')
                         if err != nil {
@@ -188,7 +180,7 @@ func IoModule() *runtime.Value {
                 }}),
                 "readInt": runtime.FuncVal(&runtime.Function{Name: "readInt", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
                         if len(args) > 0 {
-                                fmt.Print(args[0].ToString())
+                                runtime.Print(args[0].ToString())
                         }
                         var n float64
                         fmt.Scan(&n)
@@ -224,7 +216,7 @@ func IoModule() *runtime.Value {
                         bar := "[" + strings.Repeat("█", filled) + strings.Repeat("░", 40-filled) + "]"
                         fmt.Printf("\r%s %3.0f%%", bar, pct*100)
                         if current >= total {
-                                fmt.Println()
+                                runtime.PrintLn()
                         }
                         return runtime.Undefined, nil
                 }}),
@@ -242,7 +234,7 @@ func IoModule() *runtime.Value {
                                         return runtime.Undefined, nil
                                 }}),
                                 "stop": runtime.FuncVal(&runtime.Function{Name: "stop", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-                                        fmt.Println()
+                                        runtime.PrintLn()
                                         return runtime.Undefined, nil
                                 }}),
                         }), nil
@@ -262,7 +254,7 @@ func IoModule() *runtime.Value {
                         return runtime.StringVal(tmpl), nil
                 }}),
                 "write": runtime.FuncVal(&runtime.Function{Name: "write", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-                        fmt.Print(sprintArgs(args))
+                        runtime.Print(sprintArgs(args))
                         return runtime.Undefined, nil
                 }}),
                 "red":     colorFn("red"),
@@ -308,7 +300,7 @@ func IoModule() *runtime.Value {
                         if len(args) > 1 {
                                 ch = args[1].ToString()
                         }
-                        fmt.Println(strings.Repeat(ch, n))
+                        runtime.PrintLn(strings.Repeat(ch, n))
                         return runtime.Undefined, nil
                 }}),
                 "banner": runtime.FuncVal(&runtime.Function{Name: "banner", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
@@ -322,7 +314,7 @@ func IoModule() *runtime.Value {
                 }}),
                 "json": runtime.FuncVal(&runtime.Function{Name: "json", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
                         if len(args) > 0 {
-                                fmt.Println(valueToJSON(args[0]))
+                                runtime.PrintLn(valueToJSON(args[0]))
                         }
                         return runtime.Undefined, nil
                 }}),

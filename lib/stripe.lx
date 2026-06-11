@@ -1,4 +1,0 @@
-val native = @import("internal.native")
-fn init(apiKey) {
-  native.stripe.init(apiKey)
-}

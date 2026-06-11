@@ -15,6 +15,7 @@ package builtin
 
 import (
 	"fmt"
+	"lunex/internal/meta"
 	"lunex/internal/runtime"
 )
 
@@ -83,11 +84,11 @@ func RuntimeModule(interp interface {
 			},
 		}),
 
-		// version() — returns the Lunex runtime version string.
+		// version() — returns the Lunex runtime version sourced from version.json.
 		"version": runtime.FuncVal(&runtime.Function{
 			Name: "version",
 			Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-				return runtime.StringVal("0.4.1"), nil
+				return runtime.StringVal(meta.Version()), nil
 			},
 		}),
 	})

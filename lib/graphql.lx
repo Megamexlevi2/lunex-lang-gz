@@ -1,8 +1,0 @@
-val native = @import("internal.native")
-fn buildSchema(options) {
-  native.graphql.buildSchema(options)
-}
-
-fn execute(schema, query, variables) {
-  native.graphql.execute(schema, query, variables)
-}

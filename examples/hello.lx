@@ -1,5 +1,0 @@
-val io = @import("std.io")
-
-fn main() {
-  io.log("Hello, Lunex 0.4.0!")
-}

@@ -9,7 +9,7 @@ David Dev.
 Permission is granted to reference the original Lunex project for
 informational and attribution purposes only.
 
-Forks and derivative projects may not use the names "Lunex" or
+Forks and derivative projects may not use the name
 "lunex-lang" in a manner that implies official affiliation,
 endorsement, or identity with the original project.
 

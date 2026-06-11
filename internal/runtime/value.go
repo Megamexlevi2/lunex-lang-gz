@@ -7,46 +7,46 @@
 package runtime
 
 import (
-        "fmt"
-        "math"
-        "regexp"
-        "sort"
-        "strconv"
-        "strings"
-        "sync"
+	"fmt"
+	"math"
+	"regexp"
+	"sort"
+	"strconv"
+	"strings"
+	"sync"
 )
 
 type ValueType int
 
 const (
-        TypeNull ValueType = iota
-        TypeUndefined
-        TypeBool
-        TypeNumber
-        TypeString
-        TypeArray
-        TypeObject
-        TypeFunction
-        TypeClass
-        TypeInstance
-        TypeRegex
-        TypeChannel
-        TypeError
+	TypeNull ValueType = iota
+	TypeUndefined
+	TypeBool
+	TypeNumber
+	TypeString
+	TypeArray
+	TypeObject
+	TypeFunction
+	TypeClass
+	TypeInstance
+	TypeRegex
+	TypeChannel
+	TypeError
 )
 
 type Value struct {
-        Tag      ValueType
-        BoolVal  bool
-        NumVal   float64
-        StrVal   string
-        ArrVal   []*Value
-        ObjVal   map[string]*Value
-        FnVal    *Function
-        ClsVal   *Class
-        InstVal  *Instance
-        RegexVal *regexp.Regexp
-        ChanVal  *Channel
-        ErrVal   error
+	Tag      ValueType
+	BoolVal  bool
+	NumVal   float64
+	StrVal   string
+	ArrVal   []*Value
+	ObjVal   map[string]*Value
+	FnVal    *Function
+	ClsVal   *Class
+	InstVal  *Instance
+	RegexVal *regexp.Regexp
+	ChanVal  *Channel
+	ErrVal   error
 }
 
 var Null = &Value{Tag: TypeNull}
@@ -54,52 +54,56 @@ var Undefined = &Value{Tag: TypeUndefined}
 var True = &Value{Tag: TypeBool, BoolVal: true}
 var False = &Value{Tag: TypeBool, BoolVal: false}
 
+// intPoolMin / intPoolMax define the small-integer cache range.
+// Keeping this narrow (0..255 + a handful of negatives) saves ~130 MB of
+// heap that the previous 0..1_048_576 pool wasted at process startup.
+// Values outside the range are heap-allocated as before.
 const intPoolMin = -1
-const intPoolMax = 1048576
+const intPoolMax = 255
 
 var intPool [intPoolMax - intPoolMin + 1]*Value
 
 func init() {
-        for i := intPoolMin; i <= intPoolMax; i++ {
-                intPool[i-intPoolMin] = &Value{Tag: TypeNumber, NumVal: float64(i)}
-        }
-        initNumberBuiltins()
+	for i := intPoolMin; i <= intPoolMax; i++ {
+		intPool[i-intPoolMin] = &Value{Tag: TypeNumber, NumVal: float64(i)}
+	}
+	initNumberBuiltins()
 }
 
 func NumberVal(n float64) *Value {
-        i := int(n)
-        if float64(i) == n && i >= intPoolMin && i <= intPoolMax {
-                return intPool[i-intPoolMin]
-        }
-        return &Value{Tag: TypeNumber, NumVal: n}
+	i := int(n)
+	if float64(i) == n && i >= intPoolMin && i <= intPoolMax {
+		return intPool[i-intPoolMin]
+	}
+	return &Value{Tag: TypeNumber, NumVal: n}
 }
 
 func NumberValInt(i int64) *Value {
-        if i >= intPoolMin && i <= intPoolMax {
-                return intPool[i-intPoolMin]
-        }
-        return &Value{Tag: TypeNumber, NumVal: float64(i)}
+	if i >= intPoolMin && i <= intPoolMax {
+		return intPool[i-intPoolMin]
+	}
+	return &Value{Tag: TypeNumber, NumVal: float64(i)}
 }
-func StringVal(s string) *Value   { return &Value{Tag: TypeString, StrVal: s} }
+func StringVal(s string) *Value { return &Value{Tag: TypeString, StrVal: s} }
 func BoolVal(b bool) *Value {
-        if b {
-                return True
-        }
-        return False
+	if b {
+		return True
+	}
+	return False
 }
 func ArrayVal(a []*Value) *Value { return &Value{Tag: TypeArray, ArrVal: a} }
 func ObjectVal(m map[string]*Value) *Value {
-        if m == nil {
-                m = make(map[string]*Value)
-        }
-        return &Value{Tag: TypeObject, ObjVal: m}
+	if m == nil {
+		m = make(map[string]*Value)
+	}
+	return &Value{Tag: TypeObject, ObjVal: m}
 }
-func FuncVal(f *Function) *Value  { return &Value{Tag: TypeFunction, FnVal: f} }
-func ClassVal(c *Class) *Value    { return &Value{Tag: TypeClass, ClsVal: c} }
-func InstVal(i *Instance) *Value  { return &Value{Tag: TypeInstance, InstVal: i} }
+func FuncVal(f *Function) *Value      { return &Value{Tag: TypeFunction, FnVal: f} }
+func ClassVal(c *Class) *Value        { return &Value{Tag: TypeClass, ClsVal: c} }
+func InstVal(i *Instance) *Value      { return &Value{Tag: TypeInstance, InstVal: i} }
 func RegexV(re *regexp.Regexp) *Value { return &Value{Tag: TypeRegex, RegexVal: re} }
-func ChanV(ch *Channel) *Value    { return &Value{Tag: TypeChannel, ChanVal: ch} }
-func ErrorVal(err error) *Value   { return &Value{Tag: TypeError, ErrVal: err} }
+func ChanV(ch *Channel) *Value        { return &Value{Tag: TypeChannel, ChanVal: ch} }
+func ErrorVal(err error) *Value       { return &Value{Tag: TypeError, ErrVal: err} }
 
 func (v *Value) IsTruthy() bool {
         switch v.Tag {
@@ -1130,17 +1134,94 @@ func init() {
                 }
                 return StringVal(string(runes[start:end])), nil
         }})
+        // ── replace(pattern, replacement [, nth]) ──────────────────────────────
+        // Replaces a match inside the string. Supports:
+        //   - String pattern  → replaces the first (or nth) literal occurrence.
+        //   - Regex  pattern  → replaces the first regex match.
+        //   - Function replacement → called with (match, ...captures, offset, original)
+        //     and its return value is used as the replacement string.
+        //   - String replacement with capture references:
+        //       $0 / $&  → full match
+        //       $1 … $9  → numbered capture groups
+        //       $<name>  → named capture groups
+        //       $$       → literal dollar sign
+        //   - Optional 3rd argument (number, string-pattern only):
+        //       positive int → replace that specific 1-based occurrence
+        //       0 or absent  → replace the first occurrence (same as 1)
         _strReplaceVal = FuncVal(&Function{Name: "replace", Native: func(args []*Value, this *Value) (*Value, error) {
                 if len(args) < 2 {
                         return this, nil
                 }
-                return StringVal(strings.Replace(this.StrVal, args[0].ToString(), args[1].ToString(), 1)), nil
+                src := this.StrVal
+
+                // ── regex pattern branch ────────────────────────────────────────
+                if args[0].Tag == TypeRegex {
+                        re := args[0].RegexVal
+                        return strReplaceRegex(src, re, args[1], false)
+                }
+
+                // ── string pattern branch ───────────────────────────────────────
+                pattern := args[0].ToString()
+                if pattern == "" {
+                        // Empty pattern: insert replacement before the first rune (JS-compatible).
+                        repl, err := strResolveReplacement(args[1], "", nil, 0, src)
+                        if err != nil {
+                                return this, err
+                        }
+                        return StringVal(repl + src), nil
+                }
+
+                // Optional nth argument: which occurrence to replace (1-based).
+                nth := 1
+                if len(args) >= 3 && args[2].Tag == TypeNumber {
+                        n := int(args[2].ToNumber())
+                        if n > 0 {
+                                nth = n
+                        }
+                }
+
+                return strReplaceNth(src, pattern, args[1], nth)
         }})
+
+        // ── replaceAll(pattern, replacement) ──────────────────────────────────
+        // Replaces every match inside the string. Supports all the same
+        // pattern/replacement forms as replace(), minus the nth argument.
+        // When pattern is a Regex it must not have the global flag already set
+        // (the function treats it as global automatically).
         _strReplaceAllVal = FuncVal(&Function{Name: "replaceAll", Native: func(args []*Value, this *Value) (*Value, error) {
                 if len(args) < 2 {
                         return this, nil
                 }
-                return StringVal(strings.ReplaceAll(this.StrVal, args[0].ToString(), args[1].ToString())), nil
+                src := this.StrVal
+
+                if args[0].Tag == TypeRegex {
+                        re := args[0].RegexVal
+                        return strReplaceRegex(src, re, args[1], true)
+                }
+
+                pattern := args[0].ToString()
+                if pattern == "" {
+                        // Empty pattern: insert replacement between every rune.
+                        runes := []rune(src)
+                        var sb strings.Builder
+                        for i, r := range runes {
+                                repl, err := strResolveReplacement(args[1], "", nil, i, src)
+                                if err != nil {
+                                        return this, err
+                                }
+                                sb.WriteString(repl)
+                                sb.WriteRune(r)
+                        }
+                        // trailing insertion after last rune
+                        repl, err := strResolveReplacement(args[1], "", nil, len(runes), src)
+                        if err != nil {
+                                return this, err
+                        }
+                        sb.WriteString(repl)
+                        return StringVal(sb.String()), nil
+                }
+
+                return strReplaceNth(src, pattern, args[1], -1) // -1 = all
         }})
         _strRepeatVal = FuncVal(&Function{Name: "repeat", Native: func(args []*Value, this *Value) (*Value, error) {
                 if len(args) == 0 {
@@ -1250,6 +1331,308 @@ func init() {
                 return this, nil
         }})
 }
+
+// ── Replace helpers ───────────────────────────────────────────────────────────
+
+// strResolveReplacement resolves the replacement argument for a single match.
+//
+//   replacement  – a *Value that is either a string template or a callable.
+//   match        – the full match text.
+//   submatches   – numbered capture groups (nil for plain-string patterns).
+//   offset       – byte offset of the match inside src.
+//   src          – the original string being processed.
+func strResolveReplacement(replacement *Value, match string, submatches []string, offset int, src string) (string, error) {
+        // ── Callback replacement ────────────────────────────────────────────────
+        if replacement.Tag == TypeFunction && CallFunction != nil {
+                // Call signature: fn(match, ...captures, offset, original)
+                callArgs := make([]*Value, 0, 2+len(submatches))
+                callArgs = append(callArgs, StringVal(match))
+                for _, sub := range submatches {
+                        callArgs = append(callArgs, StringVal(sub))
+                }
+                callArgs = append(callArgs, NumberVal(float64(offset)), StringVal(src))
+                result, err := CallFunction(replacement, callArgs, nil)
+                if err != nil {
+                        return match, err // on error keep original match
+                }
+                if result == nil || result.Tag == TypeUndefined || result.Tag == TypeNull {
+                        return match, nil
+                }
+                return result.ToString(), nil
+        }
+
+        // ── String template replacement ─────────────────────────────────────────
+        tmpl := replacement.ToString()
+        if !strings.ContainsRune(tmpl, '$') {
+                return tmpl, nil // fast path: no special sequences
+        }
+
+        var sb strings.Builder
+        i := 0
+        for i < len(tmpl) {
+                if tmpl[i] != '$' || i+1 >= len(tmpl) {
+                        sb.WriteByte(tmpl[i])
+                        i++
+                        continue
+                }
+                next := tmpl[i+1]
+                switch {
+                case next == '$':
+                        // $$ → literal $
+                        sb.WriteByte('$')
+                        i += 2
+                case next == '&' || next == '0':
+                        // $& or $0 → full match
+                        sb.WriteString(match)
+                        i += 2
+                case next == '`':
+                        // $` → portion of string before match
+                        if offset >= 0 && offset <= len(src) {
+                                sb.WriteString(src[:offset])
+                        }
+                        i += 2
+                case next == '\'':
+                        // $' → portion of string after match
+                        end := offset + len(match)
+                        if end <= len(src) {
+                                sb.WriteString(src[end:])
+                        }
+                        i += 2
+                case next >= '1' && next <= '9':
+                        // $1–$9 → numbered capture group
+                        idx := int(next - '0')
+                        // Two-digit group: $12
+                        if i+2 < len(tmpl) && tmpl[i+2] >= '0' && tmpl[i+2] <= '9' {
+                                idx2 := idx*10 + int(tmpl[i+2]-'0')
+                                if idx2 < len(submatches) {
+                                        sb.WriteString(submatches[idx2-1])
+                                        i += 3
+                                        continue
+                                }
+                        }
+                        if idx <= len(submatches) {
+                                sb.WriteString(submatches[idx-1])
+                        }
+                        i += 2
+                case next == '<':
+                        // $<name> → named capture group (for regex matches)
+                        end := strings.IndexByte(tmpl[i+2:], '>')
+                        if end < 0 {
+                                sb.WriteByte('$')
+                                i++
+                                continue
+                        }
+                        // Named groups are stored by the regex path; we skip here
+                        // because plain-string replacements have no named groups.
+                        i += 2 + end + 1
+                default:
+                        sb.WriteByte('$')
+                        i++
+                }
+        }
+        return sb.String(), nil
+}
+
+// strReplaceNth replaces occurrences of a plain-string pattern inside src.
+//
+//   nth == -1 → replace all occurrences (replaceAll semantics).
+//   nth >= 1  → replace only that specific 1-based occurrence.
+func strReplaceNth(src, pattern string, replacement *Value, nth int) (*Value, error) {
+        if nth == -1 {
+                // Replace all: walk manually so callbacks receive correct offsets.
+                if replacement.Tag != TypeFunction {
+                        // Fast path for string replacements.
+                        repl, err := strResolveReplacement(replacement, pattern, nil, 0, src)
+                        if err != nil {
+                                return StringVal(src), err
+                        }
+                        return StringVal(strings.ReplaceAll(src, pattern, repl)), nil
+                }
+                var sb strings.Builder
+                remaining := src
+                byteOffset := 0
+                for {
+                        idx := strings.Index(remaining, pattern)
+                        if idx < 0 {
+                                sb.WriteString(remaining)
+                                break
+                        }
+                        sb.WriteString(remaining[:idx])
+                        repl, err := strResolveReplacement(replacement, pattern, nil, byteOffset+idx, src)
+                        if err != nil {
+                                sb.WriteString(pattern)
+                        } else {
+                                sb.WriteString(repl)
+                        }
+                        byteOffset += idx + len(pattern)
+                        remaining = remaining[idx+len(pattern):]
+                }
+                return StringVal(sb.String()), nil
+        }
+
+        // Replace the nth occurrence.
+        count := 0
+        var sb strings.Builder
+        remaining := src
+        byteOffset := 0
+        found := false
+        for {
+                idx := strings.Index(remaining, pattern)
+                if idx < 0 {
+                        sb.WriteString(remaining)
+                        break
+                }
+                count++
+                sb.WriteString(remaining[:idx])
+                if count == nth {
+                        repl, err := strResolveReplacement(replacement, pattern, nil, byteOffset+idx, src)
+                        if err != nil {
+                                sb.WriteString(pattern)
+                        } else {
+                                sb.WriteString(repl)
+                        }
+                        sb.WriteString(remaining[idx+len(pattern):])
+                        found = true
+                        break
+                }
+                sb.WriteString(pattern)
+                byteOffset += idx + len(pattern)
+                remaining = remaining[idx+len(pattern):]
+        }
+        _ = found
+        return StringVal(sb.String()), nil
+}
+
+// strReplaceRegex replaces regex matches inside src.
+//
+//   all == true  → replace all matches (replaceAll / g-flag semantics).
+//   all == false → replace only the first match.
+//
+// Supports:
+//   • String replacement templates ($0/$&, $1-$9, $<name>, $$, $`, $').
+//   • Callback replacement: fn(match, ...captures, offset, original).
+func strReplaceRegex(src string, re *regexp.Regexp, replacement *Value, all bool) (*Value, error) {
+        names := re.SubexpNames() // ["", "name1", "", "name2", ...]
+
+        // Helper: expand a single match using submatches.
+        expand := func(loc []int, subLocs []int) (string, error) {
+                match := src[loc[0]:loc[1]]
+                captures := make([]string, 0, len(subLocs)/2)
+                for i := 0; i < len(subLocs)-1; i += 2 {
+                        s, e := subLocs[i], subLocs[i+1]
+                        if s < 0 {
+                                captures = append(captures, "")
+                        } else {
+                                captures = append(captures, src[s:e])
+                        }
+                }
+
+                if replacement.Tag == TypeFunction && CallFunction != nil {
+                        callArgs := make([]*Value, 0, 2+len(captures))
+                        callArgs = append(callArgs, StringVal(match))
+                        for _, c := range captures {
+                                callArgs = append(callArgs, StringVal(c))
+                        }
+                        callArgs = append(callArgs, NumberVal(float64(loc[0])), StringVal(src))
+                        result, err := CallFunction(replacement, callArgs, nil)
+                        if err != nil {
+                                return match, err
+                        }
+                        if result == nil || result.Tag == TypeUndefined || result.Tag == TypeNull {
+                                return match, nil
+                        }
+                        return result.ToString(), nil
+                }
+
+                // String template: resolve $<name> using named groups.
+                tmpl := replacement.ToString()
+                if !strings.ContainsRune(tmpl, '$') {
+                        return tmpl, nil
+                }
+
+                // First resolve $<name> sequences using named groups.
+                if strings.Contains(tmpl, "$<") {
+                        var nb strings.Builder
+                        t := tmpl
+                        for {
+                                si := strings.Index(t, "$<")
+                                if si < 0 {
+                                        nb.WriteString(t)
+                                        break
+                                }
+                                nb.WriteString(t[:si])
+                                t = t[si+2:]
+                                ei := strings.IndexByte(t, '>')
+                                if ei < 0 {
+                                        nb.WriteString("$<")
+                                        nb.WriteString(t)
+                                        break
+                                }
+                                name := t[:ei]
+                                t = t[ei+1:]
+                                // Resolve name → capture group index.
+                                resolved := false
+                                for gi, n := range names {
+                                        if gi > 0 && n == name {
+                                                s, e := subLocs[(gi-1)*2], subLocs[(gi-1)*2+1]
+                                                if s >= 0 {
+                                                        nb.WriteString(src[s:e])
+                                                }
+                                                resolved = true
+                                                break
+                                        }
+                                }
+                                if !resolved {
+                                        nb.WriteString("$<")
+                                        nb.WriteString(name)
+                                        nb.WriteByte('>')
+                                }
+                        }
+                        tmpl = nb.String()
+                }
+
+                return strResolveReplacement(StringVal(tmpl), match, captures, loc[0], src)
+        }
+
+        if all {
+                // Replace all matches.
+                allLocs := re.FindAllStringSubmatchIndex(src, -1)
+                if len(allLocs) == 0 {
+                        return StringVal(src), nil
+                }
+                var sb strings.Builder
+                prev := 0
+                for _, locs := range allLocs {
+                        sb.WriteString(src[prev:locs[0]])
+                        repl, err := expand(locs[:2], locs[2:])
+                        if err != nil {
+                                sb.WriteString(src[locs[0]:locs[1]])
+                        } else {
+                                sb.WriteString(repl)
+                        }
+                        prev = locs[1]
+                }
+                sb.WriteString(src[prev:])
+                return StringVal(sb.String()), nil
+        }
+
+        // Replace first match only.
+        locs := re.FindStringSubmatchIndex(src)
+        if locs == nil {
+                return StringVal(src), nil
+        }
+        repl, err := expand(locs[:2], locs[2:])
+        if err != nil {
+                return StringVal(src), err
+        }
+        var sb strings.Builder
+        sb.WriteString(src[:locs[0]])
+        sb.WriteString(repl)
+        sb.WriteString(src[locs[1]:])
+        return StringVal(sb.String()), nil
+}
+
+// ── End of replace helpers ────────────────────────────────────────────────────
 
 func arrayBuiltin(v *Value, key string) *Value {
         switch key {

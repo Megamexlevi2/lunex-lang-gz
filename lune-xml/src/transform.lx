@@ -1,0 +1,113 @@
+val nodeLib = @fimport("./node.lx")
+val utils   = @import("std.utils")
+
+fn _cloneNode(n) {
+  val copy = nodeLib.newNode(n.tag)
+  copy.setText(n.getText())
+  val keys = Object.keys(n.attrs)
+  each k in keys {
+    copy.setAttribute(k, n.attrs[k])
+  }
+  each child in n.children {
+    copy.appendChild(_cloneNode(child))
+  }
+  copy
+}
+
+// Deep-clone a node and all its descendants
+fn clone(n) {
+  _cloneNode(n)
+}
+
+// Visit every node depth-first, calling fn_(node) on each
+fn walk(root, fn_) {
+  fn_(root)
+  each child in root.children {
+    walk(child, fn_)
+  }
+}
+
+// Transform every node through fn_(node).
+// Return the node to keep it, return null to remove it.
+fn mapNodes(root, fn_) {
+  val mapped = fn_(root)
+  if mapped {
+    var newChildren = []
+    each child in root.children {
+      val mc = mapNodes(child, fn_)
+      if mc {
+        newChildren.push(mc)
+      }
+    }
+    mapped.children = newChildren
+    mapped
+  } else {
+    null
+  }
+}
+
+// Remove children (recursively) for which predicate(node) returns false.
+// Mutates in place and returns root.
+fn filterNodes(root, predicate) {
+  var kept = []
+  each child in root.children {
+    if predicate(child) {
+      kept.push(filterNodes(child, predicate))
+    }
+  }
+  root.children = kept
+  root
+}
+
+fn _toObj(root) {
+  if !root.hasChildren() {
+    val t = root.getText()
+    if t.length > 0 { t } else { {} }
+  } else {
+    var obj = {}
+    each child in root.children {
+      val existing = obj[child.tag]
+      val val_     = _toObj(child)
+      if existing {
+        if utils.type(existing) == "array" {
+          existing.push(val_)
+        } else {
+          obj[child.tag] = [existing, val_]
+        }
+      } else {
+        obj[child.tag] = val_
+      }
+    }
+    obj
+  }
+}
+
+// Convert an XML tree to a plain Lunex object.
+// Text nodes become strings; repeated siblings become arrays.
+fn toObject(root) {
+  _toObj(root)
+}
+
+// Convert a plain Lunex object to an XML tree.
+// Arrays produce repeated sibling elements.
+fn fromObject(tag, obj) {
+  val root = nodeLib.newNode(tag)
+  val keys = Object.keys(obj)
+  each k in keys {
+    val v = obj[k]
+    if utils.type(v) == "object" {
+      root.appendChild(fromObject(k, v))
+    } else if utils.type(v) == "array" {
+      each item in v {
+        if utils.type(item) == "object" {
+          root.appendChild(fromObject(k, item))
+        } else {
+          root.appendChild(nodeLib.newTextNode(k, str(item)))
+        }
+      }
+    } else {
+      root.appendChild(nodeLib.newTextNode(k, str(v)))
+    }
+  }
+  root
+}

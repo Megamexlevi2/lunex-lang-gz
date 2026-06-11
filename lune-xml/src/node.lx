@@ -1,0 +1,41 @@
+// XmlNode — core struct for all XML elements
+// Every node has: tag, attrs, children, text
+
+fn XmlNode(tag_, text_) {
+  val self = struct {
+    tag      = tag_
+    attrs    = {}
+    children = []
+    text     = text_
+
+    // Attribute access
+    fn setAttribute(k, v) { this.attrs[k] = v }
+    fn getAttribute(k)    { this.attrs[k] }
+    fn hasAttr(k)         { this.attrs[k] != null }
+
+    // Children
+    fn appendChild(child) { this.children.push(child) }
+    fn hasChildren()      { this.children.length > 0 }
+    fn childAt(i)         { this.children[i] }
+    fn childCount()       { this.children.length }
+
+    // Text
+    fn setText(t)  { this.text = t }
+    fn getText()   { this.text }
+
+    // Tag
+    fn getTag()    { this.tag }
+
+    // Debug
+    fn toString()  { `XmlNode<${this.tag}>` }
+  }
+  self
+}
+
+fn newNode(tag) {
+  XmlNode(tag, "")
+}
+
+fn newTextNode(tag, text) {
+  XmlNode(tag, text)
+}

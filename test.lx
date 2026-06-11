@@ -1,5 +1,0 @@
-val io = @import("std.io")
-
-fn main() {
-  io.log("test")
-}

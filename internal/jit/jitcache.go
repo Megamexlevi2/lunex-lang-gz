@@ -9,19 +9,15 @@
 package jit
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
+	"lunex/internal/adaptor"
 	"os"
 	"path/filepath"
 )
 
 // JITCacheDir returns the directory used to store JIT cache entries.
+// Delegates to the platform adaptor so all path resolution is centralised.
 func JITCacheDir() string {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return filepath.Join(os.TempDir(), ".lx", "jit")
-	}
-	return filepath.Join(home, ".lx", "jit")
+	return adaptor.JITCacheDir()
 }
 
 func stubPath(key string) string {
@@ -39,8 +35,6 @@ func SaveStub(key string, code []byte) error {
 
 // LoadStub reads bytes from the on-disk JIT cache.
 // Returns (nil, false) when the entry does not exist.
-// Note: the bytes are not executed in-process; execution is handled by the
-// Zig runtime.
 func LoadStub(key string) ([]byte, bool) {
 	code, err := os.ReadFile(stubPath(key))
 	if err != nil || len(code) == 0 {
@@ -52,19 +46,7 @@ func LoadStub(key string) ([]byte, bool) {
 // FileJITKey returns a deterministic cache key for a file based on its path,
 // content, and modification time.
 func FileJITKey(absPath string) (string, error) {
-	info, err := os.Stat(absPath)
-	if err != nil {
-		return "", err
-	}
-	data, err := os.ReadFile(absPath)
-	if err != nil {
-		return "", err
-	}
-	h := sha256.New()
-	h.Write([]byte(absPath))
-	h.Write(data)
-	h.Write([]byte(info.ModTime().String()))
-	return hex.EncodeToString(h.Sum(nil)), nil
+	return adaptor.MemCacheKey(absPath)
 }
 
 // ClearJITCache removes all .bin files from the on-disk JIT cache directory

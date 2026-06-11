@@ -1,24 +1,31 @@
-// Lunex lang — NC/NTZ bytecode container format.
-// The NC (Lunex Compiled) container stores a 48-byte NTLI header followed by an
-// XOR-scrambled payload containing the original source text.  When a Zig NTZ
-// compiled opcode section is present, its byte length is stored in header
-// bytes 40-43 (little-endian u32) and the raw opcodes are appended at the
-// end of the file so the Zig runtime can detect and execute them directly.
+// Lunex lang — .nc bytecode container format.
 //
-// File layout:
-//   [0:4]   magic "lxi"
-//   [4:6]   version 0x0500
-//   [6]     flags (0x01 = has source)
-//   [7]     reserved
-//   [8:24]  SHA-256 partial hash (first 16 bytes of file content hash)
-//   [24:28] source text length
-//   [28:32] sub-chunk count
-//   [32:36] name length
-//   [36:40] sentinel bytes 0xA7 0x3E 0xC1 0x5B
-//   [40:44] NTZ opcode section length in bytes (0 = no NTZ section)
-//   [44:48] reserved / zero
-//   [48:]   XOR-scrambled payload (name, source file, source text, sub-chunks)
-//   [end-ntz_len:end]  raw Zig VM opcodes (only when hdr[40:44] > 0)
+// The .nc file is Go's job, not Zig's.  Go lexes, parses, and compiles
+// .lx source into an AST, then encodes it here into a .nc container.
+// The container has two sections:
+//
+//   1. A scrambled payload holding the module name, source path, and
+//      source text — used by the Go interpreter as a fallback.
+//   2. An NTZ opcode section appended at the end — used by the Zig VM.
+//
+// When Zig is available, Go sends the entire .nc blob over the NCP pipe.
+// Zig reads the NTZ section directly and executes the opcodes.  It never
+// touches the source text; that is Go's concern.
+//
+// When Zig is not available (sandboxed platform, noexec filesystem, …),
+// Go falls back to its own tree-walking interpreter using the source text
+// embedded in the payload.
+//
+// Wire layout (little-endian, current format X102):
+//
+//   [0:5]   magic        — 0x78 0x31 0x30 0x32 0x63 (x102c)
+//   [5:7]   version      — uint16 LE, 0x0600
+//   [7]     flags        — 0x01 = valid, 0x03 = valid + has NTZ section
+//   [8:12]  payload_len  — uint32 LE, scrambled payload size
+//   [12:16] ntz_len      — uint32 LE, NTZ opcode section size (0 if absent)
+//   [16:32] digest       — first 16 bytes of SHA-256 over the plain payload
+//   [32:]   payload      — scrambled bytes (xorScramble)
+//   [end]   NTZ opcodes  — raw opcode bytes (unscrambled), appended after payload
 
 package bytecode
 
@@ -27,70 +34,58 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"fmt"
+	"io"
 )
 
-var ntliMagic = [4]byte{'n', 't', 'l', 'i'}
+// useSelfHosted is permanently disabled. The pure Go encoder always runs,
+// guaranteeing the NTZ section is always attached to every .nc container
+// so the Zig runtime can execute it directly.
+var useSelfHosted = false
 
-const ntliVersion uint16 = 0x0500
-const ntliHeaderSize = 48
+// SetSelfHosted is a no-op kept for API compatibility.
+func SetSelfHosted(_ bool) {}
 
-var internalMagic = [4]byte{0x1c, 0x9a, 0x4e, 0x03}
+var x102Magic = [5]byte{'x', '1', '0', '2', 'c'}
 
-const internalVersion uint16 = 0x0603
+const x96Version uint16 = 0x0600
+const x102HeaderSize = 32
 
-// buildLunexIHeader constructs the 48-byte NTLI file header.
-// ntzLen is the byte length of the NTZ opcode section (0 = absent).
-func buildLunexIHeader(chunk *Chunk, ntzLen uint32) [ntliHeaderSize]byte {
-	var hdr [ntliHeaderSize]byte
-	copy(hdr[0:4], ntliMagic[:])
-	binary.LittleEndian.PutUint16(hdr[4:6], ntliVersion)
-	hdr[6] = 0x01
-	hdr[7] = 0x00
+// Legacy NTLI/NC format kept for backward compatibility.
+var legacyNCMagic = [4]byte{'n', 't', 'l', 'i'}
 
-	h := sha256.New()
-	h.Write([]byte(chunk.SourceFile))
-	h.Write([]byte(chunk.SourceText))
-	digest := h.Sum(nil)
-	copy(hdr[8:24], digest[:16])
+const legacyNCVersion uint16 = 0x0500
+const legacyNCHeaderSize = 48
 
-	binary.LittleEndian.PutUint32(hdr[24:28], uint32(len(chunk.SourceText)))
-	binary.LittleEndian.PutUint32(hdr[28:32], uint32(len(chunk.SubChunks)))
-	binary.LittleEndian.PutUint32(hdr[32:36], uint32(len(chunk.Name)))
+var legacyInternalMagic = [4]byte{0x1c, 0x9a, 0x4e, 0x03}
 
-	// Sentinel bytes — unchanged from original format.
-	hdr[36] = 0xA7
-	hdr[37] = 0x3E
-	hdr[38] = 0xC1
-	hdr[39] = 0x5B
+const legacyInternalVersion uint16 = 0x0603
 
-	// NTZ section length — read by the Zig runtime to locate opcodes.
-	// Bytes 44-47 remain zero (reserved).
-	binary.LittleEndian.PutUint32(hdr[40:44], ntzLen)
+// buildX96Header constructs the 32-byte X96 file header.
+func buildX102Header(payloadLen uint32, ntzLen uint32, digest [16]byte) [x102HeaderSize]byte {
+	var hdr [x102HeaderSize]byte
+	copy(hdr[0:5], x102Magic[:])
+	binary.LittleEndian.PutUint16(hdr[5:7], x96Version)
+	hdr[7] = 0x01
+	if ntzLen > 0 {
+		hdr[7] |= 0x02
+	}
+	hdr[8] = 0x00
+	binary.LittleEndian.PutUint32(hdr[8:12], payloadLen)
+	binary.LittleEndian.PutUint32(hdr[12:16], ntzLen)
+	copy(hdr[16:32], digest[:])
 	return hdr
 }
 
-// EncodeNC encodes a Chunk into the NC binary format without an NTZ section.
 func EncodeNC(chunk *Chunk) ([]byte, error) {
-	return encodeNCWithNTZ(chunk, nil)
+	return EncodeNCWithNTZ(chunk, nil)
 }
 
-// EncodeNCWithNTZ encodes a Chunk into the NC binary format and appends
-// ntzOpcodes as the NTZ section when the slice is non-empty.
 func EncodeNCWithNTZ(chunk *Chunk, ntzOpcodes []byte) ([]byte, error) {
 	return encodeNCWithNTZ(chunk, ntzOpcodes)
 }
 
 func encodeNCWithNTZ(chunk *Chunk, ntzOpcodes []byte) ([]byte, error) {
-	var buf bytes.Buffer
-
-	ntzLen := uint32(len(ntzOpcodes))
-	hdr := buildLunexIHeader(chunk, ntzLen)
-	buf.Write(hdr[:])
-
 	var payload bytes.Buffer
-	payload.Write(internalMagic[:])
-	writeU16(&payload, internalVersion)
-	writeU16(&payload, 0)
 	writeString(&payload, chunk.Name)
 	writeString(&payload, chunk.SourceFile)
 	writeString(&payload, chunk.SourceText)
@@ -101,61 +96,60 @@ func encodeNCWithNTZ(chunk *Chunk, ntzOpcodes []byte) ([]byte, error) {
 		writeString(&payload, sub.SourceText)
 	}
 
-	scrambled := xorScramble(payload.Bytes(), ncKey)
-	buf.Write(scrambled)
+	plain := payload.Bytes()
+	digest := digest16(plain)
+	hdr := buildX102Header(uint32(len(plain)), uint32(len(ntzOpcodes)), digest)
 
-	// Append NTZ opcodes at the very end of the file.
-	if ntzLen > 0 {
+	var buf bytes.Buffer
+	buf.Write(hdr[:])
+	buf.Write(xorScramble(plain, ncKey))
+	if len(ntzOpcodes) > 0 {
 		buf.Write(ntzOpcodes)
 	}
-
 	return buf.Bytes(), nil
 }
 
-// DecodeNC decodes an NC file back into a Chunk.
-// The NTZ opcode section (if any) is not included in the returned Chunk —
-// use NTZSection to retrieve those bytes separately.
 func DecodeNC(data []byte) (*Chunk, error) {
-	if len(data) < ntliHeaderSize+8 {
+	if len(data) >= x102HeaderSize && bytes.Equal(data[0:5], x102Magic[:]) {
+		return decodeX96NC(data)
+	}
+	if len(data) >= legacyNCHeaderSize && bytes.Equal(data[0:4], legacyNCMagic[:]) {
+		return decodeLegacyNC(data)
+	}
+	return nil, fmt.Errorf("invalid object: not a recognized Lunex format")
+}
+
+func decodeX96NC(data []byte) (*Chunk, error) {
+	if len(data) < x102HeaderSize+8 {
 		return nil, fmt.Errorf("invalid object: file too short")
 	}
 
-	if data[0] != 'n' || data[1] != 't' || data[2] != 'l' || data[3] != 'i' {
-		return nil, fmt.Errorf("invalid object: not a recognized Lunex format")
-	}
-
-	ver := binary.LittleEndian.Uint16(data[4:6])
-	if ver != ntliVersion {
+	ver := binary.LittleEndian.Uint16(data[5:7])
+	if ver != x96Version {
 		return nil, fmt.Errorf("invalid object: version mismatch (got 0x%04x)", ver)
 	}
 
-	// The NTZ section is the last ntzLen bytes of the file; exclude them from
-	// the scrambled payload so DecodeNC stays backward-compatible.
-	ntzLen := binary.LittleEndian.Uint32(data[40:44])
-	payloadEnd := len(data)
-	if ntzLen > 0 && int(ntzLen) <= payloadEnd-ntliHeaderSize {
-		payloadEnd -= int(ntzLen)
+	payloadLen := binary.LittleEndian.Uint32(data[8:12])
+	ntzLen := binary.LittleEndian.Uint32(data[12:16])
+	available := len(data) - x102HeaderSize
+	if payloadLen > uint32(available) {
+		return nil, fmt.Errorf("invalid object: payload truncated")
+	}
+	if ntzLen > uint32(available)-payloadLen {
+		return nil, fmt.Errorf("invalid object: NTZ section length is invalid")
+	}
+	if int(payloadLen)+int(ntzLen) != available {
+		return nil, fmt.Errorf("invalid object: trailing bytes or truncated payload")
 	}
 
-	payload := xorUnscramble(data[ntliHeaderSize:payloadEnd], ncKey)
-
-	if len(payload) < 8 {
-		return nil, fmt.Errorf("invalid object: corrupt payload")
+	encPayload := data[x102HeaderSize : x102HeaderSize+int(payloadLen)]
+	plain := xorUnscramble(encPayload, ncKey)
+	got := digest16(plain)
+	if !bytes.Equal(got[:], data[16:32]) {
+		return nil, fmt.Errorf("invalid object: payload checksum mismatch")
 	}
 
-	var magic [4]byte
-	copy(magic[:], payload[:4])
-	if magic != internalMagic {
-		return nil, fmt.Errorf("invalid object: bad inner signature")
-	}
-
-	innerVer := binary.LittleEndian.Uint16(payload[4:6])
-	if innerVer != internalVersion {
-		return nil, fmt.Errorf("invalid object: inner version mismatch (got 0x%04x)", innerVer)
-	}
-
-	r := bytes.NewReader(payload[8:])
-
+	r := bytes.NewReader(plain)
 	name, err := readString(r)
 	if err != nil {
 		return nil, err
@@ -168,21 +162,31 @@ func DecodeNC(data []byte) (*Chunk, error) {
 	if err != nil {
 		return nil, err
 	}
+	subCount, err := readU32(r)
+	if err != nil {
+		return nil, err
+	}
 
 	chunk := &Chunk{
 		Name:       name,
 		SourceFile: srcFile,
 		SourceText: srcText,
+		SubChunks:  make([]*Chunk, 0, subCount),
 	}
 
-	subCount, err := readU32(r)
-	if err != nil {
-		return nil, err
-	}
 	for i := uint32(0); i < subCount; i++ {
-		sName, _ := readString(r)
-		sSrc, _ := readString(r)
-		sText, _ := readString(r)
+		sName, err := readString(r)
+		if err != nil {
+			return nil, err
+		}
+		sSrc, err := readString(r)
+		if err != nil {
+			return nil, err
+		}
+		sText, err := readString(r)
+		if err != nil {
+			return nil, err
+		}
 		chunk.SubChunks = append(chunk.SubChunks, &Chunk{
 			Name:       sName,
 			SourceFile: sSrc,
@@ -193,17 +197,115 @@ func DecodeNC(data []byte) (*Chunk, error) {
 	return chunk, nil
 }
 
-// NTZSection returns the raw NTZ opcode bytes appended to an NC file.
-// Returns nil if the file has no NTZ section or is not a valid NC file.
-func NTZSection(data []byte) []byte {
-	if len(data) < ntliHeaderSize {
-		return nil
+func decodeLegacyNC(data []byte) (*Chunk, error) {
+	if len(data) < legacyNCHeaderSize+8 {
+		return nil, fmt.Errorf("invalid object: file too short")
 	}
 	if data[0] != 'n' || data[1] != 't' || data[2] != 'l' || data[3] != 'i' {
+		return nil, fmt.Errorf("invalid object: not a recognized Lunex format")
+	}
+
+	ver := binary.LittleEndian.Uint16(data[5:7])
+	if ver != legacyNCVersion {
+		return nil, fmt.Errorf("invalid object: version mismatch (got 0x%04x)", ver)
+	}
+
+	ntzLen := binary.LittleEndian.Uint32(data[40:44])
+	payloadEnd := len(data)
+	if ntzLen > 0 {
+		if int(ntzLen) > payloadEnd-legacyNCHeaderSize {
+			return nil, fmt.Errorf("invalid object: NTZ section length is invalid")
+		}
+		payloadEnd -= int(ntzLen)
+	}
+	if payloadEnd < legacyNCHeaderSize {
+		return nil, fmt.Errorf("invalid object: payload truncated")
+	}
+
+	payload := xorUnscramble(data[legacyNCHeaderSize:payloadEnd], ncKey)
+	if len(payload) < 8 {
+		return nil, fmt.Errorf("invalid object: corrupt payload")
+	}
+
+	var magic [4]byte
+	copy(magic[:], payload[:4])
+	if magic != legacyInternalMagic {
+		return nil, fmt.Errorf("invalid object: bad inner signature")
+	}
+
+	innerVer := binary.LittleEndian.Uint16(payload[4:6])
+	if innerVer != legacyInternalVersion {
+		return nil, fmt.Errorf("invalid object: inner version mismatch (got 0x%04x)", innerVer)
+	}
+
+	r := bytes.NewReader(payload[8:])
+	name, err := readString(r)
+	if err != nil {
+		return nil, err
+	}
+	srcFile, err := readString(r)
+	if err != nil {
+		return nil, err
+	}
+	srcText, err := readString(r)
+	if err != nil {
+		return nil, err
+	}
+	subCount, err := readU32(r)
+	if err != nil {
+		return nil, err
+	}
+
+	chunk := &Chunk{
+		Name:       name,
+		SourceFile: srcFile,
+		SourceText: srcText,
+		SubChunks:  make([]*Chunk, 0, subCount),
+	}
+
+	for i := uint32(0); i < subCount; i++ {
+		sName, err := readString(r)
+		if err != nil {
+			return nil, err
+		}
+		sSrc, err := readString(r)
+		if err != nil {
+			return nil, err
+		}
+		sText, err := readString(r)
+		if err != nil {
+			return nil, err
+		}
+		chunk.SubChunks = append(chunk.SubChunks, &Chunk{
+			Name:       sName,
+			SourceFile: sSrc,
+			SourceText: sText,
+		})
+	}
+
+	return chunk, nil
+}
+
+func NTZSection(data []byte) []byte {
+	if len(data) < 4 {
+		return nil
+	}
+	if bytes.Equal(data[0:5], x102Magic[:]) {
+		if len(data) < x102HeaderSize {
+			return nil
+		}
+		payloadLen := binary.LittleEndian.Uint32(data[8:12])
+		ntzLen := binary.LittleEndian.Uint32(data[12:16])
+		if ntzLen == 0 || int(payloadLen)+int(ntzLen) > len(data)-x102HeaderSize {
+			return nil
+		}
+		return data[len(data)-int(ntzLen):]
+	}
+	if len(data) < legacyNCHeaderSize || !bytes.Equal(data[0:4], legacyNCMagic[:]) {
 		return nil
 	}
 	ntzLen := binary.LittleEndian.Uint32(data[40:44])
-	if ntzLen == 0 || int(ntzLen) > len(data)-ntliHeaderSize {
+	if ntzLen == 0 || int(ntzLen) > len(data)-legacyNCHeaderSize {
 		return nil
 	}
 	return data[len(data)-int(ntzLen):]
@@ -304,9 +406,19 @@ func readString(r *bytes.Reader) (string, error) {
 	if ln == 0 {
 		return "", nil
 	}
+	if ln > uint32(r.Len()) {
+		return "", io.ErrUnexpectedEOF
+	}
 	buf := make([]byte, ln)
-	if _, err := r.Read(buf); err != nil {
+	if _, err := io.ReadFull(r, buf); err != nil {
 		return "", err
 	}
 	return string(buf), nil
+}
+
+func digest16(data []byte) [16]byte {
+	sum := sha256.Sum256(data)
+	var out [16]byte
+	copy(out[:], sum[:16])
+	return out
 }

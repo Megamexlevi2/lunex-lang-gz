@@ -1,0 +1,169 @@
+val nodeLib = @fimport("./node.lx")
+
+fn _skipWS(src, pos) {
+  var i     = pos
+  var going = true
+  while going and i < src.length {
+    val ch = src[i]
+    if ch == " " or ch == "\t" or ch == "\n" or ch == "\r" {
+      i = i + 1
+    } else {
+      going = false
+    }
+  }
+  i
+}
+
+fn _readUntilChar(src, pos, stop) {
+  var i   = pos
+  var buf = ""
+  while i < src.length and src[i] != stop {
+    buf = buf + src[i]
+    i   = i + 1
+  }
+  { value: buf, pos: i }
+}
+
+fn _readIdent(src, pos) {
+  var i     = pos
+  var buf   = ""
+  var going = true
+  while going and i < src.length {
+    val ch = src[i]
+    if ch == " " or ch == "\t" or ch == "\n" or ch == "\r"
+       or ch == ">" or ch == "/" or ch == "=" {
+      going = false
+    } else {
+      buf = buf + ch
+      i   = i + 1
+    }
+  }
+  { value: buf, pos: i }
+}
+
+fn _parseAttrs(src, pos) {
+  var i     = pos
+  var attrs = {}
+  var going = true
+  while going and i < src.length {
+    i      = _skipWS(src, i)
+    val ch = src[i]
+    if ch == ">" or ch == "/" {
+      going = false
+    } else {
+      val kRes = _readIdent(src, i)
+      val key  = kRes.value
+      i        = kRes.pos
+      i        = _skipWS(src, i)
+      if i < src.length and src[i] == "=" {
+        i = i + 1
+        i = _skipWS(src, i)
+        if i < src.length and (src[i] == "\"" or src[i] == "'") {
+          val quote = src[i]
+          i         = i + 1
+          val vRes  = _readUntilChar(src, i, quote)
+          attrs[key] = vRes.value
+          i          = vRes.pos + 1
+        }
+      }
+    }
+  }
+  { attrs: attrs, pos: i }
+}
+
+fn _parseNode(src, pos) {
+  var i = _skipWS(src, pos)
+
+  if i >= src.length or src[i] != "<" {
+    { node: null, pos: i }
+  } else {
+    var j = i + 1
+
+    // Comment / CDATA / DOCTYPE — skip until >
+    if j < src.length and src[j] == "!" {
+      while j < src.length and src[j] != ">" {
+        j = j + 1
+      }
+      j = j + 1
+      { node: null, pos: j }
+
+    // Closing tag — signal caller
+    } else if j < src.length and src[j] == "/" {
+      { node: null, pos: i, closing: true }
+
+    } else {
+      val tagRes  = _readIdent(src, j)
+      val tag     = tagRes.value
+      j           = tagRes.pos
+      val attrRes = _parseAttrs(src, j)
+      val attrs   = attrRes.attrs
+      j           = attrRes.pos
+      j           = _skipWS(src, j)
+
+      val selfClose = j < src.length and src[j] == "/"
+      if selfClose { j = j + 1 }
+      if j < src.length and src[j] == ">" { j = j + 1 }
+
+      // Build node and apply attrs
+      val n    = nodeLib.newNode(tag)
+      val keys = Object.keys(attrs)
+      each k in keys {
+        n.setAttribute(k, attrs[k])
+      }
+
+      if selfClose {
+        { node: n, pos: j }
+      } else {
+        var textBuf = ""
+        var running = true
+
+        while running and j < src.length {
+          j = _skipWS(src, j)
+          if j >= src.length {
+            running = false
+          } else if src[j] == "<" {
+            // Closing tag
+            if (j + 1) < src.length and src[j + 1] == "/" {
+              while j < src.length and src[j] != ">" {
+                j = j + 1
+              }
+              j       = j + 1
+              running = false
+            } else {
+              val childRes = _parseNode(src, j)
+              j = childRes.pos
+              if childRes.node {
+                n.appendChild(childRes.node)
+              }
+            }
+          } else {
+            val textRes = _readUntilChar(src, j, "<")
+            textBuf     = textBuf + textRes.value
+            j           = textRes.pos
+          }
+        }
+
+        val trimmed = textBuf.trim()
+        if trimmed.length > 0 and !n.hasChildren() {
+          n.setText(trimmed)
+        }
+
+        { node: n, pos: j }
+      }
+    }
+  }
+}
+
+// Parse an XML string and return the root XmlNode
+fn parse(src) {
+  var i = _skipWS(src, 0)
+  // Skip <?xml ... ?> declaration if present
+  if src.includes("<?xml") {
+    while i < src.length and src[i] != ">" {
+      i = i + 1
+    }
+    i = i + 1
+  }
+  val res = _parseNode(src, i)
+  res.node
+}

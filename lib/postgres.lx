@@ -1,4 +1,0 @@
-val native = @import("internal.native")
-fn connect(dsn) {
-  native.postgres.connect(dsn)
-}

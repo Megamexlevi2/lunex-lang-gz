@@ -12,18 +12,16 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
+	"lunex/internal/adaptor"
 	"os"
 	"path/filepath"
 	"runtime"
 )
 
 // NativeCacheDir returns the directory used to store .mcx cache files.
+// Delegates to the platform adaptor for consistent cross-platform resolution.
 func NativeCacheDir() string {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return filepath.Join(os.TempDir(), ".lx", "ncache", runtime.GOOS+"_"+runtime.GOARCH)
-	}
-	return filepath.Join(home, ".lx", "ncache", runtime.GOOS+"_"+runtime.GOARCH)
+	return adaptor.NativeCacheDir()
 }
 
 func nativeCacheKey(kind string) string {

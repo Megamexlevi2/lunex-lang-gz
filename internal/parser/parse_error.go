@@ -1,16 +1,12 @@
 // Lunex lang
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
+// Created by David Dev · GitHub: https://github.com/Megamexlerei2
 // (c) David Dev 2026. License.
 
 package parser
 
-type ParseError struct {
-	Message string
-	File    string
-	Line    int
-	Col     int
-}
+import "lunex/internal/errfmt"
 
-func (e *ParseError) Error() string {
-	return e.Message
-}
+// ParseError is kept for backwards compatibility; internally the parser
+// now produces *errfmt.LunexError directly so the full source view,
+// contextual suggestions, and underline are always present.
+type ParseError = errfmt.LunexError
