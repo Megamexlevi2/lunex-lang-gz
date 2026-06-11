@@ -1,5 +1,5 @@
 val project = {
-  name:        "lunex-xml"
+  name:        "lune-xml"
   version:     "1.0"
   description: "A Lunex project"
   author:      "David Dev"
