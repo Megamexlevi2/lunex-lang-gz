@@ -2703,11 +2703,6 @@ func (interp *Interpreter) loadModule(path string) (*Value, error) {
 
 	e := interp.runtimeError(errfmt.KindImport, "E0010",
 		fmt.Sprintf("module %q not found", path), nil, nil)
-	e.Notes = append(e.Notes,
-		"for local files: use @fimport(\"./file.lx\"), @fimport(\"./file.nax\"), or @fimport(\"./file.nc\")",
-		"for stdlib:      @import(\"std.io\"), @import(\"std.fs\"), @import(\"std.http\"), ...",
-		"for packages:    run `lunex add <module>` then use @import(\"<module>\")",
-	)
 	return nil, e
 }
 

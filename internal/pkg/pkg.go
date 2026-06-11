@@ -12,6 +12,7 @@ import (
         "lunex/internal/meta"
         "net/http"
         "os"
+        "path"
         "path/filepath"
         "strings"
         "time"
@@ -246,14 +247,18 @@ func Resolve(name string) (string, bool) {
 
 	var candidate string
 	prefix := strings.ReplaceAll(name, "/", "__") + "@"
+	// suffix match: handles packages installed under a repo subpath,
+	// e.g. "lune-xml" matches cache dir "lunex-lang-gz__lune-xml@main"
+	suffix := "__" + strings.ReplaceAll(name, "/", "__") + "@"
 	for _, e := range entries {
 		if !e.IsDir() {
 			continue
 		}
-		if !strings.HasPrefix(e.Name(), prefix) {
+		dirName := e.Name()
+		if !strings.HasPrefix(dirName, prefix) && !strings.Contains(dirName, suffix) {
 			continue
 		}
-		p := filepath.Join(cache, e.Name())
+		p := filepath.Join(cache, dirName)
 		for _, file := range entryFiles {
 			fp := filepath.Join(p, file)
 			if st, err := os.Stat(fp); err == nil && !st.IsDir() {
@@ -772,7 +777,10 @@ func Install(spec string) (*Module, error) {
                 }
                 pkgName := repo
                 if subpath != "" {
-                        pkgName = repo + "/" + subpath
+                        // Use only the last path segment as the package name so that
+                        // @import("lune-xml") resolves a package installed from
+                        // github.com/user/repo/lune-xml without requiring the full path.
+                        pkgName = path.Base(subpath)
                 }
                 return InstallFromGitHub(pkgName, owner, repo, ref, subpath)
         }
