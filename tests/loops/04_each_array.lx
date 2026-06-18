@@ -1,0 +1,15 @@
+// Lunex — each over array
+// Iterating over every element
+// Lunex v0.7.1 · github.com/Megamexlevi2/lunex-lang-gz
+
+val io    = @import("std.io")
+val utils = @import("std.utils")
+fn main() {
+  val colors = ["red", "green", "blue", "yellow"]
+  each color in colors { io.log(" -", color) }
+  val primes = [2, 3, 5, 7, 11, 13]
+  var sum = 0
+  each p in primes { sum = sum + p }
+  io.log("sum of primes:", sum)
+  io.log("PASS each_array")
+}

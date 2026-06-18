@@ -1,0 +1,11 @@
+// Lunex — channel — basic
+// Send and receive a single value
+// Lunex v0.7.1 · github.com/Megamexlevi2/lunex-lang-gz
+
+val io = @import("std.io")
+fn main() {
+  val ch = channel()
+  spawn fn() { ch.send("hello from spawn") }()
+  io.log("received:", ch.recv())
+  io.log("PASS channel_basic")
+}

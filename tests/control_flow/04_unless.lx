@@ -1,0 +1,22 @@
+// Lunex — unless statement
+// Runs the block when the condition is false
+// Lunex v0.7.1 · github.com/Megamexlevi2/lunex-lang-gz
+
+val io = @import("std.io")
+fn checkReady(ready) {
+  unless ready {
+    io.warn("not ready")
+  }
+  if ready {
+    io.log("system is ready")
+  }
+}
+fn main() {
+  checkReady(true)
+  checkReady(false)
+  val authed = false
+  unless authed { io.warn("access denied") }
+  val authed2 = true
+  unless authed2 { io.warn("this should not print") }
+  io.log("PASS unless")
+}

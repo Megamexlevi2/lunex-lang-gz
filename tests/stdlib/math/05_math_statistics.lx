@@ -1,0 +1,20 @@
+// Lunex — math — statistics
+// mean, variance, std dev using native array methods
+// Lunex v0.7.1 · github.com/Megamexlevi2/lunex-lang-gz
+
+val io    = @import("std.io")
+val math  = @import("std.math")
+val utils = @import("std.utils")
+fn mean(arr)     { utils.sum(arr) / arr.length }
+fn variance(arr) {
+  val m = mean(arr)
+  mean(arr.map(fn(x) { (x - m) * (x - m) }))
+}
+fn stddev(arr) { math.sqrt(variance(arr)) }
+fn main() {
+  val data = [4, 7, 13, 16, 21]
+  io.log("mean:", mean(data))
+  io.log("variance:", variance(data))
+  io.log("stddev:", stddev(data))
+  io.log("PASS math_statistics")
+}

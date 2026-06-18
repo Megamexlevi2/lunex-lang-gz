@@ -1,0 +1,12 @@
+// Lunex — os — env vars
+// Read and write environment variables
+// Lunex v0.7.1 · github.com/Megamexlevi2/lunex-lang-gz
+
+val io = @import("std.io"); val os = @import("std.os")
+fn main() {
+  os.setenv("LUNEX_TEST_VAR", "hello")
+  io.log("set:", os.getenv("LUNEX_TEST_VAR"))
+  io.log("HOME:", os.getenv("HOME"))
+  io.log("missing:", os.getenv("LUNEX_MISSING_XYZ"))
+  io.log("PASS os_env")
+}

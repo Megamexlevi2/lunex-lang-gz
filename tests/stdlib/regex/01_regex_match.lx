@@ -1,0 +1,11 @@
+// Lunex — regex — match
+// Test whether a pattern matches
+// Lunex v0.7.1 · github.com/Megamexlevi2/lunex-lang-gz
+
+val io = @import("std.io"); val regex = @import("std.regex")
+fn main() {
+  io.log("digits:", regex.match("12345", "^\\d+$"))
+  io.log("non-digit:", regex.match("abc", "^\\d+$"))
+  io.log("email:", regex.match("user@example.com", "^[\\w.]+@[\\w.]+\\.[a-z]{2,}$"))
+  io.log("PASS regex_match")
+}

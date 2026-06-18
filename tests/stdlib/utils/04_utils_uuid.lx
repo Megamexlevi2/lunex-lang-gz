@@ -1,0 +1,13 @@
+// Lunex — utils — UUID
+// Generate and compare UUIDs
+// Lunex v0.7.1 · github.com/Megamexlevi2/lunex-lang-gz
+
+val io = @import("std.io"); val utils = @import("std.utils")
+fn main() {
+  io.log("5 UUIDs:")
+  var i = 0
+  while i < 5 { io.log(" ", utils.uuid()); i = i + 1 }
+  val a = utils.uuid(); val b = utils.uuid()
+  io.log("unique:", a != b)
+  io.log("PASS utils_uuid")
+}

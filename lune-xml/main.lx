@@ -1,0 +1,142 @@
+val _node      = @fimport("./src/node.lx")
+val _builder   = @fimport("./src/builder.lx")
+val _parser    = @fimport("./src/parser.lx")
+val _query     = @fimport("./src/query.lx")
+val _transform = @fimport("./src/transform.lx")
+val _validate  = @fimport("./src/validate.lx")
+
+fn createElement(tag) {
+  _builder.createElement(tag)
+}
+
+fn createTextElement(tag, text) {
+  _builder.createTextElement(tag, text)
+}
+
+fn createCDataElement(tag, text) {
+  _builder.createCDataElement(tag, text)
+}
+
+fn createElementWithAttrs(tag, a) {
+  _builder.createElementWithAttrs(tag, a)
+}
+
+fn createElementWithAttrPairs(tag, ps) {
+  _builder.createElementWithAttrPairs(tag, ps)
+}
+
+fn appendChild(node, child) {
+  node.appendChild(child)
+}
+
+fn setAttribute(node, k, v) {
+  node.setAttribute(k, v)
+}
+
+fn getAttribute(node, k) {
+  node.getAttribute(k)
+}
+
+fn attributeNames(node) {
+  node.attributeNames()
+}
+
+fn hasChildren(node) {
+  node.hasChildren()
+}
+
+fn isCData(node) {
+  node.isCData()
+}
+
+fn setCData(node, flag) {
+  node.setCData(flag)
+}
+
+fn build(root) {
+  _builder.build(root)
+}
+
+fn buildFragment(node) {
+  _builder.buildFragment(node)
+}
+
+fn buildCompact(root) {
+  _builder.buildCompact(root)
+}
+
+fn buildFragmentCompact(node) {
+  _builder.buildFragmentCompact(node)
+}
+
+fn parse(src) {
+  _parser.parse(src)
+}
+
+fn selectFirst(root, tag) {
+  _query.selectFirst(root, tag)
+}
+
+fn selectAll(root, tag) {
+  _query.selectAll(root, tag)
+}
+
+fn selectByAttr(root, attrName, attrValue) {
+  _query.selectByAttr(root, attrName, attrValue)
+}
+
+fn selectPath(root, path) {
+  _query.selectPath(root, path)
+}
+
+fn children(node) {
+  _query.children(node)
+}
+
+fn childrenByTag(node, tag) {
+  _query.childrenByTag(node, tag)
+}
+
+fn text(node) {
+  _query.text(node)
+}
+
+fn attr(node, name) {
+  _query.attr(node, name)
+}
+
+fn clone(node) {
+  _transform.clone(node)
+}
+
+fn walk(root, fn_) {
+  _transform.walk(root, fn_)
+}
+
+fn mapNodes(root, fn_) {
+  _transform.mapNodes(root, fn_)
+}
+
+fn filterNodes(root, pred) {
+  _transform.filterNodes(root, pred)
+}
+
+fn toObject(root) {
+  _transform.toObject(root)
+}
+
+fn fromObject(tag, obj) {
+  _transform.fromObject(tag, obj)
+}
+
+fn isWellFormed(node) {
+  _validate.isWellFormed(node)
+}
+
+fn validateSchema(node, schema) {
+  _validate.validateSchema(node, schema)
+}
+
+fn validateTree(root, schemas) {
+  _validate.validateTree(root, schemas)
+}

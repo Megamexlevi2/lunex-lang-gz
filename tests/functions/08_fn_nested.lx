@@ -1,0 +1,20 @@
+// Lunex — nested functions
+// Functions defined inside other functions
+// Lunex v0.7.1 · github.com/Megamexlevi2/lunex-lang-gz
+
+val io = @import("std.io")
+fn logger(prefix) {
+  fn format(text) { "[" + prefix + "] " + text }
+  struct {
+    fn log(text) { io.log(format(text)) }
+    fn warn(text) { io.warn(format(text)) }
+  }
+}
+fn main() {
+  val info = logger("INFO")
+  val warn = logger("WARN")
+  info.log("server started")
+  info.log("listening on :8080")
+  warn.log("memory above threshold")
+  io.log("PASS fn_nested")
+}

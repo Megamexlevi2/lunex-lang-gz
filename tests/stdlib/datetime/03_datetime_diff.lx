@@ -1,0 +1,14 @@
+// Lunex — datetime — diff
+// Elapsed time between two moments
+// Lunex v0.7.1 · github.com/Megamexlevi2/lunex-lang-gz
+
+val io = @import("std.io"); val dt = @import("std.datetime")
+fn main() {
+  val start = dt.now()
+  dt.sleep(120)
+  val end  = dt.now()
+  val diff = dt.diff(start, end)
+  io.log("elapsed ms:", diff)
+  io.log("elapsed > 0:", diff > 0)
+  io.log("PASS datetime_diff")
+}

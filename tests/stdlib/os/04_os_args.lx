@@ -1,0 +1,10 @@
+// Lunex — os — args
+// Read command-line arguments
+// Lunex v0.7.1 · github.com/Megamexlevi2/lunex-lang-gz
+
+val io = @import("std.io"); val os = @import("std.os")
+fn main() {
+  val args = os.args()
+  io.log("args:", args)
+  io.log("PASS os_args")
+}
