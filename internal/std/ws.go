@@ -11,9 +11,9 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
+	"lunex/internal/runtime"
 	"net"
 	"net/http"
-	"lunex/internal/runtime"
 	"strings"
 	"sync"
 )
@@ -147,7 +147,9 @@ func computeWSAccept(key string) string {
 func wsConnValue(c *wsConn) *runtime.Value {
 	return runtime.ObjectVal(map[string]*runtime.Value{
 		"send": runtime.FuncVal(&runtime.Function{Name: "send", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			if len(args) == 0 { return runtime.Undefined, nil }
+			if len(args) == 0 {
+				return runtime.Undefined, nil
+			}
 			msg := args[0].ToString()
 			if args[0].Tag == runtime.TypeObject || args[0].Tag == runtime.TypeArray {
 				msg = valueToJSON(args[0])
@@ -160,11 +162,15 @@ func wsConnValue(c *wsConn) *runtime.Value {
 			return runtime.Undefined, nil
 		}}),
 		"onMessage": runtime.FuncVal(&runtime.Function{Name: "onMessage", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			if len(args) > 0 && args[0].Tag == runtime.TypeFunction { c.onMsg = args[0] }
+			if len(args) > 0 && args[0].Tag == runtime.TypeFunction {
+				c.onMsg = args[0]
+			}
 			return runtime.Undefined, nil
 		}}),
 		"onClose": runtime.FuncVal(&runtime.Function{Name: "onClose", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			if len(args) > 0 && args[0].Tag == runtime.TypeFunction { c.onClose = args[0] }
+			if len(args) > 0 && args[0].Tag == runtime.TypeFunction {
+				c.onClose = args[0]
+			}
 			return runtime.Undefined, nil
 		}}),
 		"isClosed": runtime.FuncVal(&runtime.Function{Name: "isClosed", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
@@ -177,9 +183,15 @@ func WsModule() *runtime.Value {
 	return runtime.ObjectVal(map[string]*runtime.Value{
 		"createServer": runtime.FuncVal(&runtime.Function{Name: "createServer", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			port := 8080
-			if len(args) > 0 { port = int(args[0].ToNumber()) }
+			if len(args) > 0 {
+				port = int(args[0].ToNumber())
+			}
 			var connHandler *runtime.Value
-			if len(args) >= 3 { connHandler = args[2] } else if len(args) == 2 && args[1].Tag == runtime.TypeFunction { connHandler = args[1] }
+			if len(args) >= 3 {
+				connHandler = args[2]
+			} else if len(args) == 2 && args[1].Tag == runtime.TypeFunction {
+				connHandler = args[1]
+			}
 
 			var clients []*wsConn
 			var clientsMu sync.Mutex
@@ -229,14 +241,20 @@ func WsModule() *runtime.Value {
 			return runtime.ObjectVal(map[string]*runtime.Value{
 				"port": runtime.NumberVal(float64(port)),
 				"broadcast": runtime.FuncVal(&runtime.Function{Name: "broadcast", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-					if len(a) == 0 { return runtime.Undefined, nil }
+					if len(a) == 0 {
+						return runtime.Undefined, nil
+					}
 					msg := a[0].ToString()
-					if a[0].Tag == runtime.TypeObject || a[0].Tag == runtime.TypeArray { msg = valueToJSON(a[0]) }
+					if a[0].Tag == runtime.TypeObject || a[0].Tag == runtime.TypeArray {
+						msg = valueToJSON(a[0])
+					}
 					clientsMu.Lock()
 					snap := make([]*wsConn, len(clients))
 					copy(snap, clients)
 					clientsMu.Unlock()
-					for _, cl := range snap { cl.send(msg) }
+					for _, cl := range snap {
+						cl.send(msg)
+					}
 					return runtime.Undefined, nil
 				}}),
 				"clientCount": runtime.FuncVal(&runtime.Function{Name: "clientCount", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
@@ -253,7 +271,9 @@ func WsModule() *runtime.Value {
 		}}),
 
 		"send": runtime.FuncVal(&runtime.Function{Name: "send", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			if len(args) < 2 { return runtime.Undefined, nil }
+			if len(args) < 2 {
+				return runtime.Undefined, nil
+			}
 			if sendFn, ok := args[0].ObjVal["send"]; ok {
 				runtime.CallFunction(sendFn, []*runtime.Value{args[1]}, nil)
 			}
@@ -261,7 +281,9 @@ func WsModule() *runtime.Value {
 		}}),
 
 		"onMessage": runtime.FuncVal(&runtime.Function{Name: "onMessage", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			if len(args) < 2 { return runtime.Undefined, nil }
+			if len(args) < 2 {
+				return runtime.Undefined, nil
+			}
 			if fn, ok := args[0].ObjVal["onMessage"]; ok {
 				runtime.CallFunction(fn, []*runtime.Value{args[1]}, nil)
 			}
@@ -269,7 +291,9 @@ func WsModule() *runtime.Value {
 		}}),
 
 		"onClose": runtime.FuncVal(&runtime.Function{Name: "onClose", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			if len(args) < 2 { return runtime.Undefined, nil }
+			if len(args) < 2 {
+				return runtime.Undefined, nil
+			}
 			if fn, ok := args[0].ObjVal["onClose"]; ok {
 				runtime.CallFunction(fn, []*runtime.Value{args[1]}, nil)
 			}
@@ -286,9 +310,11 @@ func WsModule() *runtime.Value {
 		}}),
 
 		"connect": runtime.FuncVal(&runtime.Function{Name: "connect", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			if len(args) == 0 { return runtime.Null, fmt.Errorf("url required") }
+			if len(args) == 0 {
+				return runtime.Null, fmt.Errorf("url required")
+			}
 			return runtime.ObjectVal(map[string]*runtime.Value{
-				"send": runtime.FuncVal(&runtime.Function{Name: "send", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) { return runtime.Undefined, nil }}),
+				"send":  runtime.FuncVal(&runtime.Function{Name: "send", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) { return runtime.Undefined, nil }}),
 				"close": runtime.FuncVal(&runtime.Function{Name: "close", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) { return runtime.Undefined, nil }}),
 			}), nil
 		}}),

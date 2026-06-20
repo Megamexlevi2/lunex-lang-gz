@@ -179,11 +179,11 @@ func FsModule() *runtime.Value {
 					size = info.Size()
 				}
 				out = append(out, runtime.ObjectVal(map[string]*runtime.Value{
-					"name":  runtime.StringVal(e.Name()),
-					"isDir": runtime.BoolVal(e.IsDir()),
+					"name":   runtime.StringVal(e.Name()),
+					"isDir":  runtime.BoolVal(e.IsDir()),
 					"isFile": runtime.BoolVal(!e.IsDir()),
-					"size":  runtime.NumberVal(float64(size)),
-					"path":  runtime.StringVal(filepath.Join(path, e.Name())),
+					"size":   runtime.NumberVal(float64(size)),
+					"path":   runtime.StringVal(filepath.Join(path, e.Name())),
 				}))
 			}
 			return runtime.ArrayVal(out), nil
@@ -206,11 +206,11 @@ func FsModule() *runtime.Value {
 					size = info.Size()
 				}
 				out = append(out, runtime.ObjectVal(map[string]*runtime.Value{
-					"name":  runtime.StringVal(e.Name()),
-					"isDir": runtime.BoolVal(e.IsDir()),
+					"name":   runtime.StringVal(e.Name()),
+					"isDir":  runtime.BoolVal(e.IsDir()),
 					"isFile": runtime.BoolVal(!e.IsDir()),
-					"size":  runtime.NumberVal(float64(size)),
-					"path":  runtime.StringVal(filepath.Join(path, e.Name())),
+					"size":   runtime.NumberVal(float64(size)),
+					"path":   runtime.StringVal(filepath.Join(path, e.Name())),
 				}))
 			}
 			return runtime.ArrayVal(out), nil
@@ -230,7 +230,7 @@ func FsModule() *runtime.Value {
 				"isDir":   runtime.BoolVal(info.IsDir()),
 				"isFile":  runtime.BoolVal(!info.IsDir()),
 				"mode":    runtime.StringVal(info.Mode().String()),
-				"modTime": runtime.NumberVal(float64(info.ModTime().UnixNano()/1e6)),
+				"modTime": runtime.NumberVal(float64(info.ModTime().UnixNano() / 1e6)),
 			}), nil
 		}}),
 

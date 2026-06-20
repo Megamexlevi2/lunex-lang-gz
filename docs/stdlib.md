@@ -171,6 +171,34 @@ val math = @import("std.math")
 
 ---
 
+## `std.json` — JSON serialization
+
+```lx
+val json = @import("std.json")
+```
+
+### Parsing and formatting
+
+| Function | Description |
+|----------|-------------|
+| `json.parse(text)` | Parse a JSON string into Lunex values |
+| `json.stringify(value)` | Pretty-print JSON with spaces and indentation |
+| `json.stringify(value, indent)` | Pretty-print JSON using `indent` spaces |
+| `json.pretty(value)` | Alias for `json.stringify(value)` |
+| `json.compact(value)` | Minified JSON output |
+| `json.isValid(text)` | True if the text is valid JSON |
+| `json.toJSON(value)` | Alias for `json.stringify(value)` |
+| `json.fromJSON(text)` | Alias for `json.parse(text)` |
+| `json.writeFile(path, value)` | Save pretty JSON to a file |
+| `json.writeFile(path, value, indent)` | Save pretty JSON with custom indentation |
+| `json.save(path, value)` | Alias for `json.writeFile(path, value)` |
+
+> `json.stringify(...)` omits function and undefined fields in objects and
+> writes array holes as `null`, which keeps the output readable and consistent.
+> `json.writeFile(...)` uses the same human-readable formatting directly on disk.
+
+---
+
 ## `std.utils` — Utilities
 
 ```lx
@@ -181,7 +209,7 @@ val utils = @import("std.utils")
 > sort, includes, push, etc.) are available as **native methods** directly
 > on the value — no import needed. See the language reference for the full
 > list. `std.utils` provides additional higher-level helpers not covered by
-> native methods.
+> native methods. JSON helpers live in `std.json`.
 
 ### Array helpers
 

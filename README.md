@@ -9,6 +9,12 @@ external dependencies.
 
 Runs on **Linux**, **macOS**, **Windows**, and **Android (Termux)**.
 
+### attention
+
+lunex-lang is constantly evolving, therefore it may change
+
+If you want to explore the language, it has two ready-made modules written in lunex-lang.  
+
 ---
 
 ## Installation

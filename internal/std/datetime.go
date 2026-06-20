@@ -467,19 +467,19 @@ func DatetimeModule() *runtime.Value {
 
 func timeToObj(t time.Time) *runtime.Value {
 	return runtime.ObjectVal(map[string]*runtime.Value{
-		"year":       runtime.NumberVal(float64(t.Year())),
-		"month":      runtime.NumberVal(float64(t.Month())),
-		"day":        runtime.NumberVal(float64(t.Day())),
-		"hour":       runtime.NumberVal(float64(t.Hour())),
-		"minute":     runtime.NumberVal(float64(t.Minute())),
-		"second":     runtime.NumberVal(float64(t.Second())),
-		"ms":         runtime.NumberVal(float64(t.Nanosecond() / 1e6)),
-		"weekday":    runtime.NumberVal(float64(t.Weekday())),
-		"timestamp":  runtime.NumberVal(float64(t.UnixMilli())),
-		"unix":       runtime.NumberVal(float64(t.Unix())),
-		"timezone":   runtime.StringVal(t.Location().String()),
-		"iso":        runtime.StringVal(t.Format(time.RFC3339)),
-		"__time__":   runtime.StringVal(t.Format(time.RFC3339Nano)),
+		"year":      runtime.NumberVal(float64(t.Year())),
+		"month":     runtime.NumberVal(float64(t.Month())),
+		"day":       runtime.NumberVal(float64(t.Day())),
+		"hour":      runtime.NumberVal(float64(t.Hour())),
+		"minute":    runtime.NumberVal(float64(t.Minute())),
+		"second":    runtime.NumberVal(float64(t.Second())),
+		"ms":        runtime.NumberVal(float64(t.Nanosecond() / 1e6)),
+		"weekday":   runtime.NumberVal(float64(t.Weekday())),
+		"timestamp": runtime.NumberVal(float64(t.UnixMilli())),
+		"unix":      runtime.NumberVal(float64(t.Unix())),
+		"timezone":  runtime.StringVal(t.Location().String()),
+		"iso":       runtime.StringVal(t.Format(time.RFC3339)),
+		"__time__":  runtime.StringVal(t.Format(time.RFC3339Nano)),
 	})
 }
 

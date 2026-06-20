@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Lunex test suite — verifies all 100 standard tests pass.
+# Lunex test suite — verifies all 105 standard tests pass.
 # Usage: bash tests/run_all.sh ./path/to/lunex
 #
 # IMPORTANT: The binary path MUST start with "./" or "/" (explicit path).
@@ -69,14 +69,32 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 
 BASE="$(cd "$(dirname "$0")" && pwd)"
 
-for category in variables functions control_flow loops structs \
-  "stdlib/io" "stdlib/math" "stdlib/utils" "stdlib/datetime" \
-  "stdlib/crypto" "stdlib/fs" "stdlib/os" "stdlib/regex" \
-  concurrency advanced; do
+categories=(
+  variables
+  functions
+  control_flow
+  loops
+  structs
+  "stdlib/io"
+  "stdlib/math"
+  "stdlib/utils"
+  "stdlib/json"
+  "stdlib/datetime"
+  "stdlib/crypto"
+  "stdlib/fs"
+  "stdlib/os"
+  "stdlib/regex"
+  concurrency
+  advanced
+)
+
+for category in "${categories[@]}"; do
   dir="$BASE/$category"
+
   if [ -d "$dir" ]; then
     echo ""
-    echo "\033[1m  $category\033[0m"
+    printf "\033[1m%s\033[0m\n" "  $category"
+
     for f in "$dir"/*.lx; do
       [ -f "$f" ] && run_test "$f"
     done

@@ -1,12 +1,6 @@
 // Lunex lang
 // Created by David Dev · GitHub: https://github.com/Megamexlevi2
 // (c) David Dev 2026. License.
-// interpreter.go — tree-walking interpreter and bytecode executor for Lunex.
-//
-// Architecture:
-//   The Go tree-walker handles all Lunex execution.
-//   Pure-Go fast paths (O(1) math) accelerate recognised numeric loop patterns
-//   on all platforms with no external dependencies.
 
 package runtime
 

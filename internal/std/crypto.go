@@ -39,19 +39,22 @@ var (
 	sha512Pool = sync.Pool{New: func() any { return sha512.New() }}
 )
 
-/* hashBytes computes the requested algorithm over raw bytes and returns a
-   lowercase hex string. Falls back to SHA-256 for unknown algorithm names. */
+/*
+hashBytes computes the requested algorithm over raw bytes and returns a
+
+	lowercase hex string. Falls back to SHA-256 for unknown algorithm names.
+*/
 func hashBytes(algorithm string, data []byte) string {
 	switch strings.ToLower(algorithm) {
 	case "md5":
-	
+
 		h := md5Pool.Get().(hash.Hash)
 		h.Reset()
 		h.Write(data)
 		sum := hex.EncodeToString(h.Sum(nil))
 		md5Pool.Put(h)
 		return sum
-		
+
 	case "sha1":
 		h := sha1Pool.Get().(hash.Hash)
 		h.Reset()
@@ -59,7 +62,7 @@ func hashBytes(algorithm string, data []byte) string {
 		sum := hex.EncodeToString(h.Sum(nil))
 		sha1Pool.Put(h)
 		return sum
-		
+
 	case "sha256":
 		h := sha256Pool.Get().(hash.Hash)
 		h.Reset()
@@ -67,7 +70,7 @@ func hashBytes(algorithm string, data []byte) string {
 		sum := hex.EncodeToString(h.Sum(nil))
 		sha256Pool.Put(h)
 		return sum
-		
+
 	case "sha512":
 		h := sha512Pool.Get().(hash.Hash)
 		h.Reset()
@@ -75,7 +78,7 @@ func hashBytes(algorithm string, data []byte) string {
 		sum := hex.EncodeToString(h.Sum(nil))
 		sha512Pool.Put(h)
 		return sum
-		
+
 	default:
 		h := sha256Pool.Get().(hash.Hash)
 		h.Reset()
@@ -91,8 +94,11 @@ func hashString(algorithm, data string) string {
 	return hashBytes(algorithm, []byte(data))
 }
 
-/* hmacHashFunc maps an algorithm name to the corresponding hash constructor
-   used by the hmac package. Defaults to SHA-256. */
+/*
+hmacHashFunc maps an algorithm name to the corresponding hash constructor
+
+	used by the hmac package. Defaults to SHA-256.
+*/
 func hmacHashFunc(algorithm string) func() hash.Hash {
 	switch strings.ToLower(algorithm) {
 	case "sha256":
@@ -111,7 +117,7 @@ func hmacHashFunc(algorithm string) func() hash.Hash {
 /* hmacBytes computes an HMAC over data using key and returns the raw digest. */
 func hmacBytes(algorithm string, key, data []byte) []byte {
 	mac := hmac.New(hmacHashFunc(algorithm), key)
-	
+
 	mac.Write(data)
 	return mac.Sum(nil)
 }
@@ -131,8 +137,11 @@ func hmacString(algorithm, key, data string) string {
    requires. This makes tokens interoperable with any standard JWT library.
    -------------------------------------------------------------------------- */
 
-/* jwtSign creates a signed JWT with the HS256 algorithm.
-   expiresIn is in seconds; pass 0 to omit the "exp" claim. */
+/*
+jwtSign creates a signed JWT with the HS256 algorithm.
+
+	expiresIn is in seconds; pass 0 to omit the "exp" claim.
+*/
 func jwtSign(payload map[string]*runtime.Value, secret string, expiresIn int64) string {
 	header := base64.RawURLEncoding.EncodeToString(
 		[]byte(`{"alg":"HS256","typ":"JWT"}`),
@@ -171,8 +180,11 @@ func jwtSign(payload map[string]*runtime.Value, secret string, expiresIn int64) 
 		base64.RawURLEncoding.EncodeToString(signature)
 }
 
-/* jwtVerify validates signature and expiry, returning the decoded payload
-   or an error. Uses constant-time comparison to prevent timing attacks. */
+/*
+jwtVerify validates signature and expiry, returning the decoded payload
+
+	or an error. Uses constant-time comparison to prevent timing attacks.
+*/
 func jwtVerify(token, secret string) (*runtime.Value, error) {
 	// Split token
 	parts := strings.Split(token, ".")
@@ -184,7 +196,7 @@ func jwtVerify(token, secret string) (*runtime.Value, error) {
 	// Verify signature
 	sigInput := parts[0] + "." + parts[1]
 	rawSig := hmacBytes("sha256", []byte(secret), []byte(sigInput))
-	
+
 	expectedB64 := base64.RawURLEncoding.EncodeToString(rawSig)
 
 	if !hmac.Equal([]byte(parts[2]), []byte(expectedB64)) {
@@ -222,8 +234,11 @@ func jwtVerify(token, secret string) (*runtime.Value, error) {
    stripped during decryption — no separate nonce storage needed.
    -------------------------------------------------------------------------- */
 
-/* aesEncrypt encrypts plaintext with AES-256-GCM and returns a base64 string
-   that embeds the nonce as the first 12 bytes. */
+/*
+aesEncrypt encrypts plaintext with AES-256-GCM and returns a base64 string
+
+	that embeds the nonce as the first 12 bytes.
+*/
 func aesEncrypt(plaintext, key string) (string, error) {
 	k := make([]byte, 32)
 	copy(k, []byte(key))
@@ -232,17 +247,17 @@ func aesEncrypt(plaintext, key string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	
+
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
 		return "", err
 	}
-	
+
 	nonce := make([]byte, gcm.NonceSize())
 	if _, err := rand.Read(nonce); err != nil {
 		return "", err
 	}
-	
+
 	ciphertext := gcm.Seal(nonce, nonce, []byte(plaintext), nil)
 	return base64.StdEncoding.EncodeToString(ciphertext), nil
 }
@@ -289,8 +304,11 @@ func aesDecrypt(ciphertextB64, key string) (string, error) {
        compiler will auto-vectorise on amd64/arm64.
    -------------------------------------------------------------------------- */
 
-/* pbkdf2SHA256 derives a key of keyLen bytes from password and salt using
-   PBKDF2-HMAC-SHA256 with the given number of iterations. */
+/*
+pbkdf2SHA256 derives a key of keyLen bytes from password and salt using
+
+	PBKDF2-HMAC-SHA256 with the given number of iterations.
+*/
 func pbkdf2SHA256(password, salt []byte, iterations, keyLen int) []byte {
 	prf := hmac.New(sha256.New, password)
 
@@ -482,8 +500,11 @@ func (st *blowfishState) expandKey(key, data []byte) {
 	}
 }
 
-/* eksblowfishSetup implements the Eksblowfish key schedule used by bcrypt.
-   It runs 2^cost rounds of alternating key/salt expansion. */
+/*
+eksblowfishSetup implements the Eksblowfish key schedule used by bcrypt.
+
+	It runs 2^cost rounds of alternating key/salt expansion.
+*/
 func eksblowfishSetup(cost int, salt, key []byte) *blowfishState {
 	st := newBlowfishState()
 
@@ -647,8 +668,11 @@ func bcryptDecode(s string, outLen int) ([]byte, error) {
 	return dst, nil
 }
 
-/* bcryptGenSalt generates a random 16-byte salt and encodes it in bcrypt's
-   base64 alphabet (22 characters). */
+/*
+bcryptGenSalt generates a random 16-byte salt and encodes it in bcrypt's
+
+	base64 alphabet (22 characters).
+*/
 func bcryptGenSalt() (string, error) {
 	salt := make([]byte, 16)
 
@@ -723,8 +747,11 @@ func bcryptHash(password string, cost int) (string, error) {
 	return fmt.Sprintf("$2a$%02d$%s%s", cost, saltStr, encoded), nil
 }
 
-/* bcryptVerify checks a plaintext password against a stored bcrypt hash.
-   Uses hmac.Equal for constant-time comparison. */
+/*
+bcryptVerify checks a plaintext password against a stored bcrypt hash.
+
+	Uses hmac.Equal for constant-time comparison.
+*/
 func bcryptVerify(password, stored string) bool {
 	if len(stored) != 60 {
 		return false
@@ -1064,7 +1091,6 @@ func CryptoModule() *runtime.Value {
 		}}),
 	})
 }
-
 
 var blowfishS0 = [256]uint32{
 	0xd1310ba6, 0x98dfb5ac, 0x2ffd72db, 0xd01adfb7,

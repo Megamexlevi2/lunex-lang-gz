@@ -8,12 +8,16 @@ package std
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
+	"lunex/internal/runtime"
+	"mime"
 	"net"
 	"net/http"
-	"lunex/internal/runtime"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -44,7 +48,7 @@ func httpRequestObj(r *http.Request, body string) *runtime.Value {
 		}
 	}
 	paramsObj := make(map[string]*runtime.Value)
-	obj := runtime.ObjectVal(map[string]*runtime.Value{
+	return runtime.ObjectVal(map[string]*runtime.Value{
 		"method":  runtime.StringVal(r.Method),
 		"url":     runtime.StringVal(r.URL.String()),
 		"path":    runtime.StringVal(r.URL.Path),
@@ -55,7 +59,6 @@ func httpRequestObj(r *http.Request, body string) *runtime.Value {
 		"ip":      runtime.StringVal(r.RemoteAddr),
 		"host":    runtime.StringVal(r.Host),
 	})
-	return obj
 }
 
 type httpServer struct {
@@ -68,6 +71,7 @@ type httpRoute struct {
 	method  string
 	pattern string
 	handler *runtime.Value
+	isUse   bool
 }
 
 func (s *httpServer) match(method, path string) (*runtime.Value, map[string]string) {
@@ -114,12 +118,343 @@ func matchRoute(pattern, path string) (map[string]string, bool) {
 	return params, true
 }
 
+func matchPrefix(pattern, path string) bool {
+	if pattern == "/" {
+		return true
+	}
+	prefix := strings.TrimRight(pattern, "/")
+	return path == prefix || strings.HasPrefix(path, prefix+"/")
+}
+
+func buildResObj(w http.ResponseWriter, r *http.Request) (resObj *runtime.Value, isSent func() bool) {
+	sent := false
+	pendingStatus := 0
+	pendingHeaders := map[string]string{}
+
+	flushHeaders := func() {
+		for k, v := range pendingHeaders {
+			w.Header().Set(k, v)
+		}
+		pendingHeaders = map[string]string{}
+	}
+
+	isSent = func() bool { return sent }
+
+	var resMap map[string]*runtime.Value
+
+	resMap = map[string]*runtime.Value{
+		"json": runtime.FuncVal(&runtime.Function{Name: "json", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+			if sent {
+				return runtime.Undefined, nil
+			}
+			sent = true
+			status := 200
+			if pendingStatus > 0 {
+				status = pendingStatus
+			}
+			if len(a) > 1 && a[1].Tag == runtime.TypeNumber {
+				status = int(a[1].ToNumber())
+			}
+			flushHeaders()
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.WriteHeader(status)
+			data := ""
+			if len(a) > 0 {
+				data = valueToJSON(a[0])
+			}
+			fmt.Fprint(w, data)
+			return runtime.Undefined, nil
+		}}),
+
+		"send": runtime.FuncVal(&runtime.Function{Name: "send", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+			if sent {
+				return runtime.Undefined, nil
+			}
+			sent = true
+			status := 200
+			if pendingStatus > 0 {
+				status = pendingStatus
+			}
+			body := ""
+			ct := "text/plain; charset=utf-8"
+			if len(a) > 0 {
+				if a[0].Tag == runtime.TypeObject || a[0].Tag == runtime.TypeArray {
+					body = valueToJSON(a[0])
+					ct = "application/json; charset=utf-8"
+				} else {
+					body = a[0].ToString()
+					if strings.Contains(body, "<") && strings.Contains(body, ">") {
+						ct = "text/html; charset=utf-8"
+					}
+				}
+			}
+			if len(a) > 1 && a[1].Tag == runtime.TypeNumber {
+				status = int(a[1].ToNumber())
+			}
+			flushHeaders()
+			httpBuildResponse(w, status, body, ct)
+			return runtime.Undefined, nil
+		}}),
+
+		"text": runtime.FuncVal(&runtime.Function{Name: "text", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+			if sent {
+				return runtime.Undefined, nil
+			}
+			sent = true
+			status := 200
+			if pendingStatus > 0 {
+				status = pendingStatus
+			}
+			body := ""
+			if len(a) > 0 {
+				body = a[0].ToString()
+			}
+			if len(a) > 1 && a[1].Tag == runtime.TypeNumber {
+				status = int(a[1].ToNumber())
+			}
+			flushHeaders()
+			httpBuildResponse(w, status, body, "text/plain; charset=utf-8")
+			return runtime.Undefined, nil
+		}}),
+
+		"html": runtime.FuncVal(&runtime.Function{Name: "html", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+			if sent {
+				return runtime.Undefined, nil
+			}
+			sent = true
+			status := 200
+			if pendingStatus > 0 {
+				status = pendingStatus
+			}
+			body := ""
+			if len(a) > 0 {
+				body = a[0].ToString()
+			}
+			if len(a) > 1 && a[1].Tag == runtime.TypeNumber {
+				status = int(a[1].ToNumber())
+			}
+			flushHeaders()
+			httpBuildResponse(w, status, body, "text/html; charset=utf-8")
+			return runtime.Undefined, nil
+		}}),
+
+		"redirect": runtime.FuncVal(&runtime.Function{Name: "redirect", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+			if sent {
+				return runtime.Undefined, nil
+			}
+			sent = true
+			url := "/"
+			status := 302
+			if len(a) > 0 {
+				url = a[0].ToString()
+			}
+			if len(a) > 1 && a[1].Tag == runtime.TypeNumber {
+				status = int(a[1].ToNumber())
+			}
+			flushHeaders()
+			http.Redirect(w, r, url, status)
+			return runtime.Undefined, nil
+		}}),
+
+		"status": runtime.FuncVal(&runtime.Function{Name: "status", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+			if !sent && len(a) > 0 {
+				pendingStatus = int(a[0].ToNumber())
+			}
+			return runtime.ObjectVal(resMap), nil
+		}}),
+
+		"setHeader": runtime.FuncVal(&runtime.Function{Name: "setHeader", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+			if !sent && len(a) >= 2 {
+				pendingHeaders[a[0].ToString()] = a[1].ToString()
+			}
+			return runtime.ObjectVal(resMap), nil
+		}}),
+
+		"getHeader": runtime.FuncVal(&runtime.Function{Name: "getHeader", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+			if len(a) > 0 {
+				return runtime.StringVal(w.Header().Get(a[0].ToString())), nil
+			}
+			return runtime.Null, nil
+		}}),
+
+		"removeHeader": runtime.FuncVal(&runtime.Function{Name: "removeHeader", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+			if !sent && len(a) > 0 {
+				delete(pendingHeaders, a[0].ToString())
+				w.Header().Del(a[0].ToString())
+			}
+			return runtime.ObjectVal(resMap), nil
+		}}),
+
+		"cookie": runtime.FuncVal(&runtime.Function{Name: "cookie", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+			if sent || len(a) < 2 {
+				return runtime.ObjectVal(resMap), nil
+			}
+			name := a[0].ToString()
+			value := a[1].ToString()
+			cookie := &http.Cookie{Name: name, Value: value, Path: "/"}
+			if len(a) > 2 && a[2].Tag == runtime.TypeObject {
+				opts := a[2].ObjVal
+				if v, ok := opts["maxAge"]; ok {
+					cookie.MaxAge = int(v.ToNumber())
+				}
+				if v, ok := opts["path"]; ok {
+					cookie.Path = v.ToString()
+				}
+				if v, ok := opts["domain"]; ok {
+					cookie.Domain = v.ToString()
+				}
+				if v, ok := opts["secure"]; ok {
+					cookie.Secure = v.Tag == runtime.TypeBool && v.BoolVal
+				}
+				if v, ok := opts["httpOnly"]; ok {
+					cookie.HttpOnly = v.Tag == runtime.TypeBool && v.BoolVal
+				}
+				if v, ok := opts["sameSite"]; ok {
+					switch strings.ToLower(v.ToString()) {
+					case "strict":
+						cookie.SameSite = http.SameSiteStrictMode
+					case "lax":
+						cookie.SameSite = http.SameSiteLaxMode
+					case "none":
+						cookie.SameSite = http.SameSiteNoneMode
+					}
+				}
+			}
+			http.SetCookie(w, cookie)
+			return runtime.ObjectVal(resMap), nil
+		}}),
+
+		"clearCookie": runtime.FuncVal(&runtime.Function{Name: "clearCookie", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+			if !sent && len(a) > 0 {
+				http.SetCookie(w, &http.Cookie{
+					Name:    a[0].ToString(),
+					Value:   "",
+					Path:    "/",
+					MaxAge:  -1,
+					Expires: time.Unix(0, 0),
+				})
+			}
+			return runtime.ObjectVal(resMap), nil
+		}}),
+
+		"end": runtime.FuncVal(&runtime.Function{Name: "end", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+			if !sent {
+				sent = true
+				status := 200
+				if pendingStatus > 0 {
+					status = pendingStatus
+				}
+				body := ""
+				if len(a) > 0 {
+					body = a[0].ToString()
+				}
+				flushHeaders()
+				w.WriteHeader(status)
+				if body != "" {
+					fmt.Fprint(w, body)
+				}
+			}
+			return runtime.Undefined, nil
+		}}),
+	}
+
+	resObj = runtime.ObjectVal(resMap)
+	return resObj, isSent
+}
+
+func serveStaticFile(w http.ResponseWriter, r *http.Request, dir string) bool {
+	clean := filepath.Clean(r.URL.Path)
+	if clean == "/" {
+		clean = "/index.html"
+	}
+	fullPath := filepath.Join(dir, filepath.FromSlash(clean))
+
+	rel, err := filepath.Rel(dir, fullPath)
+	if err != nil || strings.HasPrefix(rel, "..") {
+		return false
+	}
+
+	info, err := os.Stat(fullPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			indexPath := filepath.Join(fullPath, "index.html")
+			info2, err2 := os.Stat(indexPath)
+			if err2 != nil || info2.IsDir() {
+				return false
+			}
+			fullPath = indexPath
+		} else {
+			return false
+		}
+	} else if info.IsDir() {
+		indexPath := filepath.Join(fullPath, "index.html")
+		info2, err2 := os.Stat(indexPath)
+		if err2 != nil || info2.IsDir() {
+			return false
+		}
+		fullPath = indexPath
+	}
+
+	ext := strings.ToLower(filepath.Ext(fullPath))
+	ct := mime.TypeByExtension(ext)
+	if ct == "" {
+		switch ext {
+		case ".js":
+			ct = "application/javascript; charset=utf-8"
+		case ".css":
+			ct = "text/css; charset=utf-8"
+		case ".html", ".htm":
+			ct = "text/html; charset=utf-8"
+		case ".json":
+			ct = "application/json; charset=utf-8"
+		case ".svg":
+			ct = "image/svg+xml"
+		case ".ico":
+			ct = "image/x-icon"
+		case ".png":
+			ct = "image/png"
+		case ".jpg", ".jpeg":
+			ct = "image/jpeg"
+		case ".gif":
+			ct = "image/gif"
+		case ".woff":
+			ct = "font/woff"
+		case ".woff2":
+			ct = "font/woff2"
+		case ".ttf":
+			ct = "font/ttf"
+		case ".map":
+			ct = "application/json"
+		default:
+			ct = "application/octet-stream"
+		}
+	}
+
+	f, err := os.Open(fullPath)
+	if err != nil {
+		return false
+	}
+	defer f.Close()
+
+	fi, err := f.Stat()
+	if err != nil {
+		return false
+	}
+
+	w.Header().Set("Content-Type", ct)
+	http.ServeContent(w, r, fi.Name(), fi.ModTime(), f)
+	return true
+}
+
 func httpServerVal(s *httpServer) *runtime.Value {
-	obj := runtime.ObjectVal(map[string]*runtime.Value{
+	var obj *runtime.Value
+
+	serverMap := map[string]*runtime.Value{
 		"listen": runtime.FuncVal(&runtime.Function{Name: "listen", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			port := 3000
 			host := "0.0.0.0"
 			var onStart *runtime.Value
+
 			if len(args) > 0 {
 				port = int(args[0].ToNumber())
 			}
@@ -133,268 +468,251 @@ func httpServerVal(s *httpServer) *runtime.Value {
 			if len(args) > 2 && args[2].Tag == runtime.TypeFunction {
 				onStart = args[2]
 			}
+
 			addr := fmt.Sprintf("%s:%d", host, port)
 			ln, err := net.Listen("tcp", addr)
 			if err != nil {
 				return runtime.Null, err
 			}
+
 			if onStart != nil && runtime.CallFunction != nil {
 				runtime.CallFunction(onStart, []*runtime.Value{runtime.NumberVal(float64(port))})
 			}
+
+			srv := &http.Server{}
+
+			mux := http.NewServeMux()
+			mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+				bodyBytes, _ := io.ReadAll(r.Body)
+				body := string(bodyBytes)
+				reqObj := httpRequestObj(r, body)
+
+				var routeHandler *runtime.Value
+				var params map[string]string
+				var staticDir string
+
+				s.mu.Lock()
+				for _, route := range s.routes {
+					if route.isUse {
+						if matchPrefix(route.pattern, r.URL.Path) {
+							if route.handler != nil && route.handler.Tag == runtime.TypeObject {
+								if sd, ok := route.handler.ObjVal["staticDir"]; ok {
+									staticDir = sd.StrVal
+									break
+								}
+							}
+						}
+						continue
+					}
+					if route.method != "" && route.method != r.Method {
+						continue
+					}
+					p, ok := matchRoute(route.pattern, r.URL.Path)
+					if ok {
+						routeHandler = route.handler
+						params = p
+						break
+					}
+				}
+				s.mu.Unlock()
+
+				if staticDir != "" {
+					if serveStaticFile(w, r, staticDir) {
+						return
+					}
+				}
+
+				if params != nil {
+					paramsObj := make(map[string]*runtime.Value)
+					for k, v := range params {
+						paramsObj[k] = runtime.StringVal(v)
+					}
+					reqObj.ObjVal["params"] = runtime.ObjectVal(paramsObj)
+				}
+
+				resObj, isSent := buildResObj(w, r)
+
+				var callErr error
+				var callRes *runtime.Value
+
+				if routeHandler != nil && runtime.CallFunction != nil {
+					callRes, callErr = runtime.CallFunction(routeHandler, []*runtime.Value{reqObj, resObj})
+				} else if s.handler != nil {
+					callRes, callErr = s.handler(reqObj, resObj)
+				}
+
+				_ = callErr
+
+				if !isSent() {
+					if callRes != nil && callRes.Tag != runtime.TypeUndefined && callRes.Tag != runtime.TypeNull {
+						if callRes.Tag == runtime.TypeString {
+							ct := "text/plain; charset=utf-8"
+							if strings.Contains(callRes.StrVal, "<") && strings.Contains(callRes.StrVal, ">") {
+								ct = "text/html; charset=utf-8"
+							}
+							httpBuildResponse(w, 200, callRes.StrVal, ct)
+						} else if callRes.Tag == runtime.TypeObject || callRes.Tag == runtime.TypeArray {
+							httpBuildResponse(w, 200, valueToJSON(callRes), "application/json; charset=utf-8")
+						} else {
+							httpBuildResponse(w, 200, callRes.ToString(), "text/plain; charset=utf-8")
+						}
+					} else {
+						httpBuildResponse(w, 404, `{"error":"not found"}`, "application/json; charset=utf-8")
+					}
+				}
+			})
+
+			srv.Handler = mux
+
 			runtime.KeepAliveAdd()
 			go func() {
 				defer runtime.KeepAliveDone()
-				mux := http.NewServeMux()
-				mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-					bodyBytes, _ := io.ReadAll(r.Body)
-					body := string(bodyBytes)
-					reqObj := httpRequestObj(r, body)
-					var routeHandler *runtime.Value
-					var params map[string]string
-					s.mu.Lock()
-					for _, route := range s.routes {
-						if route.method != "" && route.method != r.Method {
-							continue
-						}
-						p, ok := matchRoute(route.pattern, r.URL.Path)
-						if ok {
-							routeHandler = route.handler
-							params = p
-							break
-						}
-					}
-					s.mu.Unlock()
-					if params != nil {
-						paramsObj := make(map[string]*runtime.Value)
-						for k, v := range params {
-							paramsObj[k] = runtime.StringVal(v)
-						}
-						reqObj.ObjVal["params"] = runtime.ObjectVal(paramsObj)
-					}
-					sent := false
-					resObj := runtime.ObjectVal(map[string]*runtime.Value{
-						"json": runtime.FuncVal(&runtime.Function{Name: "json", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-							if sent {
-								return runtime.Undefined, nil
-							}
-							sent = true
-							status := 200
-							if len(a) > 1 {
-								status = int(a[1].ToNumber())
-							}
-							w.Header().Set("Content-Type", "application/json")
-							w.WriteHeader(status)
-							data := ""
-							if len(a) > 0 {
-								data = valueToJSON(a[0])
-							}
-							fmt.Fprint(w, data)
-							return runtime.Undefined, nil
-						}}),
-						"send": runtime.FuncVal(&runtime.Function{Name: "send", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-							if sent {
-								return runtime.Undefined, nil
-							}
-							sent = true
-							status := 200
-							body := ""
-							ct := "text/plain"
-							if len(a) > 0 {
-								if a[0].Tag == runtime.TypeObject || a[0].Tag == runtime.TypeArray {
-									body = valueToJSON(a[0])
-									ct = "application/json"
-								} else {
-									body = a[0].ToString()
-								}
-							}
-							if len(a) > 1 {
-								status = int(a[1].ToNumber())
-							}
-							httpBuildResponse(w, status, body, ct)
-							return runtime.Undefined, nil
-						}}),
-						"text": runtime.FuncVal(&runtime.Function{Name: "text", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-							if sent {
-								return runtime.Undefined, nil
-							}
-							sent = true
-							status := 200
-							body := ""
-							if len(a) > 0 {
-								body = a[0].ToString()
-							}
-							if len(a) > 1 {
-								status = int(a[1].ToNumber())
-							}
-							httpBuildResponse(w, status, body, "text/plain; charset=utf-8")
-							return runtime.Undefined, nil
-						}}),
-						"html": runtime.FuncVal(&runtime.Function{Name: "html", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-							if sent {
-								return runtime.Undefined, nil
-							}
-							sent = true
-							status := 200
-							body := ""
-							if len(a) > 0 {
-								body = a[0].ToString()
-							}
-							if len(a) > 1 {
-								status = int(a[1].ToNumber())
-							}
-							httpBuildResponse(w, status, body, "text/html; charset=utf-8")
-							return runtime.Undefined, nil
-						}}),
-						"redirect": runtime.FuncVal(&runtime.Function{Name: "redirect", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-							if sent {
-								return runtime.Undefined, nil
-							}
-							sent = true
-							url := "/"
-							status := 302
-							if len(a) > 0 {
-								url = a[0].ToString()
-							}
-							if len(a) > 1 {
-								status = int(a[1].ToNumber())
-							}
-							http.Redirect(w, r, url, status)
-							return runtime.Undefined, nil
-						}}),
-						"status": runtime.FuncVal(&runtime.Function{Name: "status", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-							if len(a) > 0 && !sent {
-								w.WriteHeader(int(a[0].ToNumber()))
-							}
-							return runtime.Undefined, nil
-						}}),
-						"setHeader": runtime.FuncVal(&runtime.Function{Name: "setHeader", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-							if len(a) >= 2 && !sent {
-								w.Header().Set(a[0].ToString(), a[1].ToString())
-							}
-							return runtime.Undefined, nil
-						}}),
-						"end": runtime.FuncVal(&runtime.Function{Name: "end", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-							if !sent {
-								sent = true
-								w.WriteHeader(200)
-							}
-							return runtime.Undefined, nil
-						}}),
-					})
-					if routeHandler != nil && runtime.CallFunction != nil {
-						res, err := runtime.CallFunction(routeHandler, []*runtime.Value{reqObj, resObj})
-						if err == nil && res != nil && !sent {
-							if res.Tag == runtime.TypeString {
-								httpBuildResponse(w, 200, res.StrVal, "text/plain")
-							} else if res.Tag == runtime.TypeObject || res.Tag == runtime.TypeArray {
-								httpBuildResponse(w, 200, valueToJSON(res), "application/json")
-							}
-						}
-					} else if s.handler != nil {
-						res, err := s.handler(reqObj, resObj)
-						if err == nil && res != nil && !sent {
-							if res.Tag == runtime.TypeString {
-								httpBuildResponse(w, 200, res.StrVal, "text/plain")
-							} else if res.Tag == runtime.TypeObject || res.Tag == runtime.TypeArray {
-								httpBuildResponse(w, 200, valueToJSON(res), "application/json")
-							}
-						}
-					} else if !sent {
-						httpBuildResponse(w, 404, `{"error":"not found"}`, "application/json")
-					}
-				})
-				http.Serve(ln, mux)
+				srv.Serve(ln)
 			}()
+
 			return runtime.ObjectVal(map[string]*runtime.Value{
-				"port":  runtime.NumberVal(float64(port)),
-				"close": runtime.FuncVal(&runtime.Function{Name: "close", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) { ln.Close(); return runtime.Undefined, nil }}),
+				"port": runtime.NumberVal(float64(port)),
+				"close": runtime.FuncVal(&runtime.Function{Name: "close", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+					ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+					defer cancel()
+					srv.Shutdown(ctx)
+					return runtime.Undefined, nil
+				}}),
 			}), nil
 		}}),
 
 		"get": runtime.FuncVal(&runtime.Function{Name: "get", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			s.mu.Lock()
 			pattern := ""
-			if len(args) > 0 { pattern = args[0].ToString() }
+			if len(args) > 0 {
+				pattern = args[0].ToString()
+			}
 			var handler *runtime.Value
-			if len(args) > 1 { handler = args[1] }
-			s.routes = append(s.routes, httpRoute{"GET", pattern, handler})
+			if len(args) > 1 {
+				handler = args[1]
+			}
+			s.routes = append(s.routes, httpRoute{method: "GET", pattern: pattern, handler: handler})
 			s.mu.Unlock()
-			return httpServerVal(s), nil
+			return obj, nil
 		}}),
+
 		"post": runtime.FuncVal(&runtime.Function{Name: "post", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			s.mu.Lock()
 			pattern := ""
-			if len(args) > 0 { pattern = args[0].ToString() }
+			if len(args) > 0 {
+				pattern = args[0].ToString()
+			}
 			var handler *runtime.Value
-			if len(args) > 1 { handler = args[1] }
-			s.routes = append(s.routes, httpRoute{"POST", pattern, handler})
+			if len(args) > 1 {
+				handler = args[1]
+			}
+			s.routes = append(s.routes, httpRoute{method: "POST", pattern: pattern, handler: handler})
 			s.mu.Unlock()
-			return httpServerVal(s), nil
+			return obj, nil
 		}}),
+
 		"put": runtime.FuncVal(&runtime.Function{Name: "put", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			s.mu.Lock()
 			pattern := ""
-			if len(args) > 0 { pattern = args[0].ToString() }
+			if len(args) > 0 {
+				pattern = args[0].ToString()
+			}
 			var handler *runtime.Value
-			if len(args) > 1 { handler = args[1] }
-			s.routes = append(s.routes, httpRoute{"PUT", pattern, handler})
+			if len(args) > 1 {
+				handler = args[1]
+			}
+			s.routes = append(s.routes, httpRoute{method: "PUT", pattern: pattern, handler: handler})
 			s.mu.Unlock()
-			return httpServerVal(s), nil
+			return obj, nil
 		}}),
+
 		"patch": runtime.FuncVal(&runtime.Function{Name: "patch", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			s.mu.Lock()
 			pattern := ""
-			if len(args) > 0 { pattern = args[0].ToString() }
+			if len(args) > 0 {
+				pattern = args[0].ToString()
+			}
 			var handler *runtime.Value
-			if len(args) > 1 { handler = args[1] }
-			s.routes = append(s.routes, httpRoute{"PATCH", pattern, handler})
+			if len(args) > 1 {
+				handler = args[1]
+			}
+			s.routes = append(s.routes, httpRoute{method: "PATCH", pattern: pattern, handler: handler})
 			s.mu.Unlock()
-			return httpServerVal(s), nil
+			return obj, nil
 		}}),
+
 		"delete": runtime.FuncVal(&runtime.Function{Name: "delete", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			s.mu.Lock()
 			pattern := ""
-			if len(args) > 0 { pattern = args[0].ToString() }
+			if len(args) > 0 {
+				pattern = args[0].ToString()
+			}
 			var handler *runtime.Value
-			if len(args) > 1 { handler = args[1] }
-			s.routes = append(s.routes, httpRoute{"DELETE", pattern, handler})
+			if len(args) > 1 {
+				handler = args[1]
+			}
+			s.routes = append(s.routes, httpRoute{method: "DELETE", pattern: pattern, handler: handler})
 			s.mu.Unlock()
-			return httpServerVal(s), nil
+			return obj, nil
 		}}),
+
 		"all": runtime.FuncVal(&runtime.Function{Name: "all", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			s.mu.Lock()
 			pattern := ""
-			if len(args) > 0 { pattern = args[0].ToString() }
+			if len(args) > 0 {
+				pattern = args[0].ToString()
+			}
 			var handler *runtime.Value
-			if len(args) > 1 { handler = args[1] }
-			s.routes = append(s.routes, httpRoute{"", pattern, handler})
+			if len(args) > 1 {
+				handler = args[1]
+			}
+			s.routes = append(s.routes, httpRoute{method: "", pattern: pattern, handler: handler})
 			s.mu.Unlock()
-			return httpServerVal(s), nil
+			return obj, nil
 		}}),
+
 		"use": runtime.FuncVal(&runtime.Function{Name: "use", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			s.mu.Lock()
 			pattern := "/"
 			var handler *runtime.Value
-			if len(args) == 1 { handler = args[0] } else if len(args) >= 2 { pattern = args[0].ToString(); handler = args[1] }
-			if handler != nil { s.routes = append([]httpRoute{{"", pattern, handler}}, s.routes...) }
+			if len(args) == 1 {
+				handler = args[0]
+			} else if len(args) >= 2 {
+				pattern = args[0].ToString()
+				handler = args[1]
+			}
+			if handler != nil {
+				s.routes = append([]httpRoute{{method: "", pattern: pattern, handler: handler, isUse: true}}, s.routes...)
+			}
 			s.mu.Unlock()
-			return httpServerVal(s), nil
+			return obj, nil
 		}}),
-	})
+	}
+
+	obj = runtime.ObjectVal(serverMap)
 	return obj
 }
 
 func HttpModule() *runtime.Value {
-	client := &http.Client{Timeout: 30 * time.Second}
+	newClient := func(timeoutMs float64) *http.Client {
+		t := 30 * time.Second
+		if timeoutMs > 0 {
+			t = time.Duration(timeoutMs) * time.Millisecond
+		}
+		return &http.Client{Timeout: t}
+	}
 
 	doRequest := func(method, url string, opts *runtime.Value) (*runtime.Value, error) {
 		var body io.Reader
-		headers := map[string]string{"Content-Type": "application/json"}
+		headers := map[string]string{}
+		timeoutMs := float64(0)
+
 		if opts != nil && opts.Tag == runtime.TypeObject {
 			if b, ok := opts.ObjVal["body"]; ok && b != nil {
 				var bodyStr string
 				if b.Tag == runtime.TypeObject || b.Tag == runtime.TypeArray {
 					bodyStr = valueToJSON(b)
+					headers["Content-Type"] = "application/json"
 				} else {
 					bodyStr = b.ToString()
 				}
@@ -406,24 +724,36 @@ func HttpModule() *runtime.Value {
 				}
 			}
 			if t, ok := opts.ObjVal["timeout"]; ok && t != nil {
-				client.Timeout = time.Duration(t.ToNumber()) * time.Millisecond
+				timeoutMs = t.ToNumber()
 			}
 		}
+
+		client := newClient(timeoutMs)
+
 		req, err := http.NewRequest(method, url, body)
 		if err != nil {
-			return runtime.ObjectVal(map[string]*runtime.Value{"ok": runtime.False, "error": runtime.StringVal(err.Error())}), nil
+			return runtime.ObjectVal(map[string]*runtime.Value{
+				"ok":    runtime.False,
+				"error": runtime.StringVal(err.Error()),
+			}), nil
 		}
 		for k, v := range headers {
 			req.Header.Set(k, v)
 		}
+
 		resp, err := client.Do(req)
 		if err != nil {
-			return runtime.ObjectVal(map[string]*runtime.Value{"ok": runtime.False, "error": runtime.StringVal(err.Error())}), nil
+			return runtime.ObjectVal(map[string]*runtime.Value{
+				"ok":    runtime.False,
+				"error": runtime.StringVal(err.Error()),
+			}), nil
 		}
 		defer resp.Body.Close()
+
 		respBody, _ := io.ReadAll(resp.Body)
 		bodyStr := string(respBody)
 		ct := resp.Header.Get("Content-Type")
+
 		var parsedBody *runtime.Value
 		if strings.Contains(ct, "application/json") {
 			parsed, err := parseJSON(bodyStr)
@@ -435,6 +765,7 @@ func HttpModule() *runtime.Value {
 		} else {
 			parsedBody = runtime.StringVal(bodyStr)
 		}
+
 		return runtime.ObjectVal(map[string]*runtime.Value{
 			"ok":      runtime.BoolVal(resp.StatusCode >= 200 && resp.StatusCode < 300),
 			"status":  runtime.NumberVal(float64(resp.StatusCode)),
@@ -443,7 +774,9 @@ func HttpModule() *runtime.Value {
 			"text":    runtime.StringVal(bodyStr),
 			"json": runtime.FuncVal(&runtime.Function{Name: "json", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 				v, err := parseJSON(bodyStr)
-				if err != nil { return runtime.Null, nil }
+				if err != nil {
+					return runtime.Null, nil
+				}
 				return v, nil
 			}}),
 		}), nil
@@ -451,44 +784,75 @@ func HttpModule() *runtime.Value {
 
 	return runtime.ObjectVal(map[string]*runtime.Value{
 		"request": runtime.FuncVal(&runtime.Function{Name: "request", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			if len(args) < 2 { return runtime.Null, fmt.Errorf("http.request: method and url required") }
+			if len(args) < 2 {
+				return runtime.Null, fmt.Errorf("http.request: method and url required")
+			}
 			var opts *runtime.Value
-			if len(args) > 2 { opts = args[2] }
+			if len(args) > 2 {
+				opts = args[2]
+			}
 			return doRequest(args[0].ToString(), args[1].ToString(), opts)
 		}}),
 
 		"get": runtime.FuncVal(&runtime.Function{Name: "get", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			if len(args) == 0 { return runtime.Null, fmt.Errorf("url required") }
+			if len(args) == 0 {
+				return runtime.Null, fmt.Errorf("http.get: url required")
+			}
 			var opts *runtime.Value
-			if len(args) > 1 { opts = args[1] }
+			if len(args) > 1 {
+				opts = args[1]
+			}
 			return doRequest("GET", args[0].ToString(), opts)
 		}}),
+
 		"post": runtime.FuncVal(&runtime.Function{Name: "post", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			if len(args) == 0 { return runtime.Null, fmt.Errorf("url required") }
+			if len(args) == 0 {
+				return runtime.Null, fmt.Errorf("http.post: url required")
+			}
 			var opts *runtime.Value
-			if len(args) > 1 { opts = args[1] }
+			if len(args) > 1 {
+				opts = args[1]
+			}
 			return doRequest("POST", args[0].ToString(), opts)
 		}}),
+
 		"put": runtime.FuncVal(&runtime.Function{Name: "put", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			if len(args) == 0 { return runtime.Null, fmt.Errorf("url required") }
+			if len(args) == 0 {
+				return runtime.Null, fmt.Errorf("http.put: url required")
+			}
 			var opts *runtime.Value
-			if len(args) > 1 { opts = args[1] }
+			if len(args) > 1 {
+				opts = args[1]
+			}
 			return doRequest("PUT", args[0].ToString(), opts)
 		}}),
+
 		"patch": runtime.FuncVal(&runtime.Function{Name: "patch", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			if len(args) == 0 { return runtime.Null, fmt.Errorf("url required") }
+			if len(args) == 0 {
+				return runtime.Null, fmt.Errorf("http.patch: url required")
+			}
 			var opts *runtime.Value
-			if len(args) > 1 { opts = args[1] }
+			if len(args) > 1 {
+				opts = args[1]
+			}
 			return doRequest("PATCH", args[0].ToString(), opts)
 		}}),
+
 		"delete": runtime.FuncVal(&runtime.Function{Name: "delete", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			if len(args) == 0 { return runtime.Null, fmt.Errorf("url required") }
+			if len(args) == 0 {
+				return runtime.Null, fmt.Errorf("http.delete: url required")
+			}
 			var opts *runtime.Value
-			if len(args) > 1 { opts = args[1] }
+			if len(args) > 1 {
+				opts = args[1]
+			}
 			return doRequest("DELETE", args[0].ToString(), opts)
 		}}),
+
 		"head": runtime.FuncVal(&runtime.Function{Name: "head", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			if len(args) == 0 { return runtime.Null, fmt.Errorf("url required") }
+			if len(args) == 0 {
+				return runtime.Null, fmt.Errorf("http.head: url required")
+			}
 			return doRequest("HEAD", args[0].ToString(), nil)
 		}}),
 
@@ -507,7 +871,9 @@ func HttpModule() *runtime.Value {
 		}}),
 
 		"listen": runtime.FuncVal(&runtime.Function{Name: "listen", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			if len(args) < 2 { return runtime.Null, fmt.Errorf("server and port required") }
+			if len(args) < 2 {
+				return runtime.Null, fmt.Errorf("http.listen: server and port required")
+			}
 			server := args[0]
 			if listen, ok := server.ObjVal["listen"]; ok {
 				return runtime.CallFunction(listen, args[1:])
@@ -516,11 +882,15 @@ func HttpModule() *runtime.Value {
 		}}),
 
 		"json": runtime.FuncVal(&runtime.Function{Name: "json", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			if len(args) < 2 { return runtime.Undefined, nil }
+			if len(args) < 2 {
+				return runtime.Undefined, nil
+			}
 			res := args[0]
 			data := args[1]
 			status := 200
-			if len(args) > 2 { status = int(args[2].ToNumber()) }
+			if len(args) > 2 {
+				status = int(args[2].ToNumber())
+			}
 			if jsonFn, ok := res.ObjVal["json"]; ok {
 				return runtime.CallFunction(jsonFn, []*runtime.Value{data, runtime.NumberVal(float64(status))})
 			}
@@ -528,7 +898,9 @@ func HttpModule() *runtime.Value {
 		}}),
 
 		"text": runtime.FuncVal(&runtime.Function{Name: "text", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			if len(args) < 2 { return runtime.Undefined, nil }
+			if len(args) < 2 {
+				return runtime.Undefined, nil
+			}
 			res := args[0]
 			if textFn, ok := res.ObjVal["text"]; ok {
 				return runtime.CallFunction(textFn, args[1:])
@@ -536,8 +908,21 @@ func HttpModule() *runtime.Value {
 			return runtime.Undefined, nil
 		}}),
 
+		"html": runtime.FuncVal(&runtime.Function{Name: "html", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+			if len(args) < 2 {
+				return runtime.Undefined, nil
+			}
+			res := args[0]
+			if htmlFn, ok := res.ObjVal["html"]; ok {
+				return runtime.CallFunction(htmlFn, args[1:])
+			}
+			return runtime.Undefined, nil
+		}}),
+
 		"redirect": runtime.FuncVal(&runtime.Function{Name: "redirect", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			if len(args) < 2 { return runtime.Undefined, nil }
+			if len(args) < 2 {
+				return runtime.Undefined, nil
+			}
 			res := args[0]
 			if redFn, ok := res.ObjVal["redirect"]; ok {
 				return runtime.CallFunction(redFn, args[1:])
@@ -546,12 +931,16 @@ func HttpModule() *runtime.Value {
 		}}),
 
 		"parseBody": runtime.FuncVal(&runtime.Function{Name: "parseBody", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			if len(args) == 0 { return runtime.Null, nil }
+			if len(args) == 0 {
+				return runtime.Null, nil
+			}
 			req := args[0]
 			if body, ok := req.ObjVal["body"]; ok {
 				if body.Tag == runtime.TypeString {
 					v, err := parseJSON(body.StrVal)
-					if err == nil { return v, nil }
+					if err == nil {
+						return v, nil
+					}
 					return body, nil
 				}
 				return body, nil
@@ -561,19 +950,18 @@ func HttpModule() *runtime.Value {
 
 		"serveStatic": runtime.FuncVal(&runtime.Function{Name: "serveStatic", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			dir := "."
-			if len(args) > 0 { dir = args[0].ToString() }
-			return runtime.FuncVal(&runtime.Function{Name: "staticHandler", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-				return runtime.ObjectVal(map[string]*runtime.Value{"staticDir": runtime.StringVal(dir)}), nil
-			}}), nil
-		}}),
-
-		"cookie": runtime.FuncVal(&runtime.Function{Name: "cookie", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			if len(args) < 3 { return runtime.Undefined, nil }
-			return runtime.Undefined, nil
+			if len(args) > 0 {
+				dir = args[0].ToString()
+			}
+			return runtime.ObjectVal(map[string]*runtime.Value{
+				"staticDir": runtime.StringVal(dir),
+			}), nil
 		}}),
 
 		"parseURL": runtime.FuncVal(&runtime.Function{Name: "parseURL", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			if len(args) == 0 { return runtime.ObjectVal(nil), nil }
+			if len(args) == 0 {
+				return runtime.ObjectVal(nil), nil
+			}
 			rawURL := args[0].ToString()
 			protocol := ""
 			host := ""
@@ -597,7 +985,7 @@ func HttpModule() *runtime.Value {
 			queryObj := make(map[string]*runtime.Value)
 			for _, part := range strings.Split(query, "&") {
 				kv := strings.SplitN(part, "=", 2)
-				if len(kv) == 2 {
+				if len(kv) == 2 && kv[0] != "" {
 					queryObj[kv[0]] = runtime.StringVal(kv[1])
 				}
 			}
@@ -611,12 +999,14 @@ func HttpModule() *runtime.Value {
 		}}),
 
 		"buildURL": runtime.FuncVal(&runtime.Function{Name: "buildURL", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			if len(args) == 0 { return runtime.StringVal(""), nil }
+			if len(args) == 0 {
+				return runtime.StringVal(""), nil
+			}
 			base := args[0].ToString()
 			if len(args) > 1 && args[1].Tag == runtime.TypeObject {
 				params := []string{}
 				for k, v := range args[1].ObjVal {
-					params = append(params, k+"="+v.ToString())
+					params = append(params, urlEncode(k)+"="+urlEncode(v.ToString()))
 				}
 				if len(params) > 0 {
 					if strings.Contains(base, "?") {
@@ -630,16 +1020,23 @@ func HttpModule() *runtime.Value {
 		}}),
 
 		"encode": runtime.FuncVal(&runtime.Function{Name: "encode", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			if len(args) == 0 { return runtime.StringVal(""), nil }
+			if len(args) == 0 {
+				return runtime.StringVal(""), nil
+			}
 			return runtime.StringVal(urlEncode(args[0].ToString())), nil
 		}}),
+
 		"decode": runtime.FuncVal(&runtime.Function{Name: "decode", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			if len(args) == 0 { return runtime.StringVal(""), nil }
+			if len(args) == 0 {
+				return runtime.StringVal(""), nil
+			}
 			return runtime.StringVal(urlDecode(args[0].ToString())), nil
 		}}),
 
 		"statusText": runtime.FuncVal(&runtime.Function{Name: "statusText", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			if len(args) == 0 { return runtime.StringVal(""), nil }
+			if len(args) == 0 {
+				return runtime.StringVal(""), nil
+			}
 			return runtime.StringVal(http.StatusText(int(args[0].ToNumber()))), nil
 		}}),
 	})
@@ -649,10 +1046,14 @@ func urlEncode(s string) string {
 	var out strings.Builder
 	for _, c := range s {
 		switch {
-		case (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-' || c == '_' || c == '.' || c == '~':
+		case (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') ||
+			c == '-' || c == '_' || c == '.' || c == '~':
 			out.WriteRune(c)
 		default:
-			out.WriteString(fmt.Sprintf("%%%02X", c))
+			b := []byte(string(c))
+			for _, bb := range b {
+				out.WriteString(fmt.Sprintf("%%%02X", bb))
+			}
 		}
 	}
 	return out.String()

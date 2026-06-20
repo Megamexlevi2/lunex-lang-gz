@@ -14,9 +14,9 @@
 package std
 
 import (
-        "fmt"
-        "lunex/internal/meta"
-        "lunex/internal/runtime"
+	"fmt"
+	"lunex/internal/meta"
+	"lunex/internal/runtime"
 )
 
 func RuntimeModule(interp interface {
