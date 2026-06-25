@@ -1,0 +1,61 @@
+val io = @import("std.io")
+val gh = @fimport("../src/github.lx")
+
+var passed = 0
+var failed = 0
+
+fn check(label, got, expected) {
+  if got == expected {
+    io.log(io.green("  ✔") + " " + label)
+    passed = passed + 1
+  } else {
+    io.log(io.red("  ✘") + " " + label)
+    io.log(io.dim("    got:      " + str(got)))
+    io.log(io.dim("    expected: " + str(expected)))
+    failed = failed + 1
+  }
+}
+
+fn main() {
+  io.log(io.bold("github.lx — parseSpec"))
+
+  val p1 = gh.parseSpec("user/repo")
+  check("shorthand owner",  p1.owner,   "user")
+  check("shorthand repo",   p1.repo,    "repo")
+  check("shorthand ref",    p1.ref,     "main")
+  check("shorthand sub",    p1.subpath, "")
+  check("shorthand full",   p1.full,    "user/repo")
+
+  val p2 = gh.parseSpec("user/repo@v1.2.3")
+  check("versioned owner",  p2.owner,   "user")
+  check("versioned ref",    p2.ref,     "v1.2.3")
+  check("versioned repo",   p2.repo,    "repo")
+
+  val p3 = gh.parseSpec("github.com/org/lib")
+  check("full path owner",  p3.owner,   "org")
+  check("full path repo",   p3.repo,    "lib")
+
+  val p4 = gh.parseSpec("https://github.com/david/pkg@beta")
+  check("https owner",      p4.owner,   "david")
+  check("https repo",       p4.repo,    "pkg")
+  check("https ref",        p4.ref,     "beta")
+
+  val p5 = gh.parseSpec("github.com/user/repo/subdir")
+  check("subpath",          p5.subpath, "subdir")
+
+  val p6 = gh.parseSpec("github.com/user/repo/a/b/c")
+  check("deep subpath",     p6.subpath, "a/b/c")
+
+  val empty = gh.parseSpec("")
+  check("empty owner",      empty.owner, "")
+  check("empty repo",       empty.repo,  "")
+
+  io.log("")
+  io.log(io.bold("github.lx — rawURL"))
+  val url = gh.rawURL("user", "repo", "main", "index.lx")
+  check("rawURL format", url, "https://raw.githubusercontent.com/user/repo/main/index.lx")
+
+  io.log("")
+  io.log(io.dim("  " + str(passed) + " passed, " + str(failed) + " failed"))
+  io.log("")
+}

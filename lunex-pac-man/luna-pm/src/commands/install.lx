@@ -1,0 +1,114 @@
+val io     = @import("std.io")
+val fs     = @import("std.fs")
+val os     = @import("std.os")
+val paths  = @fimport("../paths.lx")
+val gh     = @fimport("../github.lx")
+val meta   = @fimport("../meta.lx")
+val cfg    = @fimport("../config.lx")
+val updater = @fimport("../update.lx")
+val runtime = @fimport("../runtime.lx")
+
+fn checkEngines(lunexConstraint) {
+  if lunexConstraint == null || lunexConstraint == "" {
+    null
+  } else {
+    val result = runtime.execLunex("version")
+    if result.ok {
+      io.log(io.dim("  Requires lunex " + lunexConstraint))
+    }
+    null
+  }
+}
+
+fn createBinShims(pkgDir, binMap, globalBinDir) {
+  if binMap == null { null } else {
+    each cmdName in binMap {
+      val scriptPath = pkgDir + "/" + binMap[cmdName]
+      val shimPath   = globalBinDir + "/" + cmdName
+      val content    = "#!/bin/sh\nLUNEXBIN=\"${LUNEXBIN:-lunex}\"\nexec \"$LUNEXBIN\" run \"" + scriptPath + "\" \"$@\""
+      fs.writeFile(shimPath, content)
+      os.exec("chmod +x " + shimPath)
+      io.log(io.dim("  Bin: ") + cmdName + io.dim(" → " + scriptPath))
+    }
+    null
+  }
+}
+
+fn installOne(spec) {
+  io.log("")
+  io.log(io.bold(io.cyan("◆")) + " " + io.bold(spec))
+
+  val parsed = gh.parseSpec(spec)
+  if parsed.owner == "" || parsed.repo == "" {
+    io.err("Invalid spec: " + spec + "  (expected user/repo or github.com/user/repo)")
+    os.exit(1)
+  }
+
+  val dest = paths.pkgDir(parsed.full)
+  val sp   = io.spinner("Downloading " + parsed.full)
+
+  val ok = gh.download(parsed.owner, parsed.repo, parsed.ref, parsed.subpath, dest)
+
+  if !ok {
+    sp.stop()
+    io.err("Download failed for " + spec)
+    os.exit(1)
+  }
+
+  sp.tick()
+
+  val entry = meta.detectEntry(dest, parsed.repo)
+  if entry != null {
+    meta.writeEntry(dest, entry)
+    io.log(io.dim("  Entry:  ") + entry)
+  }
+
+  val pkgMeta = cfg.readFrom(dest)
+  val binMap  = if pkgMeta != null { cfg.getBin(pkgMeta) } else { {} }
+
+  meta.write(dest, parsed.full, parsed.ref, spec, binMap)
+  createBinShims(dest, binMap, paths.binDir())
+
+  io.success("Installed " + parsed.full + " (" + parsed.ref + ")")
+  io.log(io.dim("  Path:   ") + dest)
+  io.log(io.dim("  Import: ") + io.cyan("@import(\"" + parsed.repo + "\")"))
+  io.log("")
+}
+
+fn installFromConfig() {
+  val project = cfg.read()
+  if project == null {
+    io.err("No config.lx found. Run: luna init")
+    os.exit(1)
+  }
+
+  val engines = cfg.getEngines(project)
+  if engines.lunex != null { checkEngines(engines.lunex) }
+
+  val deps = cfg.getDeps(project)
+  var count = 0
+  each dep in deps {
+    installOne(dep + "@" + deps[dep])
+    count = count + 1
+  }
+
+  if count == 0 {
+    io.log(io.dim("No dependencies listed in config.lx"))
+  } else {
+    io.success("All " + str(count) + " dependencies installed")
+  }
+}
+
+fn run(args) {
+  updater.selfUpdate(paths.binDir(), paths.versionFile())
+
+  if args.length == 0 {
+    installFromConfig()
+  } else {
+    each spec in args {
+      installOne(spec)
+    }
+  }
+}
+
+{ run: run }

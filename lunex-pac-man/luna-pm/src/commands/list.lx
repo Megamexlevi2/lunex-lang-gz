@@ -1,0 +1,40 @@
+val io    = @import("std.io")
+val fs    = @import("std.fs")
+val paths = @fimport("../paths.lx")
+val meta  = @fimport("../meta.lx")
+
+fn run(args) {
+  if !fs.exists(paths.packagesDir()) {
+    io.log("No packages installed.")
+  } else {
+    val entries = fs.list(paths.packagesDir())
+    var pkgs    = []
+    each e in entries {
+      if e.isDir {
+        val m = meta.read(e.path)
+        if m != null {
+          pkgs.push(m)
+        } else {
+          pkgs.push({ name: e.name, version: "?", source: "" })
+        }
+      }
+    }
+
+    if pkgs.length == 0 {
+      io.log("No packages installed.")
+    } else {
+      io.log("")
+      io.log(io.bold("Installed packages"))
+      io.hr()
+      each p in pkgs {
+        val ver = if p.version != null { p.version } else { "?" }
+        io.log("  " + io.bold(p.name) + "  " + io.dim(ver))
+      }
+      io.hr()
+      io.log(io.dim(str(pkgs.length) + " package(s) total"))
+      io.log("")
+    }
+  }
+}
+
+{ run: run }

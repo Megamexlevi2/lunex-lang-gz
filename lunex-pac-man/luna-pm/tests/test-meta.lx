@@ -1,0 +1,63 @@
+val io = @import("std.io")
+val fs = @import("std.fs")
+val meta = @fimport("../src/meta.lx")
+
+var passed = 0
+var failed = 0
+
+fn check(label, got, expected) {
+  if got == expected {
+    io.log(io.green("  ✔") + " " + label)
+    passed = passed + 1
+  } else {
+    io.log(io.red("  ✘") + " " + label)
+    io.log(io.dim("    got:      " + str(got)))
+    io.log(io.dim("    expected: " + str(expected)))
+    failed = failed + 1
+  }
+}
+
+fn main() {
+  io.log(io.bold("meta.lx — write and read"))
+
+  val tmpDir = "/tmp/luna-test-meta"
+  fs.mkdir(tmpDir)
+
+  meta.write(tmpDir, "user/repo", "v1.0.0", "user/repo@v1.0.0", {})
+  val m = meta.read(tmpDir)
+  check("meta name",    m.name,    "user/repo")
+  check("meta version", m.version, "v1.0.0")
+  check("meta source",  m.source,  "user/repo@v1.0.0")
+
+  meta.writeEntry(tmpDir, "index.lx")
+  val entry = meta.readEntry(tmpDir)
+  check("entry file", entry, "index.lx")
+
+  io.log("")
+  io.log(io.bold("meta.lx — read from nonexistent dir"))
+  val noMeta = meta.read("/tmp/does-not-exist-luna")
+  check("missing meta returns null", noMeta, null)
+
+  io.log("")
+  io.log(io.bold("meta.lx — detectEntry"))
+
+  val tmpPkg = "/tmp/luna-test-detect"
+  fs.mkdir(tmpPkg)
+  fs.writeFile(tmpPkg + "/index.lx", "// hello")
+  val found = meta.detectEntry(tmpPkg, "mylib")
+  check("detects index.lx", found, "index.lx")
+
+  val tmpPkg2 = "/tmp/luna-test-detect2"
+  fs.mkdir(tmpPkg2)
+  fs.writeFile(tmpPkg2 + "/mylib.lx", "// hello")
+  val found2 = meta.detectEntry(tmpPkg2, "mylib")
+  check("detects name.lx", found2, "mylib.lx")
+
+  fs.deleteAll(tmpDir)
+  fs.deleteAll(tmpPkg)
+  fs.deleteAll(tmpPkg2)
+
+  io.log("")
+  io.log(io.dim("  " + str(passed) + " passed, " + str(failed) + " failed"))
+  io.log("")
+}

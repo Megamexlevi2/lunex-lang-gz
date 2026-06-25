@@ -1,0 +1,61 @@
+val io  = @import("std.io")
+val os  = @import("std.os")
+val cfg = @fimport("../config.lx")
+val runtime = @fimport("../runtime.lx")
+
+fn resolveCommand(cmd) {
+  if cmd == "lunex" {
+    runtime.lunexBin()
+  } else if cmd.startsWith("lunex ") {
+    runtime.lunexBin() + " " + cmd.slice(6)
+  } else {
+    cmd
+  }
+}
+
+fn run(args) {
+  if args.length == 0 {
+    val project  = cfg.read()
+    val scripts  = cfg.getScripts(project)
+    var hasAny   = false
+    io.log("")
+    io.log(io.bold("Available scripts:"))
+    each name in scripts {
+      if scripts[name] != null && scripts[name] != "" {
+        io.log("  " + io.cyan(name) + "  " + io.dim(scripts[name]))
+        hasAny = true
+      }
+    }
+    if !hasAny {
+      io.log(io.dim("  No scripts defined in config.lx"))
+    }
+    io.log("")
+  } else {
+    val scriptName = args[0]
+    val project    = cfg.read()
+
+    if project == null {
+      io.err("No config.lx found in current directory")
+      os.exit(1)
+    }
+
+    val scripts = cfg.getScripts(project)
+    val cmd     = scripts[scriptName]
+
+    if cmd == null || cmd == "" {
+      io.err("Script not found: " + scriptName)
+      io.log(io.dim("  Available: build, dev, test, clean, lint"))
+      os.exit(1)
+    }
+
+    io.log(io.bold(io.cyan("▶")) + " " + scriptName + io.dim(" → " + cmd))
+    val result = os.exec(resolveCommand(cmd))
+    if result.stdout.length > 0 { io.log(result.stdout) }
+    if !result.ok {
+      io.err(result.stderr)
+      os.exit(result.code)
+    }
+  }
+}
+
+{ run: run }

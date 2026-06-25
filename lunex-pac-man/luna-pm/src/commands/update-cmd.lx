@@ -1,0 +1,67 @@
+val io     = @import("std.io")
+val fs     = @import("std.fs")
+val os     = @import("std.os")
+val paths  = @fimport("../paths.lx")
+val meta   = @fimport("../meta.lx")
+val remove = @fimport("./remove.lx")
+val install = @fimport("./install.lx")
+
+fn updateOne(name) {
+  val dir = paths.pkgDir(name)
+  var m   = null
+
+  if fs.exists(dir) {
+    m = meta.read(dir)
+  } else {
+    val found = remove.findByName(name)
+    if found != null { m = meta.read(found) }
+  }
+
+  if m == null {
+    io.err("Package not found: " + name)
+    io.log(io.dim("  Install it first: luna install " + name))
+    os.exit(1)
+  }
+
+  val source = if m.source != null { m.source } else { name }
+  io.log(io.cyan("↑") + " Updating " + io.bold(m.name))
+  remove.run([m.name])
+  install.run([source])
+}
+
+fn updateAll() {
+  if !fs.exists(paths.packagesDir()) {
+    io.log("Nothing to update.")
+  } else {
+    val entries = fs.list(paths.packagesDir())
+    var count   = 0
+    each e in entries {
+      if e.isDir {
+        val m = meta.read(e.path)
+        if m != null && m.source != null {
+          io.log(io.cyan("↑") + " Updating " + m.name)
+          remove.run([m.name])
+          install.run([m.source])
+          count = count + 1
+        }
+      }
+    }
+    if count == 0 {
+      io.log("Nothing to update.")
+    } else {
+      io.success("Updated " + str(count) + " package(s)")
+    }
+  }
+}
+
+fn run(args) {
+  if args.length == 0 {
+    updateAll()
+  } else {
+    each name in args {
+      updateOne(name)
+    }
+  }
+}
+
+{ run: run }

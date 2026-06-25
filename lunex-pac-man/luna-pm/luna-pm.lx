@@ -1,0 +1,108 @@
+#!/usr/bin/env luna
+val io      = @import("std.io")
+val os      = @import("std.os")
+val paths   = @fimport("./src/paths.lx")
+val runtime = @fimport("./src/runtime.lx")
+
+val cmdInstall  = @fimport("./src/commands/install.lx")
+val cmdRemove   = @fimport("./src/commands/remove.lx")
+val cmdList     = @fimport("./src/commands/list.lx")
+val cmdUpdate   = @fimport("./src/commands/update-cmd.lx")
+val cmdRun      = @fimport("./src/commands/run.lx")
+val cmdInit     = @fimport("./src/commands/init.lx")
+val cmdSearch   = @fimport("./src/commands/search.lx")
+
+val LUNA_VERSION = "1.0.0"
+
+fn showHelp() {
+  io.log("")
+  io.log(io.bold(io.cyan("Luna")) + " " + LUNA_VERSION + "  —  Lunex Package Manager")
+  io.log("")
+  io.log(io.bold("Commands:"))
+  io.log("  " + io.cyan("luna install") + " [pkg]       Install from GitHub, or all deps from config.lx")
+  io.log("  " + io.cyan("luna remove") + " <pkg>        Remove an installed package")
+  io.log("  " + io.cyan("luna list") + "               List installed packages")
+  io.log("  " + io.cyan("luna update") + " [pkg]        Update a package (or all)")
+  io.log("  " + io.cyan("luna run") + " <script>        Run a script from config.lx")
+  io.log("  " + io.cyan("luna init") + " [name]         Create a new config.lx")
+  io.log("  " + io.cyan("luna search") + " <query>       Search GitHub for packages")
+  io.log("  " + io.cyan("luna version") + "             Show Luna version")
+  io.log("  " + io.cyan("luna help") + "               Show this help")
+  io.log("")
+  io.log(io.bold("Package specs:"))
+  io.log("  user/repo              Install from GitHub (main branch)")
+  io.log("  user/repo@v1.2.0       Install a specific version")
+  io.log("  github.com/user/repo   Full GitHub URL")
+  io.log("  github.com/u/r/subdir  A subdirectory of a repo")
+  io.log("")
+  io.log(io.bold("After install, import in any .lx file:"))
+  io.log("  " + io.cyan("@import(\"repo-name\")"))
+  io.log("")
+  io.log(io.bold("Shebang (make scripts executable):"))
+  io.log("  #!/usr/bin/env luna")
+  io.log("  chmod +x myscript.lx && ./myscript.lx")
+  io.log("")
+  io.log(io.dim("Packages: " + paths.packagesDir()))
+  io.log("")
+}
+
+fn showVersion() {
+  io.log(io.bold(io.cyan("Luna")) + " " + LUNA_VERSION)
+}
+
+fn isFile(s) {
+  s.endsWith(".lx") || s.endsWith(".nax") || s.endsWith(".nc")
+}
+
+fn main() {
+  paths.ensureDirs()
+
+  var argv = os.args()
+  if argv.length > 0 && (argv[0].endsWith("luna-pm.lx") || argv[0] == "luna-pm") {
+    argv = argv.slice(1)
+  }
+
+  if argv.length == 0 {
+    showHelp()
+  } else {
+    val cmd  = argv[0]
+    val rest = argv.slice(1)
+
+    if isFile(cmd) {
+      val result = runtime.execLunex("run " + cmd)
+      if result.stdout.length > 0 { io.write(result.stdout) }
+      if !result.ok {
+        io.err(result.stderr)
+        os.exit(result.code)
+      }
+    } else {
+      match cmd {
+        "install"                     => cmdInstall.run(rest)
+        "i"                           => cmdInstall.run(rest)
+        "remove"                      => cmdRemove.run(rest)
+        "rm"                          => cmdRemove.run(rest)
+        "uninstall"                   => cmdRemove.run(rest)
+        "list"                        => cmdList.run(rest)
+        "ls"                          => cmdList.run(rest)
+        "update"                      => cmdUpdate.run(rest)
+        "upgrade"                     => cmdUpdate.run(rest)
+        "run"                         => cmdRun.run(rest)
+        "init"                        => cmdInit.run(rest)
+        "search"                      => cmdSearch.run(rest)
+        "version"                     => showVersion()
+        "--version"                   => showVersion()
+        "-v"                          => showVersion()
+        "help"                        => showHelp()
+        "--help"                      => showHelp()
+        "-h"                          => showHelp()
+        _                             => {
+          io.err("Unknown command: " + cmd)
+          io.log(io.dim("Run `luna help` for usage."))
+          os.exit(1)
+        }
+      }
+    }
+  }
+}
+
+main()
