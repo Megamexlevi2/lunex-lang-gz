@@ -1,8 +1,8 @@
 package main
 
 import (
-	_ "embed"
 	"bufio"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"lunex/internal/adaptor"
@@ -14,6 +14,7 @@ import (
 	"lunex/internal/errfmt"
 	"lunex/internal/firstrun"
 	"lunex/internal/jit"
+	"lunex/internal/lunaresolver"
 	"lunex/internal/meta"
 	"lunex/internal/pkg"
 	"lunex/internal/runtime"
@@ -228,60 +229,57 @@ fn mul(a, b) {
 		fmt.Printf("    @fimport(\"./lib/mod.nax\")   local compiled archive\n")
 		fmt.Printf("    @fimport(\"./lib/mod.nc\")    local bytecode file\n")
 		fmt.Printf("    @import(\"std.io\")            standard library module\n")
-		fmt.Printf("    @import(\"my-pkg\")            installed package (lunex add <pkg>)\n\n")
+		fmt.Printf("    @import(\"my-pkg\")            installed package (luna install <pkg>)\n\n")
+		fmt.Printf("  Package management is handled by Luna:\n")
+		fmt.Printf("    luna install <pkg>           install a package\n\n")
 
-	case "install", "i":
-		if len(args) < 2 {
-			installAll()
+	case "install", "i", "add":
+		fmt.Fprintln(os.Stderr, "\033[1;33mlunex\033[0m no longer manages packages.")
+		fmt.Fprintln(os.Stderr, "Use \033[1;36mLuna\033[0m — the Lunex package manager:")
+		fmt.Fprintln(os.Stderr, "")
+		if len(args) >= 2 {
+			fmt.Fprintf(os.Stderr, "  luna install %s\n", strings.Join(args[1:], " "))
 		} else {
-			for _, spec := range args[1:] {
-				installPkg(spec, false)
-			}
+			fmt.Fprintln(os.Stderr, "  luna install              # install all deps from config.lx")
+			fmt.Fprintln(os.Stderr, "  luna install user/repo    # install a specific package")
 		}
-
-	case "add":
-		if len(args) < 2 {
-			fmt.Fprintln(os.Stderr, "usage: lunex add <package>[@version]")
-			os.Exit(1)
-		}
-		for _, spec := range args[1:] {
-			installPkg(spec, true)
-		}
+		fmt.Fprintln(os.Stderr, "")
+		fmt.Fprintln(os.Stderr, "Install Luna:  luna help  (if already installed)")
+		fmt.Fprintln(os.Stderr, "               lunex run lunex-pac-man/luna-pm/luna-pm.lx -- help")
+		os.Exit(1)
 
 	case "remove", "uninstall", "rm":
-		if len(args) < 2 {
-			fmt.Fprintln(os.Stderr, "usage: lunex remove <package>")
-			os.Exit(1)
+		fmt.Fprintln(os.Stderr, "\033[1;33mlunex\033[0m no longer manages packages.")
+		fmt.Fprintln(os.Stderr, "Use \033[1;36mLuna\033[0m — the Lunex package manager:")
+		fmt.Fprintln(os.Stderr, "")
+		if len(args) >= 2 {
+			fmt.Fprintf(os.Stderr, "  luna remove %s\n", strings.Join(args[1:], " "))
+		} else {
+			fmt.Fprintln(os.Stderr, "  luna remove <package>")
 		}
-		for _, name := range args[1:] {
-			if err := pkg.Remove(name); err != nil {
-				fmt.Fprintln(os.Stderr, "error:", err)
-			} else {
-				fmt.Printf("removed %s\n", name)
-			}
-		}
+		fmt.Fprintln(os.Stderr, "")
+		os.Exit(1)
 
 	case "update", "upgrade":
-		if len(args) < 2 {
-			// No module specified — update all deps from config.lx
-			updateAll()
+		fmt.Fprintln(os.Stderr, "\033[1;33mlunex\033[0m no longer manages packages.")
+		fmt.Fprintln(os.Stderr, "Use \033[1;36mLuna\033[0m — the Lunex package manager:")
+		fmt.Fprintln(os.Stderr, "")
+		if len(args) >= 2 {
+			fmt.Fprintf(os.Stderr, "  luna update %s\n", strings.Join(args[1:], " "))
 		} else {
-			for _, spec := range args[1:] {
-				updatePkg(spec)
-			}
+			fmt.Fprintln(os.Stderr, "  luna update               # update all packages")
+			fmt.Fprintln(os.Stderr, "  luna update <package>     # update one package")
 		}
+		fmt.Fprintln(os.Stderr, "")
+		os.Exit(1)
 
 	case "list", "ls":
-		mods := pkg.List()
-		if len(mods) == 0 {
-			fmt.Println("no packages installed")
-			return
-		}
-		fmt.Printf("%-30s %s\n", "package", "version")
-		fmt.Println(strings.Repeat("─", 50))
-		for _, m := range mods {
-			fmt.Printf("%-30s %s\n", m.Name, m.Version)
-		}
+		fmt.Fprintln(os.Stderr, "\033[1;33mlunex\033[0m no longer manages packages.")
+		fmt.Fprintln(os.Stderr, "Use \033[1;36mLuna\033[0m — the Lunex package manager:")
+		fmt.Fprintln(os.Stderr, "")
+		fmt.Fprintln(os.Stderr, "  luna list                 # list installed packages")
+		fmt.Fprintln(os.Stderr, "")
+		os.Exit(1)
 
 	case "build":
 		if len(args) == 1 {
@@ -441,11 +439,26 @@ func moduleSourceFromPath(resolvedPath string) (string, bool) {
 }
 
 func pkgLoader(name string) (string, bool) {
-	resolvedPath, ok := pkg.Resolve(name)
-	if !ok {
-		return "", false
+	// 1. Try Luna's global package store (~/.luna/packages) — managed by `luna install`.
+	resolvedPath, ok := lunaresolver.Resolve(name)
+	if ok {
+		return moduleSourceFromPath(resolvedPath)
 	}
-	return moduleSourceFromPath(resolvedPath)
+
+	// 2. Legacy fall-through: also check the old Lunex-local .lunex/cache in case
+	//    any packages were installed there before this migration.
+	resolvedPath, ok = pkg.Resolve(name)
+	if ok {
+		return moduleSourceFromPath(resolvedPath)
+	}
+
+	// Package not found — print a helpful hint to stderr (the caller will emit
+	// the actual E0009 "module not found" error through the normal error path).
+	fmt.Fprintf(os.Stderr,
+		"\033[33mhint:\033[0m package %q not found — install it with:\033[0m\n  luna install %s\n\n",
+		name, name,
+	)
+	return "", false
 }
 
 func runString(source string) {
@@ -494,14 +507,18 @@ const (
 	emitModeIR  emitMode = "ir"
 )
 
-func parseRunOptions(extraArgs []string) (emitMode, error) {
+func parseRunOptions(extraArgs []string) (emitMode, []string, error) {
 	var emit emitMode
+	var scriptArgs []string
 	for i := 0; i < len(extraArgs); i++ {
 		arg := extraArgs[i]
 		switch {
+		case arg == "--":
+			scriptArgs = append(scriptArgs, extraArgs[i+1:]...)
+			i = len(extraArgs)
 		case arg == "--emit":
 			if i+1 >= len(extraArgs) {
-				return "", fmt.Errorf("error: --emit requires a value")
+				return "", nil, fmt.Errorf("error: --emit requires a value")
 			}
 			emit = emitMode(strings.ToLower(extraArgs[i+1]))
 			i++
@@ -510,13 +527,14 @@ func parseRunOptions(extraArgs []string) (emitMode, error) {
 		case strings.TrimSpace(arg) == "":
 			continue
 		default:
-			return "", fmt.Errorf("unknown flag: %s", arg)
+			scriptArgs = append(scriptArgs, extraArgs[i:]...)
+			i = len(extraArgs)
 		}
 	}
 	if emit != "" && emit != emitModeAST && emit != emitModeIR {
-		return "", fmt.Errorf("unsupported emit mode: %s", emit)
+		return "", nil, fmt.Errorf("unsupported emit mode: %s", emit)
 	}
-	return emit, nil
+	return emit, scriptArgs, nil
 }
 
 func emitAST(tree *ast.Node) error {
@@ -645,7 +663,7 @@ func emitSource(absPath string, mode emitMode) {
 }
 
 func runFile(filePath string, extraArgs []string) {
-	emit, err := parseRunOptions(extraArgs)
+	emit, scriptArgs, err := parseRunOptions(extraArgs)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -663,6 +681,9 @@ func runFile(filePath string, extraArgs []string) {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
 		}
+		prevArgs := os.Args
+		os.Args = append([]string{absPath}, scriptArgs...)
+		defer func() { os.Args = prevArgs }()
 		data, err := os.ReadFile(absPath)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
@@ -679,6 +700,9 @@ func runFile(filePath string, extraArgs []string) {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
 		}
+		prevArgs := os.Args
+		os.Args = append([]string{absPath}, scriptArgs...)
+		defer func() { os.Args = prevArgs }()
 		data, err := os.ReadFile(absPath)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
@@ -701,6 +725,9 @@ func runFile(filePath string, extraArgs []string) {
 			emitSource(absPath, emit)
 			return
 		}
+		prevArgs := os.Args
+		os.Args = append([]string{absPath}, scriptArgs...)
+		defer func() { os.Args = prevArgs }()
 		runNTLWithCache(absPath)
 	}
 }
@@ -1450,99 +1477,6 @@ func runStart(extraArgs []string) {
 	runFile(entry, extraArgs)
 }
 
-func installAll() {
-	mod, err := pkg.LoadManifest(".")
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "error: no config.lx found. Run 'lunex init' first.")
-		os.Exit(1)
-	}
-	if len(mod.Dependencies) == 0 {
-		fmt.Println("no dependencies to install")
-		return
-	}
-	for name, ver := range mod.Dependencies {
-		spec := name + "@" + ver
-		installPkg(spec, false)
-	}
-}
-
-func installPkg(spec string, _ bool) {
-	mod, err := pkg.Install(spec)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "error installing %s: %v\n", spec, err)
-		os.Exit(1)
-	}
-	fmt.Printf("installed %s@%s\n", mod.Name, mod.Version)
-}
-
-func updatePkg(spec string) {
-	name := strings.TrimSpace(spec)
-	if idx := strings.Index(name, "@"); idx > 0 {
-		name = name[:idx]
-	}
-	if name == "" {
-		fmt.Fprintln(os.Stderr, "error: empty package name")
-		os.Exit(1)
-	}
-
-	installed := pkg.List()
-	var current *pkg.Module
-	for i := range installed {
-		if installed[i].Name == name {
-			current = &installed[i]
-			break
-		}
-	}
-
-	if current != nil {
-		if err := pkg.Remove(current.Name); err != nil && !strings.Contains(err.Error(), "not found") {
-			fmt.Fprintf(os.Stderr, "error removing %s: %v\n", current.Name, err)
-			os.Exit(1)
-		}
-		installSpec := current.Source
-		if installSpec == "" {
-			installSpec = current.Name
-		}
-		mod, err := pkg.Install(installSpec)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "error updating %s: %v\n", current.Name, err)
-			os.Exit(1)
-		}
-		fmt.Printf("updated %s@%s\n", mod.Name, mod.Version)
-		return
-	}
-
-	if err := pkg.Remove(name); err != nil && !strings.Contains(err.Error(), "not found") {
-		fmt.Fprintf(os.Stderr, "error removing %s: %v\n", name, err)
-		os.Exit(1)
-	}
-	mod, err := pkg.Install(name)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "error updating %s: %v\n", name, err)
-		os.Exit(1)
-	}
-	fmt.Printf("updated %s@%s\n", mod.Name, mod.Version)
-}
-
-func updateAll() {
-	manifest, err := pkg.LoadManifest(".")
-	if err == nil && len(manifest.Dependencies) > 0 {
-		for name := range manifest.Dependencies {
-			updatePkg(name)
-		}
-		return
-	}
-
-	mods := pkg.List()
-	if len(mods) == 0 {
-		fmt.Println("no installed packages to update")
-		return
-	}
-	for _, mod := range mods {
-		updatePkg(mod.Name)
-	}
-}
-
 func printHelp() {
 	fmt.Printf("Lunex %s\n\n", meta.Version())
 	fmt.Print(`Usage:
@@ -1554,12 +1488,6 @@ func printHelp() {
   lunex see_errors <file>            show detailed compile errors
   lunex dis <file.nc>                disassemble nc bytecode
   lunex init [name]                  create a new project folder
-  lunex install <url>                install a package from GitHub or any URL
-  lunex add <url>                    alias for install
-  lunex update <name>                update an installed package to the latest version
-  lunex update                       update all dependencies
-  lunex remove / rm <name>           remove an installed package
-  lunex list                         show installed packages
   lunex pack <dir>                   bundle a directory to .nax archive
   lunex unpack <file.nax>            extract a .nax archive to a directory
   lunex set cache <dir>              set the on-disk bytecode cache directory
@@ -1574,17 +1502,22 @@ func printHelp() {
   lunex help                         show this help
 
 Module system:
-  @import("std.io")                  standard library module
-  @import("modulename")              installed external module from .lunex/cache
-  @import("github.com/user/repo")    import directly from GitHub (installs on first use)
-  @import("https://example.com/pkg") import from URL (sandboxed, installs on first use)
-  @fimport("./mylib.nax")            import from a local .nax archive file
+  @import("std.io")                  standard library module (always available)
+  @import("pkg-name")                external package installed by Luna
+  @fimport("./mylib.nax")            local .nax archive file
+  @fimport("./src/utils.lx")         local .lx source file
 
-Installing packages:
-  lunex install github.com/user/repo          from GitHub
-  lunex install https://github.com/user/repo  full URL, same result
-  lunex install https://example.com/mypkg     any HTTPS URL (sandboxed)
-  lunex install                               install all deps from config.lx
+Package management (handled by Luna):
+  luna install user/repo             install a package from GitHub
+  luna install user/repo@v1.2.0      install a specific version
+  luna install                       install all deps from config.lx
+  luna remove <pkg>                  remove a package
+  luna update [pkg]                  update one or all packages
+  luna list                          list installed packages
+  luna search <query>                search GitHub for packages
+
+  Packages are stored in ~/.luna/packages/ and resolved automatically
+  when you use @import("pkg-name") in any .lx file.
 
 Global flags (place before the command or file):
   --debug, -d   enable debug mode (shows every execution step on stderr)
@@ -1592,9 +1525,8 @@ Global flags (place before the command or file):
   --no-cache    compile fresh every run; store nothing to disk or memory
 
 Environment variables:
-  NTL_DEBUG=1     enable debug mode
-  LUNEX_DEBUG=1   alias for NTL_DEBUG
-  LUNEX_VERBOSE=1 verbose debug output (implies NTL_DEBUG=1)
+  LUNEX_DEBUG=1   enable debug mode
+  LUNEX_VERBOSE=1 verbose debug output (implies LUNEX_DEBUG=1)
 
 Architecture:
   Go interpreter handles ALL Lunex execution.
@@ -1623,16 +1555,16 @@ Standard library modules (13):
 // ── REPL ─────────────────────────────────────────────────────────────────────
 
 const (
-	replPrompt     = "\x1b[1;36mlunex\x1b[0m \x1b[90m»\x1b[0m "
-	replContinue   = "      \x1b[90m·\x1b[0m "
-	replReset      = "\x1b[0m"
-	replBold       = "\x1b[1m"
-	replDim        = "\x1b[90m"
-	replGreen      = "\x1b[32m"
-	replYellow     = "\x1b[33m"
-	replCyan       = "\x1b[36m"
-	replMagenta    = "\x1b[35m"
-	replRed        = "\x1b[31m"
+	replPrompt   = "\x1b[1;36mlunex\x1b[0m \x1b[90m»\x1b[0m "
+	replContinue = "      \x1b[90m·\x1b[0m "
+	replReset    = "\x1b[0m"
+	replBold     = "\x1b[1m"
+	replDim      = "\x1b[90m"
+	replGreen    = "\x1b[32m"
+	replYellow   = "\x1b[33m"
+	replCyan     = "\x1b[36m"
+	replMagenta  = "\x1b[35m"
+	replRed      = "\x1b[31m"
 )
 
 // replState holds the persistent interpreter state across REPL lines.

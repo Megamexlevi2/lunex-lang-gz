@@ -5,24 +5,108 @@ val _query     = @fimport("./src/query.lx")
 val _transform = @fimport("./src/transform.lx")
 val _validate  = @fimport("./src/validate.lx")
 
-fn createElement(tag) {
-  _builder.createElement(tag)
+// ─────────────────────────────────────────────────────────────
+// BEGINNER API  —  simple helpers for common tasks
+// ─────────────────────────────────────────────────────────────
+
+// Create a tag with optional text.
+//   xml.tag("title")              → <title />
+//   xml.tag("title", "Hello")     → <title>Hello</title>
+fn tag(name, text) {
+  if text {
+    _builder.createTextElement(name, text)
+  } else {
+    _builder.createElement(name)
+  }
 }
 
-fn createTextElement(tag, text) {
-  _builder.createTextElement(tag, text)
+// Add one or more children to a parent and return the parent.
+//   xml.add(root, child1, child2)
+fn add(parent, a, b, c, d, e) {
+  if a { parent.appendChild(a) }
+  if b { parent.appendChild(b) }
+  if c { parent.appendChild(c) }
+  if d { parent.appendChild(d) }
+  if e { parent.appendChild(e) }
+  parent
 }
 
-fn createCDataElement(tag, text) {
-  _builder.createCDataElement(tag, text)
+// Set one attribute on a node and return the node.
+//   xml.set(node, "id", "1")
+fn set(node, key, value) {
+  node.setAttribute(key, value)
+  node
 }
 
-fn createElementWithAttrs(tag, a) {
-  _builder.createElementWithAttrs(tag, a)
+// Set multiple attributes from an object and return the node.
+//   xml.setAll(node, { id: "1", class: "box" })
+fn setAll(node, attrs) {
+  var keys = Object.keys(attrs)
+  keys = keys.sort()
+  each k in keys {
+    node.setAttribute(k, attrs[k])
+  }
+  node
 }
 
-fn createElementWithAttrPairs(tag, ps) {
-  _builder.createElementWithAttrPairs(tag, ps)
+// Get the text content of a node.
+//   xml.get(node)  →  "Hello"
+fn get(node) {
+  _query.text(node)
+}
+
+// Get an attribute value.
+//   xml.attr(node, "id")  →  "1"
+fn attr(node, name) {
+  _query.attr(node, name)
+}
+
+// Serialize a node tree to a pretty XML string.
+//   xml.toString(root)
+fn toString(root) {
+  _builder.build(root)
+}
+
+// Parse an XML string and return the root node.
+//   xml.fromString("<root><item>A</item></root>")
+fn fromString(src) {
+  _parser.parse(src)
+}
+
+// Find the first element by tag name anywhere in the tree.
+//   xml.find(doc, "title")
+fn find(root, tag_) {
+  _query.selectFirst(root, tag_)
+}
+
+// Find all elements by tag name.
+//   xml.findAll(doc, "item")
+fn findAll(root, tag_) {
+  _query.selectAll(root, tag_)
+}
+
+// ─────────────────────────────────────────────────────────────
+// FULL API  —  all original functions below
+// ─────────────────────────────────────────────────────────────
+
+fn createElement(tag_) {
+  _builder.createElement(tag_)
+}
+
+fn createTextElement(tag_, text) {
+  _builder.createTextElement(tag_, text)
+}
+
+fn createCDataElement(tag_, text) {
+  _builder.createCDataElement(tag_, text)
+}
+
+fn createElementWithAttrs(tag_, a) {
+  _builder.createElementWithAttrs(tag_, a)
+}
+
+fn createElementWithAttrPairs(tag_, ps) {
+  _builder.createElementWithAttrPairs(tag_, ps)
 }
 
 fn appendChild(node, child) {
@@ -73,12 +157,12 @@ fn parse(src) {
   _parser.parse(src)
 }
 
-fn selectFirst(root, tag) {
-  _query.selectFirst(root, tag)
+fn selectFirst(root, tag_) {
+  _query.selectFirst(root, tag_)
 }
 
-fn selectAll(root, tag) {
-  _query.selectAll(root, tag)
+fn selectAll(root, tag_) {
+  _query.selectAll(root, tag_)
 }
 
 fn selectByAttr(root, attrName, attrValue) {
@@ -93,16 +177,12 @@ fn children(node) {
   _query.children(node)
 }
 
-fn childrenByTag(node, tag) {
-  _query.childrenByTag(node, tag)
+fn childrenByTag(node, tag_) {
+  _query.childrenByTag(node, tag_)
 }
 
 fn text(node) {
   _query.text(node)
-}
-
-fn attr(node, name) {
-  _query.attr(node, name)
 }
 
 fn clone(node) {
@@ -125,8 +205,8 @@ fn toObject(root) {
   _transform.toObject(root)
 }
 
-fn fromObject(tag, obj) {
-  _transform.fromObject(tag, obj)
+fn fromObject(tag_, obj) {
+  _transform.fromObject(tag_, obj)
 }
 
 fn isWellFormed(node) {

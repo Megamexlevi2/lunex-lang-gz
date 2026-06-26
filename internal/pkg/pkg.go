@@ -122,6 +122,59 @@ func writeModuleMeta(dir string, mod *Module) error {
 	return os.WriteFile(moduleMetaPath(dir), data, 0644)
 }
 
+func currentLunexBin() string {
+	if exe, err := os.Executable(); err == nil && exe != "" {
+		if abs, absErr := filepath.Abs(exe); absErr == nil && abs != "" {
+			return abs
+		}
+		return exe
+	}
+	return "lunex"
+}
+
+func launcherScriptContent(lunexBin, target string) string {
+	if lunexBin == "" {
+		lunexBin = "lunex"
+	}
+	return fmt.Sprintf(`#!/bin/sh
+LUNEXBIN=%q
+exec "$LUNEXBIN" run %q "$@"
+`, lunexBin, target)
+}
+
+func writeLauncherScript(shimPath, target string) error {
+	if shimPath == "" || target == "" {
+		return fmt.Errorf("invalid launcher target")
+	}
+	if err := os.MkdirAll(filepath.Dir(shimPath), 0755); err != nil {
+		return err
+	}
+	if err := os.WriteFile(shimPath, []byte(launcherScriptContent(currentLunexBin(), target)), 0644); err != nil {
+		return err
+	}
+	return os.Chmod(shimPath, 0755)
+}
+
+func writeGlobalLauncher(name, target string) error {
+	home, err := os.UserHomeDir()
+	if err != nil || home == "" {
+		return fmt.Errorf("could not determine home directory")
+	}
+	binDir := filepath.Join(home, ".luna", "bin")
+	if err := os.MkdirAll(binDir, 0755); err != nil {
+		return err
+	}
+	return writeLauncherScript(filepath.Join(binDir, name), target)
+}
+
+func writeLocalLauncher(name, target string) error {
+	cwd, err := os.Getwd()
+	if err != nil || cwd == "" {
+		return fmt.Errorf("could not determine current directory")
+	}
+	return writeLauncherScript(filepath.Join(cwd, name), target)
+}
+
 func readModuleMeta(dir string) (*Module, bool) {
 	data, err := os.ReadFile(moduleMetaPath(dir))
 	if err != nil {
@@ -1092,9 +1145,9 @@ func truncateFilename(name string, maxLen int) string {
 
 // progressReader wraps an io.Reader and reports bytes read to the progress tracker.
 type progressReader struct {
-	r       io.Reader
-	prog    *installProgress
-	name    string
+	r    io.Reader
+	prog *installProgress
+	name string
 }
 
 func (pr *progressReader) Read(p []byte) (int, error) {
@@ -1347,7 +1400,6 @@ func (c *githubClient) fetchViaTreeAPIProgress(owner, repo, ref, subpath, localD
 	return nil
 }
 
-
 // fetchViaCodeload downloads the repository as a ZIP archive from
 // codeload.github.com and extracts only the files that belong to subpath.
 //
@@ -1359,7 +1411,8 @@ func (c *githubClient) fetchViaTreeAPIProgress(owner, repo, ref, subpath, localD
 //
 // The ZIP root entry is always "{repo}-{branch}/", so a subpath of "lune-xml"
 // inside repo "lunex-lang-gz" branch "main" lives at:
-//   lunex-lang-gz-main/lune-xml/…
+//
+//	lunex-lang-gz-main/lune-xml/…
 func (c *githubClient) fetchViaCodeload(owner, repo, ref, subpath, localDir string, prog *installProgress) error {
 	// codeload uses "refs/heads/{branch}" for branches.
 	// Tags are under "refs/tags/{tag}" — we try the branch path first and
@@ -1652,6 +1705,10 @@ func InstallFromGitHub(name, owner, repo, ref, subpath string) (*Module, error) 
 		Path:    filepath.Join(dir, entry),
 	}
 	_ = writeModuleMeta(dir, mod)
+	_ = writeGlobalLauncher(name, mod.Path)
+	if name == "luna" {
+		_ = writeLocalLauncher("luna", mod.Path)
+	}
 	return mod, nil
 }
 
@@ -1659,6 +1716,10 @@ func Install(spec string) (*Module, error) {
 	spec = strings.TrimSpace(spec)
 	if spec == "" {
 		return nil, fmt.Errorf("empty package spec")
+	}
+
+	if spec == "luna" {
+		return InstallFromGitHub("luna", "Megamexlevi2", "luna", "main", "luna-pm")
 	}
 
 	// GitHub URL or owner/repo path.
@@ -1677,21 +1738,5 @@ func Install(spec string) (*Module, error) {
 		return InstallFromGitHub(pkgName, owner, repo, ref, subpath)
 	}
 
-	// Simple name[@version] spec — not a GitHub path.
-	atIdx := strings.Index(spec, "@")
-	name := spec
-	ver := "latest"
-	if atIdx > 0 {
-		name = spec[:atIdx]
-		ver = spec[atIdx+1:]
-	}
-
-	mod := &Module{
-		Name:    name,
-		Version: ver,
-		Source:  spec,
-		Path:    filepath.Join(ModuleDir(name, ver), "index.nax"),
-	}
-	_ = writeModuleMeta(filepath.Dir(mod.Path), mod)
-	return mod, nil
+	return nil, fmt.Errorf("invalid package spec %q: expected github.com/user/repo or https://github.com/user/repo", spec)
 }

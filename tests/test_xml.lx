@@ -1,5 +1,5 @@
 // Lunex lang — XML parsing test (requires lune-xml external module)
-// Install: lunex install github.com/Megamexlevi2/lunex-lang-gz/lune-xml
+// Install: luna install Megamexlevi2/lune-xml
 // Created by David Dev · GitHub: https://github.com/Megamexlevi2
 
 val io  = @import("std.io")

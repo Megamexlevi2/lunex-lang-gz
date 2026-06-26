@@ -1,6 +1,6 @@
 // Lunex — conditional return via if/else expressions
 // Lunex uses last-expression semantics; if/else controls the returned value
-// Lunex v0.7.1 · github.com/Megamexlevi2/lunex-lang-gz
+// Lunex v0.8.1 · github.com/Megamexlevi2/lunex-lang-gz
 
 val io = @import("std.io")
 fn safeDiv(a, b) {

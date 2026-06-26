@@ -4,16 +4,13 @@
 
 Lunex is a statically-scoped scripting language built in Go. It combines
 clean, readable syntax with a practical built-in standard library — HTTP,
-file system, cryptography, databases, WebSockets, and more — requiring no
-external dependencies.
+file system, cryptography, databases, WebSockets, and more.
 
 Runs on **Linux**, **macOS**, **Windows**, and **Android (Termux)**.
 
-### attention
+> Lunex is actively evolving — things may change between versions.
 
-lunex-lang is constantly evolving, therefore it may change
-
-If you want to explore the language, it has two ready-made modules written in lunex-lang.  
+Two ready-made modules written in Lunex are included: `lune-xml` and `lunex-cli`.
 
 ---
 
@@ -77,7 +74,7 @@ val [first, second] = items
 ### Functions
 
 The last expression in a function body is its return value.
-Lunex does not have a `return` keyword.
+Lunex has no `return` keyword.
 
 ```lx
 fn add(a, b) {
@@ -96,14 +93,15 @@ No `class` keyword. Factory functions return a `struct`:
 
 ```lx
 fn Animal(name, sound) {
-  struct {
+  val self = struct {
     name  = name
     sound = sound
 
     fn speak() {
-      this.name + " says " + this.sound
+      self.name + " says " + self.sound
     }
   }
+  self
 }
 
 val cat = Animal("Cat", "Meow")
@@ -217,21 +215,44 @@ lunex run <file> [--emit ast|ir]   run a .lx, .nc, or .nax file
 lunex -e "<code>"                  run a code snippet directly
 lunex build [file] [-o output]     compile to .nc bytecode
 lunex check <file>                 check for errors without running
-lunex fmt <file>                   format source code in place
 lunex dis <file.nc>                disassemble bytecode
 lunex bench <file>                 run with timing output
 lunex init [name]                  create a new project
 lunex start                        run project entry from config.lx
-lunex install <url>                install a package (GitHub or any URL)
-lunex add / remove <name>          manage packages
-lunex update [name]                update a package or all packages
-lunex list                         list installed packages
 lunex pack <dir>                   bundle a directory to .nax archive
 lunex unpack <file.nax>            extract a .nax archive
 lunex platform                     show platform diagnostics
 lunex runtimes                     list available execution engines
 lunex version                      print version
 lunex help                         show full usage
+```
+
+> Package management is handled entirely by **Luna** — see below.
+
+---
+
+## Package Management (Luna)
+
+Luna is the official package manager for Lunex. It manages all external
+packages independently of the Lunex runtime.
+
+```bash
+luna install user/repo             # install from GitHub
+luna install user/repo@v1.2.0      # install a specific version
+luna install                       # install all deps from config.lx
+luna remove  <pkg>                 # remove a package
+luna update  [pkg]                 # update one or all packages
+luna list                          # list installed packages
+luna search  <query>               # search GitHub for packages
+```
+
+Packages are stored globally in `~/.luna/packages/` and resolved
+automatically when you use `@import("pkg-name")` in any `.lx` file.
+
+**Install Luna** (self-bootstraps via Lunex):
+
+```bash
+lunex run lunex-pac-man/luna-pm/luna-pm.lx -- help
 ```
 
 ---
@@ -251,11 +272,10 @@ val lib = @fimport("./src/utils.lx")
 val pkg = @fimport("./dist/math.nax")
 ```
 
-Import directly from GitHub (downloaded and cached on first use):
+Import an external package installed by Luna:
 
 ```lx
-val pkg = @import("github.com/user/repo")
-val pkg = @import("https://example.com/mylib")
+val xml = @import("lune-xml")   // after: luna install Megamexlevi2/lune-xml
 ```
 
 ---

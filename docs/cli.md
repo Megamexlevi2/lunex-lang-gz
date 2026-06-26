@@ -6,13 +6,13 @@ Complete reference for the `lunex` command-line tool.
 
 ## Global flags
 
-| Flag | Description |
-|------|-------------|
-| `--debug`, `-d` | Enable debug output (AST, IR, and runtime traces) |
-| `--verbose`, `-V` | Verbose debug output (implies `--debug`) |
-| `--no-cache` | Skip both disk and memory caches; force a fresh compile |
-| `--version` | Print version and exit |
-| `--help` | Print usage and exit |
+| Flag               | Description                                              |
+|--------------------|----------------------------------------------------------|
+| `--debug`, `-d`    | Enable debug output (AST, IR, and runtime traces)        |
+| `--verbose`, `-V`  | Verbose debug output (implies `--debug`)                 |
+| `--no-cache`       | Skip both disk and memory caches; force a fresh compile  |
+| `--version`        | Print version and exit                                   |
+| `--help`           | Print usage and exit                                     |
 
 ---
 
@@ -26,18 +26,18 @@ Run a Lunex source file, compiled bytecode, or archive.
 lunex run <file> [--emit ast|ir]
 ```
 
-| Flag | Description |
-|------|-------------|
-| `--emit ast` | Print the parsed AST as JSON instead of running |
-| `--emit ir` | Print the IR as JSON instead of running |
+| Flag          | Description                                        |
+|---------------|----------------------------------------------------|
+| `--emit ast`  | Print the parsed AST as JSON instead of running    |
+| `--emit ir`   | Print the IR as JSON instead of running            |
 
 Supported file extensions:
 
-| Extension | Description |
-|-----------|-------------|
-| `.lx` | Lunex source file |
-| `.nc` | Compiled bytecode |
-| `.nax` | Compiled archive (bundle of `.lx` files) |
+| Extension | Description               |
+|-----------|---------------------------|
+| `.lx`     | Lunex source file         |
+| `.nc`     | Compiled bytecode         |
+| `.nax`    | Compiled archive          |
 
 **Examples:**
 
@@ -57,24 +57,24 @@ Start the interactive REPL (Read-Eval-Print Loop).
 lunex repl
 ```
 
-Launches a persistent session where you can type Lunex code and evaluate
-it immediately. All defined names persist across inputs within the session.
+Launches a persistent session where you can type Lunex code and see the
+result immediately. All defined names persist across inputs within the session.
 
 **REPL commands:**
 
-| Command | Description |
-|---------|-------------|
-| `.help` | Show available REPL commands |
-| `.exit` / `.quit` | Exit the REPL |
-| `.clear` | Reset the session (clears all variables and definitions) |
-| `.vars` | List all currently defined names |
-| `.history` | Show input history for this session |
-| `.load <file>` | Load and evaluate a `.lx` file into the session |
-| `.type <expr>` | Show the inferred type of an expression |
-| `Ctrl+D` | Exit (EOF) |
+| Command          | Description                                                |
+|------------------|------------------------------------------------------------|
+| `.help`          | Show available REPL commands                               |
+| `.exit` / `.quit`| Exit the REPL                                              |
+| `.clear`         | Reset the session (clears all variables and definitions)   |
+| `.vars`          | List all currently defined names                           |
+| `.history`       | Show input history for this session                        |
+| `.load <file>`   | Load and evaluate a `.lx` file into the session            |
+| `.type <expr>`   | Show the inferred type of an expression                    |
+| `Ctrl+D`         | Exit (EOF)                                                 |
 
-**Multi-line input:** open a `{` block and press Enter — the REPL continues
-reading lines until all braces are closed.
+**Multi-line input:** open a `{` block and press Enter — the REPL keeps reading
+until all braces are closed.
 
 **Example session:**
 
@@ -116,12 +116,12 @@ Compile a `.lx` source file to bytecode.
 lunex build [file] [-o <output>]
 ```
 
-Without arguments, reads the project `config.lx` and compiles the entry point.
+Without arguments, reads `config.lx` and compiles the entry point.
 
-| Flag | Description |
-|------|-------------|
-| `-o <file>` | Output path (default: `<input>.nc`) |
-| `--format nax` | Output as a `.nax` archive instead of `.nc` |
+| Flag            | Description                                          |
+|-----------------|------------------------------------------------------|
+| `-o <file>`     | Output path (default: `<input>.nc`)                  |
+| `--format nax`  | Output as a `.nax` archive instead of `.nc`          |
 
 **Examples:**
 
@@ -140,8 +140,8 @@ Check a file for errors without running it.
 lunex check <file>
 ```
 
-Exits with code `0` and prints `ok` on success. Exits with code `1` and
-prints error details on failure. Also runs semantic checks on the AST.
+Exits with code `0` and prints `ok` on success. Exits with code `1` and prints
+error details on failure. Also runs semantic checks on the AST.
 
 ---
 
@@ -163,8 +163,7 @@ Disassemble a compiled `.nc` bytecode file.
 lunex dis <file.nc>
 ```
 
-Writes an annotated `.lx` file alongside the input showing the bytecode
-instructions.
+Writes an annotated file alongside the input showing the bytecode instructions.
 
 ---
 
@@ -176,8 +175,8 @@ Create a new Lunex project.
 lunex init [name]
 ```
 
-Creates `main.lx`, `config.lx`, and a `src/` directory in a new folder
-named `name` (defaults to the current directory name).
+Creates `main.lx`, `config.lx`, and a `src/` directory in a new folder named
+`name` (defaults to the current directory name).
 
 ---
 
@@ -204,56 +203,23 @@ lunex bench <file>
 
 ---
 
-### `lunex install`
+### Package Management
 
-Install an external package from a URL or GitHub repository.
-
-```
-lunex install <source>
-lunex install          # install all dependencies from config.lx
-```
-
-Supported sources:
+Package management is handled entirely by **Luna** — the official Lunex
+package manager. The `lunex` CLI does not install, remove, or update packages.
 
 ```bash
-lunex install github.com/user/repo
-lunex install github.com/user/repo@v1.2.3
-lunex install https://example.com/mypackage
+luna install user/repo            # install from GitHub
+luna install user/repo@v1.2.3    # install a specific version
+luna install                      # install all deps from config.lx
+luna remove  <package>            # remove a package
+luna update  [package]            # update one or all packages
+luna list                         # list installed packages
+luna search  <query>              # search GitHub for packages
 ```
 
-Packages are downloaded, compiled, and cached in the Lunex data directory.
-
----
-
-### `lunex add` / `lunex remove`
-
-Add or remove a package from `config.lx`.
-
-```
-lunex add <package>
-lunex remove <package>
-```
-
----
-
-### `lunex update`
-
-Update a specific package or all installed packages.
-
-```
-lunex update <package>
-lunex update            # update all
-```
-
----
-
-### `lunex list`
-
-List installed packages.
-
-```
-lunex list
-```
+Packages are stored globally in `~/.luna/packages/` and resolved automatically
+when you use `@import("pkg-name")` in any `.lx` file.
 
 ---
 
@@ -285,8 +251,8 @@ Print version information.
 lunex version
 ```
 
-Output includes the version number, build date, Go runtime version,
-operating system, and architecture.
+Output includes the version number, build date, Go runtime version, operating
+system, and architecture.
 
 ---
 
@@ -327,21 +293,21 @@ lunex jitcache clear      # clear JIT cache
 
 ## Environment variables
 
-| Variable | Description |
-|----------|-------------|
-| `LUNEX_HOME` | Override the Lunex data directory (default: `~/.lunex`) |
-| `LUNEX_CACHE` | Override the cache directory |
-| `LUNEX_DEBUG` | Set to `1` to enable debug output globally |
-| `LUNEX_VERBOSE` | Set to `1` to enable verbose debug output |
-| `GOGC` | Go GC percentage (Lunex sets `50` by default) |
-| `GOMEMLIMIT` | Go memory limit (Lunex sets `200 MiB` by default) |
+| Variable         | Description                                              |
+|------------------|----------------------------------------------------------|
+| `LUNEX_HOME`     | Override the Lunex data directory (default: `~/.lunex`)  |
+| `LUNEX_CACHE`    | Override the cache directory                             |
+| `LUNEX_DEBUG`    | Set to `1` to enable debug output globally               |
+| `LUNEX_VERBOSE`  | Set to `1` to enable verbose debug output                |
+| `GOGC`           | Go GC percentage (Lunex sets `50` by default)            |
+| `GOMEMLIMIT`     | Go memory limit (Lunex sets `200 MiB` by default)        |
 
 ---
 
 ## Exit codes
 
-| Code | Meaning |
-|------|---------|
-| `0` | Success |
-| `1` | Compile or runtime error |
-| `2` | Usage error (bad flag or missing argument) |
+| Code | Meaning                              |
+|------|--------------------------------------|
+| `0`  | Success                              |
+| `1`  | Compile or runtime error             |
+| `2`  | Usage error (bad flag or missing argument) |

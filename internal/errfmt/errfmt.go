@@ -601,7 +601,7 @@ func buildSuggestions(code, name, msg string, similar []string) []string {
 		add("                   @fimport(\"./file.nax\") — compiled archive")
 		add("                   @fimport(\"./file.nc\")  — bytecode")
 		add("for stdlib:        @import(\"std.io\"), @import(\"std.fs\"), @import(\"std.http\"), ...")
-		add("for packages:      run `lunex install <pkg>` then use @import(\"<pkg>\")")
+		add("for packages:      run `luna install <pkg>` then use @import(\"<pkg>\")")
 		return out
 
 	case "E0010F": // @fimport local file not found
@@ -868,7 +868,7 @@ func buildSuggestions(code, name, msg string, similar []string) []string {
 	case strings.Contains(lower, "division by zero"):
 		add("guard the denominator with an `if` check before dividing")
 	case strings.Contains(lower, "cannot resolve module"):
-		add("run `lunex add <module>` to install, or verify the module name in the stdlib list")
+		add("run `luna install <module>` to install, or verify the module name in the stdlib list")
 	case strings.Contains(lower, "stack overflow") || strings.Contains(lower, "recursion"):
 		add("add a base case to your recursive function to stop infinite recursion")
 	case strings.Contains(lower, "index out of range") || strings.Contains(lower, "out of bounds"):
@@ -1316,7 +1316,7 @@ func SuggestForMessage(msg string) string {
 	case strings.Contains(lower, "null") || strings.Contains(lower, "undefined"):
 		return "use `if x != null` or optional chaining `x?.prop` to safely access nullable values"
 	case strings.Contains(lower, "cannot resolve module"):
-		return "run `lunex add <module>` to install, or check the module name in the stdlib list"
+		return "run `luna install <module>` to install, or check the module name in the stdlib list"
 	case strings.Contains(lower, "stack overflow") || strings.Contains(lower, "recursion"):
 		return "add a base case to your recursive function to stop infinite recursion"
 	case strings.Contains(lower, "index out of range") || strings.Contains(lower, "out of bounds"):

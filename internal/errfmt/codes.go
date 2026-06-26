@@ -130,7 +130,7 @@ var errorCodes = map[string]ErrorCode{
 	ErrModuleNotFound: newErrorCode(
 		ErrModuleNotFound,
 		"Module not found",
-		"Install the module with 'lunex add <module>' or verify that it exists in the standard library.",
+		"Install the module with 'luna install <module>' or verify that it exists in the standard library.",
 	),
 	ErrIndexOutOfRange: newErrorCode(
 		ErrIndexOutOfRange,

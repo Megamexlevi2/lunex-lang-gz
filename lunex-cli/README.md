@@ -7,7 +7,7 @@ commands, and a small args helper for handlers.
 ## Example
 
 ```lx
-val cli = @import("lunex-cli")
+val cli = @fimport("./lunex-cli/main.lx")
 val io = @import("std.io")
 
 fn setupCli() {
@@ -80,9 +80,8 @@ Inside a command handler, the `args` object exposes:
 
 Run the suite with:
 
-```lx
-val tests = @fimport("./test/run_all.lx")
-tests.run()
+```bash
+lunex run lunex-cli/test/run_all.lx
 ```
 
 ## Package contents
