@@ -1,12 +1,10 @@
-// Lunex lang
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
-// (c) David Dev 2026. License.
 
 package std
 
 import (
 	"fmt"
 	"lunex/internal/runtime"
+	shared "lunex/internal/std/shared"
 	"time"
 
 	gojwt "github.com/golang-jwt/jwt/v5"
@@ -124,7 +122,7 @@ func JWTModule() *runtime.Value {
 			}
 			payload := make(map[string]*runtime.Value)
 			for k, v := range claims {
-				payload[k] = jsonToValue(v)
+				payload[k] = shared.JsonToValue(v)
 			}
 			return runtime.ObjectVal(map[string]*runtime.Value{
 				"valid":   runtime.True,
@@ -149,11 +147,11 @@ func JWTModule() *runtime.Value {
 			}
 			payload := make(map[string]*runtime.Value)
 			for k, v := range claims {
-				payload[k] = jsonToValue(v)
+				payload[k] = shared.JsonToValue(v)
 			}
 			header := make(map[string]*runtime.Value)
 			for k, v := range token.Header {
-				header[k] = jsonToValue(v)
+				header[k] = shared.JsonToValue(v)
 			}
 			return runtime.ObjectVal(map[string]*runtime.Value{
 				"header":  runtime.ObjectVal(header),

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"lunex/internal/adaptor"
 	"lunex/internal/ast"
+	"lunex/internal/bootstrap"
 	"lunex/internal/buildfile"
 	"lunex/internal/bytecode"
 	"lunex/internal/compiler"
@@ -234,6 +235,14 @@ fn mul(a, b) {
 		fmt.Printf("    luna install <pkg>           install a package\n\n")
 
 	case "install", "i", "add":
+		// Special case: `lunex install luna` bootstraps the Luna package manager.
+		if len(args) >= 2 && (args[1] == "luna" || args[1] == "luna-pm") {
+			if err := bootstrap.InstallLuna(); err != nil {
+				fmt.Fprintf(os.Stderr, "\033[1;31merror:\033[0m Luna installation failed: %v\n", err)
+				os.Exit(1)
+			}
+			os.Exit(0)
+		}
 		fmt.Fprintln(os.Stderr, "\033[1;33mlunex\033[0m no longer manages packages.")
 		fmt.Fprintln(os.Stderr, "Use \033[1;36mLuna\033[0m — the Lunex package manager:")
 		fmt.Fprintln(os.Stderr, "")
@@ -244,8 +253,7 @@ fn mul(a, b) {
 			fmt.Fprintln(os.Stderr, "  luna install user/repo    # install a specific package")
 		}
 		fmt.Fprintln(os.Stderr, "")
-		fmt.Fprintln(os.Stderr, "Install Luna:  luna help  (if already installed)")
-		fmt.Fprintln(os.Stderr, "               lunex run lunex-pac-man/luna-pm/luna-pm.lx -- help")
+		fmt.Fprintln(os.Stderr, "Install Luna:  lunex install luna")
 		os.Exit(1)
 
 	case "remove", "uninstall", "rm":

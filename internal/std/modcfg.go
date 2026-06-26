@@ -1,17 +1,13 @@
-// Lunex lang — internal/std
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
-// (c) David Dev 2026. License.
+
 
 package std
 
-// Info holds metadata for one standard library module.
 type Info struct {
 	Name        string
 	Description string
 	Functions   map[string]string
 }
 
-// catalog is the hardcoded registry of all standard library modules.
 var catalog = map[string]*Info{
 	"io": {
 		Name:        "io",
@@ -174,13 +170,11 @@ var catalog = map[string]*Info{
 	},
 }
 
-// Get returns the metadata for the given module name.
 func Get(name string) (*Info, bool) {
 	m, ok := catalog[name]
 	return m, ok
 }
 
-// All returns a snapshot of all documented modules keyed by name.
 func All() map[string]*Info {
 	result := make(map[string]*Info, len(catalog))
 	for k, v := range catalog {
@@ -189,7 +183,6 @@ func All() map[string]*Info {
 	return result
 }
 
-// Describe returns a one-line description for the given module name.
 func Describe(name string) string {
 	m, ok := Get(name)
 	if !ok {

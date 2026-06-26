@@ -1,6 +1,3 @@
-// Lunex lang
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
-// (c) David Dev 2026. License.
 
 package std
 
@@ -8,6 +5,7 @@ import (
 	"bufio"
 	"fmt"
 	"lunex/internal/runtime"
+	shared "lunex/internal/std/shared"
 	"os"
 	"regexp"
 	"strings"
@@ -39,14 +37,12 @@ var ansiColors = map[string]string{
 	"bgWhite":   "\033[47m",
 }
 
-// Regex compiled once for maximum performance in the strip method.
 var ansiRegex = regexp.MustCompile(`\x1b\[[0-9;]*m`)
 
-// Global flag: true when stdout is a real interactive terminal.
 var isTTY bool
 
 func init() {
-	// Check whether stdout is a real terminal; disable colors when writing to a file or pipe.
+	
 	fi, err := os.Stdout.Stat()
 	if err == nil && (fi.Mode()&os.ModeCharDevice) != 0 {
 		isTTY = true
@@ -54,7 +50,7 @@ func init() {
 }
 
 func colorize(color, text string) string {
-	// Return plain text when not writing to an interactive terminal.
+	
 	if !isTTY {
 		return text
 	}
@@ -70,7 +66,7 @@ func IoModule() *runtime.Value {
 
 	colorFn := func(color string) *runtime.Value {
 		return runtime.FuncVal(&runtime.Function{Name: color, Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			return runtime.StringVal(colorize(color, sprintArgs(args))), nil
+			return runtime.StringVal(colorize(color, shared.SprintArgs(args))), nil
 		}})
 	}
 
@@ -139,23 +135,23 @@ func IoModule() *runtime.Value {
 
 	return runtime.ObjectVal(map[string]*runtime.Value{
 		"log": runtime.FuncVal(&runtime.Function{Name: "log", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			runtime.PrintLn(sprintArgs(args))
+			runtime.PrintLn(shared.SprintArgs(args))
 			return runtime.Undefined, nil
 		}}),
 		"err": runtime.FuncVal(&runtime.Function{Name: "err", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			fmt.Fprintln(os.Stderr, colorize("red", sprintArgs(args)))
+			fmt.Fprintln(os.Stderr, colorize("red", shared.SprintArgs(args)))
 			return runtime.Undefined, nil
 		}}),
 		"warn": runtime.FuncVal(&runtime.Function{Name: "warn", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			fmt.Fprintln(os.Stderr, colorize("yellow", sprintArgs(args)))
+			fmt.Fprintln(os.Stderr, colorize("yellow", shared.SprintArgs(args)))
 			return runtime.Undefined, nil
 		}}),
 		"info": runtime.FuncVal(&runtime.Function{Name: "info", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			runtime.PrintLn(colorize("cyan", sprintArgs(args)))
+			runtime.PrintLn(colorize("cyan", shared.SprintArgs(args)))
 			return runtime.Undefined, nil
 		}}),
 		"success": runtime.FuncVal(&runtime.Function{Name: "success", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			runtime.PrintLn(colorize("green", "✔ "+sprintArgs(args)))
+			runtime.PrintLn(colorize("green", "✔ "+shared.SprintArgs(args)))
 			return runtime.Undefined, nil
 		}}),
 		"read": runtime.FuncVal(&runtime.Function{Name: "read", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
@@ -187,7 +183,7 @@ func IoModule() *runtime.Value {
 			return runtime.NumberVal(n), nil
 		}}),
 		"clear": runtime.FuncVal(&runtime.Function{Name: "clear", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			// Clear the screen on both Unix and Windows using universal ANSI escape codes.
+			
 			fmt.Print("\033[2J\033[H")
 			return runtime.Undefined, nil
 		}}),
@@ -246,15 +242,15 @@ func IoModule() *runtime.Value {
 			tmpl := args[0].ToString()
 			for i, arg := range args[1:] {
 				placeholder := fmt.Sprintf("{%d}", i)
-				// Replace {0}, {1}, etc. with positional arguments.
+				
 				tmpl = strings.ReplaceAll(tmpl, placeholder, arg.ToString())
-				// Replace {} one at a time in order (previously, all {} were replaced by the first argument).
+				
 				tmpl = strings.Replace(tmpl, "{}", arg.ToString(), 1)
 			}
 			return runtime.StringVal(tmpl), nil
 		}}),
 		"write": runtime.FuncVal(&runtime.Function{Name: "write", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			runtime.Print(sprintArgs(args))
+			runtime.Print(shared.SprintArgs(args))
 			return runtime.Undefined, nil
 		}}),
 		"red":     colorFn("red"),
@@ -279,7 +275,7 @@ func IoModule() *runtime.Value {
 				return runtime.StringVal(""), nil
 			}
 			s := args[0].ToString()
-			// Clean approach using the compiled regex (fixes a crash from the earlier strings.NewReplacer implementation).
+			
 			s = ansiRegex.ReplaceAllString(s, "")
 			return runtime.StringVal(s), nil
 		}}),
@@ -314,7 +310,7 @@ func IoModule() *runtime.Value {
 		}}),
 		"json": runtime.FuncVal(&runtime.Function{Name: "json", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			if len(args) > 0 {
-				runtime.PrintLn(valueToJSON(args[0]))
+				runtime.PrintLn(shared.ValueToJSON(args[0]))
 			}
 			return runtime.Undefined, nil
 		}}),

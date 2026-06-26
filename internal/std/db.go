@@ -1,6 +1,4 @@
-// Lunex lang — db standard library module.
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
-// (c) David Dev 2026. Licensed under the Mozilla Public License, Version 2.0.
+
 
 package std
 
@@ -9,6 +7,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"lunex/internal/runtime"
+	shared "lunex/internal/std/shared"
 	"math"
 	"regexp"
 	"sort"
@@ -17,19 +16,13 @@ import (
 	"time"
 )
 
-// ─── Global engine ────────────────────────────────────────────────────────────
-
-// globalDBEngine is the singleton that holds all named databases for the
-// current Lunex process.  All db.open / db.create calls go through here.
 var globalDBEngine = &dbEngine{databases: make(map[string]*lunexDB)}
 
-// dbEngine manages all named databases in the process.
 type dbEngine struct {
 	databases map[string]*lunexDB
 	mu        sync.RWMutex
 }
 
-// open returns the named database, creating it if it does not exist.
 func (e *dbEngine) open(name string) *lunexDB {
 	if name == "" {
 		name = "default"
@@ -60,9 +53,6 @@ func (e *dbEngine) list() []string {
 	return names
 }
 
-// ─── Core types ───────────────────────────────────────────────────────────────
-
-// lunexDB is a named database containing a set of tables and auto-increment sequences.
 type lunexDB struct {
 	name   string
 	tables map[string]*lunexTable
@@ -70,7 +60,6 @@ type lunexDB struct {
 	mu     sync.RWMutex
 }
 
-// table returns the named table, creating it if it does not exist.
 func (db *lunexDB) table(name string) *lunexTable {
 	db.mu.Lock()
 	defer db.mu.Unlock()
@@ -92,7 +81,6 @@ func (db *lunexDB) tableNames() []string {
 	return names
 }
 
-// lunexTable is a collection of rows with optional schema validation, indexes, and watches.
 type lunexTable struct {
 	name    string
 	db      *lunexDB
@@ -104,34 +92,30 @@ type lunexTable struct {
 	mu      sync.RWMutex
 }
 
-// dbRow is a single document stored inside a table.
-// del=true marks it as soft-deleted without immediately compacting the slice.
 type dbRow struct {
 	id  string
 	doc map[string]*runtime.Value
 	del bool
 }
 
-// fieldDef describes validation rules and default value behaviour for a schema field.
 type fieldDef struct {
-	Type       string         // expected type: "string", "number", "bool", "date", "any", …
-	Required   bool           // reject insert/update when the field is missing
-	Unique     bool           // reject duplicate values across all rows
-	DefaultVal *runtime.Value // literal default applied on insert
-	DefaultFn  string         // dynamic default: "$uuid", "$now", or "$seq"
-	Min        float64        // minimum numeric value (0 = disabled)
-	Max        float64        // maximum numeric value (0 = disabled)
-	MinLen     int            // minimum string length (0 = disabled)
-	MaxLen     int            // maximum string length
-	MaxLenSet  bool           // true when MaxLen was explicitly set
-	Enum       []string       // allowed string values (empty = any)
-	Index      bool           // auto-create an index for this field
-	Primary    bool           // marks this field as the primary key
-	OnUpdate   string         // auto-update on write, e.g. "$now"
-	Ref        string         // foreign key reference (table name)
+	Type       string         
+	Required   bool           
+	Unique     bool           
+	DefaultVal *runtime.Value 
+	DefaultFn  string         
+	Min        float64        
+	Max        float64        
+	MinLen     int            
+	MaxLen     int            
+	MaxLenSet  bool           
+	Enum       []string       
+	Index      bool           
+	Primary    bool           
+	OnUpdate   string         
+	Ref        string         
 }
 
-// tableIndex is a secondary index mapping composite key strings to row positions.
 type tableIndex struct {
 	fields []string
 	unique bool
@@ -139,17 +123,12 @@ type tableIndex struct {
 	mu     sync.RWMutex
 }
 
-// tableWatch is a registered change listener for a table.
-// The callback receives { type, doc } whenever a matching row changes.
 type tableWatch struct {
 	id     string
 	filter *runtime.Value
 	fn     *runtime.Value
 }
 
-// ─── UUID helper ────────────────────────────────────────────────────────────
-
-// genUUID generates a random UUID v4 string.
 func genUUID() string {
 	b := make([]byte, 16)
 	rand.Read(b)
@@ -163,10 +142,6 @@ func genUUID() string {
 		hex.EncodeToString(b[10:]))
 }
 
-// ─── Schema validation ──────────────────────────────────────────────────────
-
-// applySchema validates a document against the table schema and fills in default values.
-// isInsert=true applies $uuid/$now/$seq defaults and required-field checks.
 func (t *lunexTable) applySchema(doc map[string]*runtime.Value, isInsert bool) (map[string]*runtime.Value, error) {
 	out := make(map[string]*runtime.Value, len(doc))
 	for k, v := range doc {
@@ -210,10 +185,9 @@ func (t *lunexTable) applySchema(doc map[string]*runtime.Value, isInsert bool) (
 	return out, nil
 }
 
-// validateField checks a single field value against its fieldDef constraints.
 func validateField(name string, val *runtime.Value, def *fieldDef) error {
 	if def.Type != "" && def.Type != "any" {
-		typeName := getTypeName(val)
+		typeName := shared.GetTypeName(val)
 		if def.Type == "date" {
 			if typeName != "number" && typeName != "string" {
 				return fmt.Errorf("field '%s' must be a date (number or string), got %s", name, typeName)
@@ -256,9 +230,6 @@ func validateField(name string, val *runtime.Value, def *fieldDef) error {
 	return nil
 }
 
-// ─── Row helpers ────────────────────────────────────────────────────────────
-
-// rowToValue converts an internal dbRow into a Lunex object, injecting the _id field.
 func rowToValue(row dbRow) *runtime.Value {
 	out := make(map[string]*runtime.Value, len(row.doc)+1)
 	out["_id"] = runtime.StringVal(row.id)
@@ -268,10 +239,6 @@ func rowToValue(row dbRow) *runtime.Value {
 	return runtime.ObjectVal(out)
 }
 
-// ─── Filter / query matching ────────────────────────────────────────────────
-
-// matchFilter tests a document against a filter object.
-// Supports $and, $or, $not, $nor, and field-level comparison operators.
 func matchFilter(doc map[string]*runtime.Value, filter *runtime.Value) bool {
 	if filter == nil || filter.IsNullish() {
 		return true
@@ -322,11 +289,7 @@ func matchFilter(doc map[string]*runtime.Value, filter *runtime.Value) bool {
 			if fieldVal == nil {
 				fieldVal = runtime.Undefined
 			}
-			if key == "_id" {
-				if id, ok := doc["__id__"]; ok {
-					fieldVal = id
-				}
-			}
+			
 			if cond != nil && cond.Tag == runtime.TypeObject {
 				for op, opVal := range cond.ObjVal {
 					if !matchOp(fieldVal, op, opVal) {
@@ -343,7 +306,6 @@ func matchFilter(doc map[string]*runtime.Value, filter *runtime.Value) bool {
 	return true
 }
 
-// matchRowFilter wraps matchFilter for a dbRow, injecting _id into the document view.
 func matchRowFilter(row dbRow, filter *runtime.Value) bool {
 	if filter == nil || filter.IsNullish() {
 		return true
@@ -359,7 +321,6 @@ func matchRowFilter(row dbRow, filter *runtime.Value) bool {
 	return matchFilter(doc, filter)
 }
 
-// matchOp evaluates a single comparison operator ($eq, $gt, $in, $like, $regex, …).
 func matchOp(field *runtime.Value, op string, val *runtime.Value) bool {
 	if field == nil {
 		field = runtime.Undefined
@@ -438,7 +399,7 @@ func matchOp(field *runtime.Value, op string, val *runtime.Value) bool {
 		}
 		return false
 	case "$type":
-		return getTypeName(field) == val.ToString()
+		return shared.GetTypeName(field) == val.ToString()
 	case "$startsWith":
 		return strings.HasPrefix(field.ToString(), val.ToString())
 	case "$endsWith":
@@ -447,7 +408,6 @@ func matchOp(field *runtime.Value, op string, val *runtime.Value) bool {
 	return true
 }
 
-// matchLike implements SQL-style LIKE pattern matching (% = any chars, _ = one char).
 func matchLike(s, pattern string, caseInsensitive bool) bool {
 	if caseInsensitive {
 		s = strings.ToLower(s)
@@ -471,8 +431,6 @@ func matchLike(s, pattern string, caseInsensitive bool) bool {
 	return matched
 }
 
-// projectRow returns a Lunex object containing only the requested fields.
-// If fields is empty, the full row is returned.
 func projectRow(row dbRow, fields []string) *runtime.Value {
 	if len(fields) == 0 {
 		return rowToValue(row)
@@ -491,9 +449,6 @@ func projectRow(row dbRow, fields []string) *runtime.Value {
 	return runtime.ObjectVal(out)
 }
 
-// ─── Query execution ────────────────────────────────────────────────────────
-
-// execQuery runs a read-only query: filter → sort → offset → limit → project.
 func (t *lunexTable) execQuery(filter *runtime.Value, proj []string, sorts []sortEntry, limitN, offsetN int) []*runtime.Value {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
@@ -557,10 +512,6 @@ func (t *lunexTable) execQuery(filter *runtime.Value, proj []string, sorts []sor
 	return out
 }
 
-// ─── Mutations ──────────────────────────────────────────────────────────────
-
-// insertDoc validates the document against the schema, assigns an _id, appends the row,
-// notifies watches, and rebuilds affected indexes.
 func (t *lunexTable) insertDoc(doc map[string]*runtime.Value) (*runtime.Value, error) {
 	out, err := t.applySchema(doc, true)
 	if err != nil {
@@ -583,7 +534,6 @@ func (t *lunexTable) insertDoc(doc map[string]*runtime.Value) (*runtime.Value, e
 	return result, nil
 }
 
-// rebuildIndexes reconstructs all secondary indexes from the current non-deleted rows.
 func (t *lunexTable) rebuildIndexes() {
 	t.mu.RLock()
 	rows := make([]dbRow, len(t.rows))
@@ -603,7 +553,6 @@ func (t *lunexTable) rebuildIndexes() {
 	}
 }
 
-// indexKey builds a NUL-separated composite key string for a row and a set of fields.
 func indexKey(row dbRow, fields []string) string {
 	parts := make([]string, len(fields))
 	for i, f := range fields {
@@ -616,8 +565,6 @@ func indexKey(row dbRow, fields []string) string {
 	return strings.Join(parts, "\x00")
 }
 
-// updateRows applies the change map to all rows matching filter.
-// Pass onlyFirst=true to stop after the first match.
 func (t *lunexTable) updateRows(filter *runtime.Value, changes map[string]*runtime.Value, onlyFirst bool) int {
 	t.mu.Lock()
 	n := 0
@@ -645,7 +592,6 @@ func (t *lunexTable) updateRows(filter *runtime.Value, changes map[string]*runti
 	return n
 }
 
-// deleteRows soft-deletes rows matching filter by setting del=true.
 func (t *lunexTable) deleteRows(filter *runtime.Value, onlyFirst bool) int {
 	t.mu.Lock()
 	n := 0
@@ -668,9 +614,6 @@ func (t *lunexTable) deleteRows(filter *runtime.Value, onlyFirst bool) int {
 	return n
 }
 
-// ─── Watches ────────────────────────────────────────────────────────────────
-
-// notifyWatches calls all registered watch callbacks whose filter matches the row.
 func (t *lunexTable) notifyWatches(event string, row dbRow) {
 	if len(t.watches) == 0 {
 		return
@@ -689,10 +632,6 @@ func (t *lunexTable) notifyWatches(event string, row dbRow) {
 	}
 }
 
-// ─── Aggregation pipeline ───────────────────────────────────────────────────
-
-// aggregate runs a MongoDB-style aggregation pipeline over the table.
-// Supported stages: $match, $sort, $limit, $skip, $project, $group, $unwind, $count.
 func (t *lunexTable) aggregate(pipeline *runtime.Value) []*runtime.Value {
 	t.mu.RLock()
 	var current []dbRow
@@ -962,10 +901,6 @@ func (t *lunexTable) aggregate(pipeline *runtime.Value) []*runtime.Value {
 	return rows
 }
 
-// ─── Full-text search ────────────────────────────────────────────────────────
-
-// search performs a case-insensitive substring search across the specified fields.
-// If fields is empty, all fields in each row are searched.
 func (t *lunexTable) search(text string, fields []string) []*runtime.Value {
 	text = strings.ToLower(text)
 	t.mu.RLock()
@@ -993,17 +928,11 @@ func (t *lunexTable) search(text string, fields []string) []*runtime.Value {
 	return out
 }
 
-// ─── Sort helper ────────────────────────────────────────────────────────────
-
-// sortEntry describes a single sort criterion used by execQuery.
 type sortEntry struct {
 	field string
 	desc  bool
 }
 
-// ─── Lunex-facing objects ────────────────────────────────────────────────────
-
-// tableObject builds the Lunex-facing table API object.
 func tableObject(t *lunexTable) *runtime.Value {
 	makeQB := func(filter *runtime.Value) *runtime.Value {
 		return newQueryBuilder(t, filter)
@@ -1585,15 +1514,11 @@ func tableObject(t *lunexTable) *runtime.Value {
 	return obj
 }
 
-// ─── Query builder ──────────────────────────────────────────────────────────
-
-// newQueryBuilder creates a chainable query builder for the given table and initial filter.
 func newQueryBuilder(t *lunexTable, filter *runtime.Value) *runtime.Value {
 	qb := &qbState{table: t, filter: filter, limitN: 0, offsetN: 0}
 	return qbObject(qb)
 }
 
-// qbState holds the mutable state accumulated while chaining query-builder calls.
 type qbState struct {
 	table   *lunexTable
 	filter  *runtime.Value
@@ -1603,7 +1528,6 @@ type qbState struct {
 	offsetN int
 }
 
-// qbObject wraps a qbState into a chainable Lunex query-builder object.
 func qbObject(qb *qbState) *runtime.Value {
 	return runtime.ObjectVal(map[string]*runtime.Value{
 		"where": runtime.FuncVal(&runtime.Function{Name: "where", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
@@ -1722,9 +1646,6 @@ func qbObject(qb *qbState) *runtime.Value {
 	})
 }
 
-// ─── DB object (returned by db.open) ────────────────────────────────────────
-
-// dbObject builds the Lunex-facing database API object returned by db.open().
 func dbObject(db *lunexDB) *runtime.Value {
 	return runtime.ObjectVal(map[string]*runtime.Value{
 		"name": runtime.StringVal(db.name),
@@ -1809,9 +1730,6 @@ func dbObject(db *lunexDB) *runtime.Value {
 	})
 }
 
-// ─── Module entry point ─────────────────────────────────────────────────────
-
-// DbModule returns the top-level `db` module object registered in the Lunex stdlib.
 func DbModule() *runtime.Value {
 	return runtime.ObjectVal(map[string]*runtime.Value{
 		"create": runtime.FuncVal(&runtime.Function{Name: "create", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {

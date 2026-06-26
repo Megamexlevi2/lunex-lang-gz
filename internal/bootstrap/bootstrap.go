@@ -2,8 +2,6 @@
 // Created by David Dev · GitHub: https://github.com/Megamexlevi2
 // (c) David Dev 2026. License.
 
-// Package bootstrap handles the installation of the Luna package manager
-// from GitHub. It is used to bootstrap Luna before it is self-managing.
 package bootstrap
 
 import (
@@ -60,20 +58,13 @@ func InstallLuna() error {
 	}
 	ok()
 
-	// ── Step 2: download luna-pm.lx from GitHub ───────────────────────────────
+	// ── Step 2: download luna-pm from GitHub (full directory via zip) ──────────
 	step("Downloading luna-pm from GitHub (%s/%s/%s)", lunaOwner, lunaRepo, lunaSubdir)
 	pmDest := filepath.Join(lunaBin, "luna-pm.lx")
 
-	rawURL := fmt.Sprintf(
-		"https://raw.githubusercontent.com/%s/%s/%s/%s/luna-pm.lx",
-		lunaOwner, lunaRepo, lunaRef, lunaSubdir,
-	)
-	if err := downloadFile(rawURL, pmDest); err != nil {
-		// Try the zip fallback.
-		warn("direct download failed, trying archive fallback…")
-		if err2 := downloadViaZip(lunaHome, lunaBin); err2 != nil {
-			return fmt.Errorf("download failed: %w (zip fallback: %v)", err, err2)
-		}
+	// Always use the zip approach so we get luna-pm.lx AND its src/ directory.
+	if err := downloadViaZip(lunaHome, lunaBin); err != nil {
+		return fmt.Errorf("download failed: %w", err)
 	}
 	ok()
 
@@ -143,7 +134,8 @@ func downloadFile(url, destPath string) error {
 	return os.WriteFile(destPath, data, 0644)
 }
 
-// downloadViaZip downloads the entire luna repo as a zip and extracts luna-pm/.
+// downloadViaZip downloads the entire luna repo as a zip and extracts luna-pm/
+// with its full directory structure (luna-pm.lx + src/ subdirectory).
 func downloadViaZip(lunaHome, lunaBin string) error {
 	zipURL := fmt.Sprintf(
 		"https://github.com/%s/%s/archive/refs/heads/%s.zip",
@@ -155,23 +147,86 @@ func downloadViaZip(lunaHome, lunaBin string) error {
 	}
 	defer os.Remove(tmpZip)
 
-	// Extract luna-pm.lx from the zip.
+	// Extract luna-pm/ from the zip, preserving directory structure.
 	return extractLunaPMFromZip(tmpZip, lunaSubdir, lunaBin)
 }
 
-// extractLunaPMFromZip extracts files from subdir inside the zip into destDir.
+// extractLunaPMFromZip extracts files from subdir inside the zip into destDir,
+// preserving the relative directory structure (e.g. src/commands/*.lx).
 func extractLunaPMFromZip(zipPath, subdir, destDir string) error {
-	// Use the system unzip if available.
 	if _, err := exec.LookPath("unzip"); err == nil {
+		// Extract with directory structure. The zip contains a top-level
+		// directory like "luna-main/luna-pm/..." so we strip the first
+		// two components (repo root + subdir) and write the rest into destDir.
+		//
+		// unzip -o <zip> "*/luna-pm/*" -d <tmpDir>, then move contents up.
+		tmpDir := destDir + "_tmp_extract"
+		_ = os.RemoveAll(tmpDir)
+		if err := os.MkdirAll(tmpDir, 0755); err != nil {
+			return fmt.Errorf("cannot create temp dir: %w", err)
+		}
+		defer os.RemoveAll(tmpDir)
+
 		pattern := fmt.Sprintf("*/%s/*", subdir)
-		cmd := exec.Command("unzip", "-j", "-o", zipPath, pattern, "-d", destDir)
+		cmd := exec.Command("unzip", "-o", zipPath, pattern, "-d", tmpDir)
 		out, err := cmd.CombinedOutput()
 		if err != nil {
 			return fmt.Errorf("unzip failed: %v — %s", err, string(out))
 		}
-		return nil
+
+		// Walk tmpDir to find the extracted luna-pm directory and move its
+		// contents into destDir.
+		return moveExtractedFiles(tmpDir, subdir, destDir)
 	}
 	return fmt.Errorf("unzip not found; please install unzip and retry")
+}
+
+// moveExtractedFiles walks srcRoot to find a directory named subdir and copies
+// its contents (recursively) into destDir.
+func moveExtractedFiles(srcRoot, subdir, destDir string) error {
+	// The extracted structure looks like: srcRoot/<repo>-main/<subdir>/...
+	// Find the first occurrence of subdir.
+	var subdirPath string
+	err := filepath.Walk(srcRoot, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() && info.Name() == subdir && subdirPath == "" {
+			subdirPath = path
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	if subdirPath == "" {
+		return fmt.Errorf("could not find %q directory inside zip", subdir)
+	}
+
+	// Copy everything from subdirPath into destDir.
+	return filepath.Walk(subdirPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		rel, err := filepath.Rel(subdirPath, path)
+		if err != nil {
+			return err
+		}
+		dest := filepath.Join(destDir, rel)
+		if info.IsDir() {
+			return os.MkdirAll(dest, 0755)
+		}
+		return copyFile(path, dest)
+	})
+}
+
+// copyFile copies a single file from src to dst.
+func copyFile(src, dst string) error {
+	data, err := os.ReadFile(src)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(dst, data, 0644)
 }
 
 // writeLunaShim creates the `luna` shim script and marks it executable.

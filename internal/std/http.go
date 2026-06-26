@@ -1,8 +1,4 @@
-//go:build !js
 
-// Lunex lang
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
-// (c) David Dev 2026. License.
 
 package std
 
@@ -13,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"lunex/internal/runtime"
+	shared "lunex/internal/std/shared"
 	"mime"
 	"net"
 	"net/http"
@@ -160,7 +157,7 @@ func buildResObj(w http.ResponseWriter, r *http.Request) (resObj *runtime.Value,
 			w.WriteHeader(status)
 			data := ""
 			if len(a) > 0 {
-				data = valueToJSON(a[0])
+				data = shared.ValueToJSON(a[0])
 			}
 			fmt.Fprint(w, data)
 			return runtime.Undefined, nil
@@ -179,7 +176,7 @@ func buildResObj(w http.ResponseWriter, r *http.Request) (resObj *runtime.Value,
 			ct := "text/plain; charset=utf-8"
 			if len(a) > 0 {
 				if a[0].Tag == runtime.TypeObject || a[0].Tag == runtime.TypeArray {
-					body = valueToJSON(a[0])
+					body = shared.ValueToJSON(a[0])
 					ct = "application/json; charset=utf-8"
 				} else {
 					body = a[0].ToString()
@@ -552,7 +549,7 @@ func httpServerVal(s *httpServer) *runtime.Value {
 							}
 							httpBuildResponse(w, 200, callRes.StrVal, ct)
 						} else if callRes.Tag == runtime.TypeObject || callRes.Tag == runtime.TypeArray {
-							httpBuildResponse(w, 200, valueToJSON(callRes), "application/json; charset=utf-8")
+							httpBuildResponse(w, 200, shared.ValueToJSON(callRes), "application/json; charset=utf-8")
 						} else {
 							httpBuildResponse(w, 200, callRes.ToString(), "text/plain; charset=utf-8")
 						}
@@ -711,7 +708,7 @@ func HttpModule() *runtime.Value {
 			if b, ok := opts.ObjVal["body"]; ok && b != nil {
 				var bodyStr string
 				if b.Tag == runtime.TypeObject || b.Tag == runtime.TypeArray {
-					bodyStr = valueToJSON(b)
+					bodyStr = shared.ValueToJSON(b)
 					headers["Content-Type"] = "application/json"
 				} else {
 					bodyStr = b.ToString()
@@ -756,7 +753,7 @@ func HttpModule() *runtime.Value {
 
 		var parsedBody *runtime.Value
 		if strings.Contains(ct, "application/json") {
-			parsed, err := parseJSON(bodyStr)
+			parsed, err := shared.ParseJSON(bodyStr)
 			if err == nil {
 				parsedBody = parsed
 			} else {
@@ -773,7 +770,7 @@ func HttpModule() *runtime.Value {
 			"body":    parsedBody,
 			"text":    runtime.StringVal(bodyStr),
 			"json": runtime.FuncVal(&runtime.Function{Name: "json", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-				v, err := parseJSON(bodyStr)
+				v, err := shared.ParseJSON(bodyStr)
 				if err != nil {
 					return runtime.Null, nil
 				}
@@ -937,7 +934,7 @@ func HttpModule() *runtime.Value {
 			req := args[0]
 			if body, ok := req.ObjVal["body"]; ok {
 				if body.Tag == runtime.TypeString {
-					v, err := parseJSON(body.StrVal)
+					v, err := shared.ParseJSON(body.StrVal)
 					if err == nil {
 						return v, nil
 					}

@@ -6,7 +6,7 @@
   "repository": "https://github.com/Megamexlevi2/lunex-lang-gz",
   "license": "Mozilla Public License Version 2.0",
   "year": "2026",
-  "buildDate": "2026-06-14",
+  "buildDate": "2026-06-25",
   "description": "Lunex is a fast, statically-scoped scripting language for backend.",
   "languages": [
     "Lunex",

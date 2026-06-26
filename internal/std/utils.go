@@ -1,12 +1,10 @@
-// Lunex lang
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
-// (c) David Dev 2026. License.
 
 package std
 
 import (
 	"fmt"
 	"lunex/internal/runtime"
+	shared "lunex/internal/std/shared"
 	"math"
 	"math/rand"
 	"sort"
@@ -105,7 +103,7 @@ func UtilsModule() *runtime.Value {
 					depth = d
 				}
 			}
-			return flattenValue(args[0], depth), nil
+			return shared.FlattenValue(args[0], depth), nil
 		}}),
 
 		"flatMap": runtime.FuncVal(&runtime.Function{Name: "flatMap", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
@@ -1022,7 +1020,7 @@ func UtilsModule() *runtime.Value {
 			cache := make(map[string]*runtime.Value)
 			fn := args[0]
 			return runtime.FuncVal(&runtime.Function{Name: "memoized", Native: func(a []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-				key := valueToJSON(runtime.ArrayVal(a))
+				key := shared.ValueToJSON(runtime.ArrayVal(a))
 				if v, ok := cache[key]; ok {
 					return v, nil
 				}
@@ -1101,7 +1099,7 @@ func UtilsModule() *runtime.Value {
 		}}),
 
 		"uuid": runtime.FuncVal(&runtime.Function{Name: "uuid", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			return runtime.StringVal(genUUID()), nil
+			return runtime.StringVal(shared.GenUUID()), nil
 		}}),
 
 		"isEmail": runtime.FuncVal(&runtime.Function{Name: "isEmail", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
@@ -1171,21 +1169,21 @@ func UtilsModule() *runtime.Value {
 			if len(args) == 0 {
 				return runtime.Undefined, nil
 			}
-			return deepCopy(args[0]), nil
+			return shared.DeepCopy(args[0]), nil
 		}}),
 
 		"equal": runtime.FuncVal(&runtime.Function{Name: "equal", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			if len(args) < 2 {
 				return runtime.False, nil
 			}
-			return runtime.BoolVal(deepEqual(args[0], args[1])), nil
+			return runtime.BoolVal(shared.DeepEqual(args[0], args[1])), nil
 		}}),
 
 		"type": runtime.FuncVal(&runtime.Function{Name: "type", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			if len(args) == 0 {
 				return runtime.StringVal("undefined"), nil
 			}
-			return runtime.StringVal(getTypeName(args[0])), nil
+			return runtime.StringVal(shared.GetTypeName(args[0])), nil
 		}}),
 
 		"isEmpty": runtime.FuncVal(&runtime.Function{Name: "isEmpty", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {

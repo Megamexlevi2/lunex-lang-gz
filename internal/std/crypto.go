@@ -1,6 +1,3 @@
-// Lunex lang
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
-// (c) David Dev 2026. License.
 
 package std
 
@@ -19,18 +16,13 @@ import (
 	"fmt"
 	"hash"
 	"lunex/internal/runtime"
+	shared "lunex/internal/std/shared"
 	"math/bits"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 )
-
-/* --------------------------------------------------------------------------
-   Hash object pools — reuse hash instances across calls to avoid repeated
-   heap allocations on hot paths. Each pool holds reset-ready hash.Hash
-   objects. The Reset() call before use guarantees clean state.
-   -------------------------------------------------------------------------- */
 
 var (
 	md5Pool    = sync.Pool{New: func() any { return md5.New() }}
@@ -39,11 +31,6 @@ var (
 	sha512Pool = sync.Pool{New: func() any { return sha512.New() }}
 )
 
-/*
-hashBytes computes the requested algorithm over raw bytes and returns a
-
-	lowercase hex string. Falls back to SHA-256 for unknown algorithm names.
-*/
 func hashBytes(algorithm string, data []byte) string {
 	switch strings.ToLower(algorithm) {
 	case "md5":
@@ -89,16 +76,10 @@ func hashBytes(algorithm string, data []byte) string {
 	}
 }
 
-/* hashString is the string-input convenience wrapper around hashBytes. */
 func hashString(algorithm, data string) string {
 	return hashBytes(algorithm, []byte(data))
 }
 
-/*
-hmacHashFunc maps an algorithm name to the corresponding hash constructor
-
-	used by the hmac package. Defaults to SHA-256.
-*/
 func hmacHashFunc(algorithm string) func() hash.Hash {
 	switch strings.ToLower(algorithm) {
 	case "sha256":
@@ -114,7 +95,6 @@ func hmacHashFunc(algorithm string) func() hash.Hash {
 	}
 }
 
-/* hmacBytes computes an HMAC over data using key and returns the raw digest. */
 func hmacBytes(algorithm string, key, data []byte) []byte {
 	mac := hmac.New(hmacHashFunc(algorithm), key)
 
@@ -122,26 +102,11 @@ func hmacBytes(algorithm string, key, data []byte) []byte {
 	return mac.Sum(nil)
 }
 
-/* hmacString is the string-input wrapper; returns a lowercase hex string. */
 func hmacString(algorithm, key, data string) string {
 
 	return hex.EncodeToString(hmacBytes(algorithm, []byte(key), []byte(data)))
 }
 
-/* --------------------------------------------------------------------------
-   JWT  —  HS256 (RFC 7519 / RFC 7515)
-
-   The signature is computed as:
-       HMAC-SHA256( base64url(header) + "." + base64url(payload) )
-   and then base64url-encoded as raw bytes, which is exactly what the spec
-   requires. This makes tokens interoperable with any standard JWT library.
-   -------------------------------------------------------------------------- */
-
-/*
-jwtSign creates a signed JWT with the HS256 algorithm.
-
-	expiresIn is in seconds; pass 0 to omit the "exp" claim.
-*/
 func jwtSign(payload map[string]*runtime.Value, secret string, expiresIn int64) string {
 	header := base64.RawURLEncoding.EncodeToString(
 		[]byte(`{"alg":"HS256","typ":"JWT"}`),
@@ -165,7 +130,7 @@ func jwtSign(payload map[string]*runtime.Value, secret string, expiresIn int64) 
 		}
 	}
 
-	payloadJSON := valueToJSON(runtime.ObjectVal(claims))
+	payloadJSON := shared.ValueToJSON(runtime.ObjectVal(claims))
 	payloadB64 := base64.RawURLEncoding.EncodeToString([]byte(payloadJSON))
 
 	signingInput := header + "." + payloadB64
@@ -180,20 +145,15 @@ func jwtSign(payload map[string]*runtime.Value, secret string, expiresIn int64) 
 		base64.RawURLEncoding.EncodeToString(signature)
 }
 
-/*
-jwtVerify validates signature and expiry, returning the decoded payload
-
-	or an error. Uses constant-time comparison to prevent timing attacks.
-*/
 func jwtVerify(token, secret string) (*runtime.Value, error) {
-	// Split token
+	
 	parts := strings.Split(token, ".")
 
 	if len(parts) != 3 {
 		return nil, fmt.Errorf("invalid JWT format")
 	}
 
-	// Verify signature
+	
 	sigInput := parts[0] + "." + parts[1]
 	rawSig := hmacBytes("sha256", []byte(secret), []byte(sigInput))
 
@@ -203,20 +163,20 @@ func jwtVerify(token, secret string) (*runtime.Value, error) {
 		return nil, fmt.Errorf("invalid signature")
 	}
 
-	// Decode payload
+	
 	payloadBytes, err := base64.RawURLEncoding.DecodeString(parts[1])
 
 	if err != nil {
 		return nil, fmt.Errorf("invalid payload encoding")
 	}
 
-	payload, err := parseJSON(string(payloadBytes))
+	payload, err := shared.ParseJSON(string(payloadBytes))
 
 	if err != nil {
 		return nil, fmt.Errorf("invalid payload JSON")
 	}
 
-	// Check expiration
+	
 	if exp, ok := payload.ObjVal["exp"]; ok && exp != nil {
 		if time.Now().Unix() > int64(exp.ToNumber()) {
 			return nil, fmt.Errorf("token expired")
@@ -226,19 +186,6 @@ func jwtVerify(token, secret string) (*runtime.Value, error) {
 	return payload, nil
 }
 
-/* --------------------------------------------------------------------------
-   AES-256-GCM encrypt / decrypt
-
-   Key is zero-padded (or truncated) to exactly 32 bytes so any user-supplied
-   string works. The random 12-byte nonce is prepended to the ciphertext and
-   stripped during decryption — no separate nonce storage needed.
-   -------------------------------------------------------------------------- */
-
-/*
-aesEncrypt encrypts plaintext with AES-256-GCM and returns a base64 string
-
-	that embeds the nonce as the first 12 bytes.
-*/
 func aesEncrypt(plaintext, key string) (string, error) {
 	k := make([]byte, 32)
 	copy(k, []byte(key))
@@ -262,7 +209,6 @@ func aesEncrypt(plaintext, key string) (string, error) {
 	return base64.StdEncoding.EncodeToString(ciphertext), nil
 }
 
-/* aesDecrypt is the inverse of aesEncrypt; returns an error on tampered input. */
 func aesDecrypt(ciphertextB64, key string) (string, error) {
 	k := make([]byte, 32)
 	copy(k, []byte(key))
@@ -290,25 +236,6 @@ func aesDecrypt(ciphertextB64, key string) (string, error) {
 	return string(plain), nil
 }
 
-/* --------------------------------------------------------------------------
-   PBKDF2-HMAC-SHA256  —  manual implementation (RFC 2898 §5.2)
-
-   No external package. The derivation loop follows the spec exactly:
-       T_i = PRF(password, salt || INT(i))
-       U_j = PRF(password, U_{j-1})
-       T_i = U_1 XOR U_2 XOR ... XOR U_c
-
-   Performance notes:
-     • The HMAC key is pre-computed once and reused across all blocks/rounds.
-     • Byte slices are pre-allocated; inner XOR uses a simple loop that the
-       compiler will auto-vectorise on amd64/arm64.
-   -------------------------------------------------------------------------- */
-
-/*
-pbkdf2SHA256 derives a key of keyLen bytes from password and salt using
-
-	PBKDF2-HMAC-SHA256 with the given number of iterations.
-*/
 func pbkdf2SHA256(password, salt []byte, iterations, keyLen int) []byte {
 	prf := hmac.New(sha256.New, password)
 
@@ -352,20 +279,6 @@ func pbkdf2SHA256(password, salt []byte, iterations, keyLen int) []byte {
 	return dk[:keyLen]
 }
 
-/* --------------------------------------------------------------------------
-   bcrypt  —  manual implementation
-
-   bcrypt is built on Blowfish (Eksblowfish variant). The key schedule is
-   stretched by running it 2^cost times; the default cost is 10.
-
-   Structure:
-     1. genSalt    — 16 random bytes → 22-char base64url salt string
-     2. eksblowfish — Blowfish key schedule stretched 2^cost rounds
-     3. hashPassword — full bcrypt hash: "$2a$<cost>$<22-char-salt><31-char-hash>"
-     4. verifyPassword — recompute and compare
-   -------------------------------------------------------------------------- */
-
-/* Blowfish S-box and P-array initial values (standard public constants). */
 var bfP = [18]uint32{
 	0x243f6a88, 0x85a308d3, 0x13198a2e, 0x03707344,
 	0xa4093822, 0x299f31d0, 0x082efa98, 0xec4e6c89,
@@ -376,7 +289,6 @@ var bfP = [18]uint32{
 
 var bfS [4][256]uint32
 
-/* init loads the S-boxes from precomputed Blowfish constants. */
 func init() {
 	copy(bfS[0][:], blowfishS0[:])
 	copy(bfS[1][:], blowfishS1[:])
@@ -384,13 +296,11 @@ func init() {
 	copy(bfS[3][:], blowfishS3[:])
 }
 
-/* blowfishState holds the mutable P-array and S-boxes for one hash computation. */
 type blowfishState struct {
 	p [18]uint32
 	s [4][256]uint32
 }
 
-/* newBlowfishState returns a freshly initialised state. */
 func newBlowfishState() *blowfishState {
 	st := &blowfishState{}
 
@@ -403,7 +313,6 @@ func newBlowfishState() *blowfishState {
 	return st
 }
 
-/* f is the Blowfish Feistel function F(x). */
 func (st *blowfishState) f(x uint32) uint32 {
 	a := x >> 24
 	b := (x >> 16) & 0xff
@@ -413,7 +322,6 @@ func (st *blowfishState) f(x uint32) uint32 {
 	return ((st.s[0][a] + st.s[1][b]) ^ st.s[2][c]) + st.s[3][d]
 }
 
-/* encrypt encrypts a 64-bit block (xl, xr) in place. */
 func (st *blowfishState) encrypt(xl, xr uint32) (uint32, uint32) {
 	for i := 0; i < 16; i += 2 {
 		xl ^= st.p[i]
@@ -428,7 +336,6 @@ func (st *blowfishState) encrypt(xl, xr uint32) (uint32, uint32) {
 	return xr, xl
 }
 
-/* expandKey mixes key bytes into the P-array and then expands the state. */
 func (st *blowfishState) expandKey(key, data []byte) {
 	klen := len(key)
 	if klen == 0 {
@@ -500,15 +407,10 @@ func (st *blowfishState) expandKey(key, data []byte) {
 	}
 }
 
-/*
-eksblowfishSetup implements the Eksblowfish key schedule used by bcrypt.
-
-	It runs 2^cost rounds of alternating key/salt expansion.
-*/
 func eksblowfishSetup(cost int, salt, key []byte) *blowfishState {
 	st := newBlowfishState()
 
-	/* Initial setup with salt XOR'd into P. */
+	
 	klen := len(key)
 	slen := len(salt)
 	j := 0
@@ -522,8 +424,7 @@ func eksblowfishSetup(cost int, salt, key []byte) *blowfishState {
 	}
 
 	var xl, xr uint32
-	/* Encrypt salt into P. */
-	sj := 0
+		sj := 0
 	for i := 0; i < 18; i += 2 {
 		for k := 0; k < 4; k++ {
 			xl = xl<<8 | uint32(salt[sj%slen])
@@ -551,7 +452,7 @@ func eksblowfishSetup(cost int, salt, key []byte) *blowfishState {
 		}
 	}
 
-	/* Stretch the key schedule 2^cost times. */
+	
 	rounds := 1 << cost
 	for r := 0; r < rounds; r++ {
 		st.expandKey(key, nil)
@@ -560,10 +461,8 @@ func eksblowfishSetup(cost int, salt, key []byte) *blowfishState {
 	return st
 }
 
-/* bcryptBase64 is the custom alphabet used by bcrypt (differs from MIME base64). */
 const bcryptAlphabet = "./ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
-/* bcryptEncode encodes src bytes using the bcrypt base64 alphabet. */
 func bcryptEncode(src []byte) string {
 	if len(src) == 0 {
 		return ""
@@ -608,7 +507,6 @@ func bcryptEncode(src []byte) string {
 	return string(dst)
 }
 
-/* bcryptDecode decodes a bcrypt-base64 string back to bytes. */
 func bcryptDecode(s string, outLen int) ([]byte, error) {
 	rev := [256]byte{}
 	for i := range rev {
@@ -668,11 +566,6 @@ func bcryptDecode(s string, outLen int) ([]byte, error) {
 	return dst, nil
 }
 
-/*
-bcryptGenSalt generates a random 16-byte salt and encodes it in bcrypt's
-
-	base64 alphabet (22 characters).
-*/
 func bcryptGenSalt() (string, error) {
 	salt := make([]byte, 16)
 
@@ -683,7 +576,6 @@ func bcryptGenSalt() (string, error) {
 	return bcryptEncode(salt)[:22], nil
 }
 
-/* The 24-byte plaintext "OrpheanBeholderScryDoubt" used by bcrypt. */
 var bcryptCtext = [24]byte{
 	0x4f, 0x72, 0x70, 0x68, 0x65, 0x61, 0x6e, 0x42,
 	0x65, 0x68, 0x6f, 0x6c, 0x64, 0x65, 0x72, 0x53,
@@ -715,7 +607,6 @@ func bcryptApplyRounds(st *blowfishState, ctext [24]byte) [24]byte {
 	return ctext
 }
 
-/* bcryptHash computes a bcrypt hash and returns the full "$2a$…" string. */
 func bcryptHash(password string, cost int) (string, error) {
 	if cost < 4 {
 		cost = 4
@@ -747,11 +638,6 @@ func bcryptHash(password string, cost int) (string, error) {
 	return fmt.Sprintf("$2a$%02d$%s%s", cost, saltStr, encoded), nil
 }
 
-/*
-bcryptVerify checks a plaintext password against a stored bcrypt hash.
-
-	Uses hmac.Equal for constant-time comparison.
-*/
 func bcryptVerify(password, stored string) bool {
 	if len(stored) != 60 {
 		return false
@@ -786,51 +672,17 @@ func bcryptVerify(password, stored string) bool {
 	return hmac.Equal([]byte(computed), []byte(stored))
 }
 
-/* --------------------------------------------------------------------------
-   CryptoModule — public Lunex API
-
-   Exposed functions:
-     hash(algo, data)                 → hex string
-     hmac(algo, key, data)            → hex string
-     md5(data)                        → hex string
-     sha1(data)                       → hex string
-     sha256(data)                     → hex string
-     sha512(data)                     → hex string
-     randomBytes(n?)                  → hex string (n defaults to 16)
-     randomHex(n?)                    → hex string (n defaults to 16)
-     randomUUID()                     → UUID v4 string
-     token(n?)                        → hex string (n defaults to 32)
-     encrypt(plaintext, key)          → base64 string
-     decrypt(ciphertext, key)         → string | null
-     toHex(str)                       → hex string
-     fromHex(hex)                     → string
-     base64Encode(str)                → base64 string
-     base64Decode(str)                → string
-     base64UrlEncode(str)             → base64url string
-     base64UrlDecode(str)             → string
-     pbkdf2(password, salt, it?, kl?) → hex string
-     hashPassword(password, cost?)    → bcrypt hash string
-     verifyPassword(password, hash)   → bool
-     compare(a, b)                    → bool (constant-time)
-     jwt.sign(payload, secret, opts?) → JWT string
-     jwt.verify(token, secret)        → payload object | error
-     jwt.decode(token)                → payload object | null
-   -------------------------------------------------------------------------- */
-
-/* CryptoModule returns the built-in crypto module. */
 func CryptoModule() *runtime.Value {
 	return runtime.ObjectVal(map[string]*runtime.Value{
 
-		/* Generic hash — supports md5, sha1, sha256, sha512. */
-		"hash": runtime.FuncVal(&runtime.Function{Name: "hash", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+				"hash": runtime.FuncVal(&runtime.Function{Name: "hash", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			if len(args) < 2 {
 				return runtime.StringVal(""), nil
 			}
 			return runtime.StringVal(hashString(args[0].ToString(), args[1].ToString())), nil
 		}}),
 
-		/* HMAC — supports sha256, sha512, md5, sha1. */
-		"hmac": runtime.FuncVal(&runtime.Function{Name: "hmac", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+				"hmac": runtime.FuncVal(&runtime.Function{Name: "hmac", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			if len(args) < 3 {
 				return runtime.StringVal(""), nil
 			}
@@ -865,8 +717,7 @@ func CryptoModule() *runtime.Value {
 			return runtime.StringVal(hashString("sha512", args[0].ToString())), nil
 		}}),
 
-		/* randomBytes / randomHex — same output, two names for ergonomics. */
-		"randomBytes": runtime.FuncVal(&runtime.Function{Name: "randomBytes", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+				"randomBytes": runtime.FuncVal(&runtime.Function{Name: "randomBytes", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			n := 16
 			if len(args) > 0 {
 				n = int(args[0].ToNumber())
@@ -887,7 +738,7 @@ func CryptoModule() *runtime.Value {
 		}}),
 
 		"randomUUID": runtime.FuncVal(&runtime.Function{Name: "randomUUID", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			return runtime.StringVal(genUUID()), nil
+			return runtime.StringVal(shared.GenUUID()), nil
 		}}),
 
 		"token": runtime.FuncVal(&runtime.Function{Name: "token", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
@@ -900,8 +751,7 @@ func CryptoModule() *runtime.Value {
 			return runtime.StringVal(hex.EncodeToString(b)), nil
 		}}),
 
-		/* AES-256-GCM symmetric encryption. */
-		"encrypt": runtime.FuncVal(&runtime.Function{Name: "encrypt", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+				"encrypt": runtime.FuncVal(&runtime.Function{Name: "encrypt", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			if len(args) < 2 {
 				return runtime.StringVal(""), nil
 			}
@@ -948,8 +798,7 @@ func CryptoModule() *runtime.Value {
 			return runtime.StringVal(base64.StdEncoding.EncodeToString([]byte(args[0].ToString()))), nil
 		}}),
 
-		/* base64Decode tries padded encoding first, then raw (no padding). */
-		"base64Decode": runtime.FuncVal(&runtime.Function{Name: "base64Decode", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+				"base64Decode": runtime.FuncVal(&runtime.Function{Name: "base64Decode", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			if len(args) == 0 {
 				return runtime.StringVal(""), nil
 			}
@@ -981,7 +830,7 @@ func CryptoModule() *runtime.Value {
 			return runtime.StringVal(string(b)), nil
 		}}),
 
-		/* PBKDF2-HMAC-SHA256 (RFC 2898). Signature: pbkdf2(pass, salt, iter?, keyLen?) */
+		
 		"pbkdf2": runtime.FuncVal(&runtime.Function{Name: "pbkdf2", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			if len(args) < 2 {
 				return runtime.StringVal(""), nil
@@ -1000,7 +849,7 @@ func CryptoModule() *runtime.Value {
 			return runtime.StringVal(hex.EncodeToString(key)), nil
 		}}),
 
-		/* hashPassword — bcrypt with configurable cost (default 10, range 4–31). */
+		
 		"hashPassword": runtime.FuncVal(&runtime.Function{Name: "hashPassword", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			if len(args) == 0 {
 				return runtime.StringVal(""), nil
@@ -1019,16 +868,14 @@ func CryptoModule() *runtime.Value {
 			return runtime.StringVal(h), nil
 		}}),
 
-		/* verifyPassword — constant-time bcrypt comparison. */
-		"verifyPassword": runtime.FuncVal(&runtime.Function{Name: "verifyPassword", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+				"verifyPassword": runtime.FuncVal(&runtime.Function{Name: "verifyPassword", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			if len(args) < 2 {
 				return runtime.False, nil
 			}
 			return runtime.BoolVal(bcryptVerify(args[0].ToString(), args[1].ToString())), nil
 		}}),
 
-		/* JWT sub-module: sign / verify / decode. */
-		"jwt": runtime.ObjectVal(map[string]*runtime.Value{
+				"jwt": runtime.ObjectVal(map[string]*runtime.Value{
 			"sign": runtime.FuncVal(&runtime.Function{Name: "sign", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 				if len(args) < 2 {
 					return runtime.StringVal(""), fmt.Errorf("jwt.sign: payload and secret required")
@@ -1063,8 +910,7 @@ func CryptoModule() *runtime.Value {
 				return payload, nil
 			}}),
 
-			/* decode returns the payload without verifying the signature. */
-			"decode": runtime.FuncVal(&runtime.Function{Name: "decode", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+						"decode": runtime.FuncVal(&runtime.Function{Name: "decode", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 				if len(args) == 0 {
 					return runtime.Null, nil
 				}
@@ -1076,12 +922,11 @@ func CryptoModule() *runtime.Value {
 				if err != nil {
 					return runtime.Null, nil
 				}
-				return parseJSON(string(payloadBytes))
+				return shared.ParseJSON(string(payloadBytes))
 			}}),
 		}),
 
-		/* compare — constant-time byte comparison to prevent timing attacks. */
-		"compare": runtime.FuncVal(&runtime.Function{Name: "compare", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+				"compare": runtime.FuncVal(&runtime.Function{Name: "compare", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			if len(args) < 2 {
 				return runtime.False, nil
 			}

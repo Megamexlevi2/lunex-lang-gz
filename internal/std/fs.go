@@ -1,6 +1,3 @@
-// Lunex lang
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
-// (c) David Dev 2026. License.
 
 package std
 
@@ -8,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"lunex/internal/runtime"
+	shared "lunex/internal/std/shared"
 	"os"
 	"path/filepath"
 	"strings"
@@ -148,7 +146,7 @@ func FsModule() *runtime.Value {
 				return runtime.False, nil
 			}
 			defer src.Close()
-			// Preserve permissions from source
+			
 			srcInfo, err := src.Stat()
 			if err != nil {
 				return runtime.False, nil
@@ -295,7 +293,7 @@ func FsModule() *runtime.Value {
 			if err := json.Unmarshal(data, &raw); err != nil {
 				return runtime.Null, nil
 			}
-			return jsonToValue(raw), nil
+			return shared.JsonToValue(raw), nil
 		}}),
 
 		"writeJSON": runtime.FuncVal(&runtime.Function{Name: "writeJSON", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
@@ -312,9 +310,9 @@ func FsModule() *runtime.Value {
 			var data []byte
 			var err error
 			if indent != "" {
-				data, err = json.MarshalIndent(valueToInterface(args[1]), "", indent)
+				data, err = json.MarshalIndent(shared.ValueToInterface(args[1]), "", indent)
 			} else {
-				data, err = json.Marshal(valueToInterface(args[1]))
+				data, err = json.Marshal(shared.ValueToInterface(args[1]))
 			}
 			if err != nil {
 				return runtime.False, nil
@@ -497,39 +495,6 @@ func FsModule() *runtime.Value {
 			return runtime.BoolVal(err == nil), nil
 		}}),
 	})
-}
-
-func valueToInterface(v *runtime.Value) interface{} {
-	if v == nil {
-		return nil
-	}
-	switch v.Tag {
-	case runtime.TypeNull, runtime.TypeUndefined:
-		return nil
-	case runtime.TypeBool:
-		return v.BoolVal
-	case runtime.TypeNumber:
-		return v.ToNumber()
-	case runtime.TypeString:
-		return v.StrVal
-	case runtime.TypeArray:
-		out := make([]interface{}, len(v.ArrVal))
-		for i, el := range v.ArrVal {
-			out[i] = valueToInterface(el)
-		}
-		return out
-	case runtime.TypeObject:
-		out := make(map[string]interface{})
-		for k, el := range v.ObjVal {
-			if el == nil || el.Tag == runtime.TypeFunction {
-				continue
-			}
-			out[k] = valueToInterface(el)
-		}
-		return out
-	default:
-		return v.ToString()
-	}
 }
 
 func parseCSVLine(line, sep string) []string {

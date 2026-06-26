@@ -1,6 +1,4 @@
-// Lunex lang
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
-// (c) David Dev 2026. License.
+
 
 package std
 
@@ -27,7 +25,7 @@ func RegisterAll(c *compiler.Compiler) {
 	osMod := OsModule()
 	regexMod := RegexModule()
 
-	// Build the "native" umbrella object so @import("internal.native") works.
+	
 	native := NativeModule()
 	native.ObjVal["io"] = ioMod
 	native.ObjVal["fs"] = fsMod
@@ -45,8 +43,8 @@ func RegisterAll(c *compiler.Compiler) {
 	native.ObjVal["regex"] = regexMod
 	interp.RegisterModule("internal.native", native)
 
-	// Register every module directly so @import("fs"), @import("http"), etc.
-	// resolve without any .lx shim in between.
+	
+	
 	interp.RegisterModule("io", ioMod)
 	interp.RegisterModule("fs", fsMod)
 	interp.RegisterModule("http", httpMod)
