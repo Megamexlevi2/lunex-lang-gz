@@ -1,0 +1,15 @@
+// Lunex — io — progress display
+// Show progress states using io.info and io.success
+// Lunex v0.8.1 · github.com/Megamexlevi2/lunex-lang-gz
+
+val io       = @import("std.io")
+val datetime = @import("std.datetime")
+fn main() {
+  io.info("starting operation...")
+  datetime.sleep(200)
+  io.success("step 1 complete")
+  datetime.sleep(100)
+  io.success("step 2 complete")
+  io.info("all steps finished in ~300ms")
+  io.log("PASS io_spinner")
+}

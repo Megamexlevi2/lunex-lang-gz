@@ -1,0 +1,82 @@
+// Example 04 — Control flow
+val io = @import("std.io")
+
+fn classify(n) {
+  if n < 0 {
+    "negative"
+  } else if n == 0 {
+    "zero"
+  } else {
+    "positive"
+  }
+}
+
+fn fizzBuzz(n) {
+  if n % 15 == 0 {
+    "FizzBuzz"
+  } else if n % 3 == 0 {
+    "Fizz"
+  } else if n % 5 == 0 {
+    "Buzz"
+  } else {
+    str(n)
+  }
+}
+
+fn grade(score) {
+  if score >= 90 {
+    "A"
+  } else if score >= 80 {
+    "B"
+  } else if score >= 70 {
+    "C"
+  } else {
+    "F"
+  }
+}
+
+fn checkAuth(user) {
+  // guard — runs the else block when condition is false, then continues
+  guard user.loggedIn else {
+    io.warn("not authenticated")
+  }
+  io.log("Welcome,", user.name)
+}
+
+fn main() {
+  io.log(classify(-5))
+  io.log(classify(0))
+  io.log(classify(7))
+
+  // While loop
+  var i = 1
+  while i <= 15 {
+    io.log(fizzBuzz(i))
+    i = i + 1
+  }
+
+  // Each loop over array
+  val fruits = ["apple", "banana", "cherry", "date"]
+  each fruit in fruits {
+    io.log("Fruit:", fruit)
+  }
+
+  // if-expression used as a value
+  io.log("grade 75:", grade(75))
+  io.log("grade 92:", grade(92))
+
+  // guard
+  val user = struct {
+    loggedIn = true
+    name = "Alice"
+  }
+  checkAuth(user)
+
+  // unless — runs block when condition is false
+  val ready = false
+  unless ready {
+    io.warn("not ready yet")
+  }
+
+  io.log("All done!")
+}

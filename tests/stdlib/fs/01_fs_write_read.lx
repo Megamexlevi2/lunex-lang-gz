@@ -1,0 +1,14 @@
+// Lunex — fs — write and read
+// Write a file then read it back
+// Lunex v0.8.1 · github.com/Megamexlevi2/lunex-lang-gz
+
+val io = @import("std.io"); val fs = @import("std.fs")
+fn main() {
+  val path = "/tmp/lunex_test_wr.txt"
+  val data = "Lunex file test"
+  fs.writeFile(path, data)
+  val content = fs.readFile(path)
+  io.log("match:", content == data)
+  fs.delete(path)
+  io.log("PASS fs_write_read")
+}

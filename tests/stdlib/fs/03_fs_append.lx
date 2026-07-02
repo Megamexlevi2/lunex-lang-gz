@@ -1,0 +1,18 @@
+// Lunex — fs — append
+// Append multiple lines to a file
+// Lunex v0.8.1 · github.com/Megamexlevi2/lunex-lang-gz
+
+val io = @import("std.io"); val fs = @import("std.fs")
+fn main() {
+  val path = "/tmp/lunex_test_app.txt"
+  fs.writeFile(path, "line 1
+")
+  fs.appendFile(path, "line 2
+")
+  fs.appendFile(path, "line 3
+")
+  val content = fs.readFile(path)
+  io.log("content:", content)
+  fs.delete(path)
+  io.log("PASS fs_append")
+}

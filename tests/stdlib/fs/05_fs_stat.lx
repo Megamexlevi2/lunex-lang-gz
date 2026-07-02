@@ -1,0 +1,13 @@
+// Lunex — fs — stat
+// Read file metadata
+// Lunex v0.8.1 · github.com/Megamexlevi2/lunex-lang-gz
+
+val io = @import("std.io"); val fs = @import("std.fs")
+fn main() {
+  val path = "/tmp/lunex_test_stat.txt"
+  fs.writeFile(path, "metadata test content")
+  val info = fs.stat(path)
+  io.log("stat:", info)
+  fs.delete(path)
+  io.log("PASS fs_stat")
+}
