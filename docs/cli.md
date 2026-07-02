@@ -1,6 +1,6 @@
 # CLI Reference
 
-Complete reference for the `lunex` command-line tool.
+Complete reference for the `lunex` command-line tool and its built-in Go package manager.
 
 ---
 
@@ -205,21 +205,17 @@ lunex bench <file>
 
 ### Package Management
 
-Package management is handled entirely by **Luna** — the official Lunex
-package manager. The `lunex` CLI does not install, remove, or update packages.
+Package management is built into the `lunex` CLI and implemented in Go.
 
 ```bash
-luna install user/repo            # install from GitHub
-luna install user/repo@v1.2.3    # install a specific version
-luna install                      # install all deps from config.lx
-luna remove  <package>            # remove a package
-luna update  [package]            # update one or all packages
-luna list                         # list installed packages
-luna search  <query>              # search GitHub for packages
+lunex install github.com/user/repo         # install from GitHub
+lunex install github.com/user/repo@v1.2.3  # install a specific version
+lunex remove <package>                     # remove a package
+lunex update [package]                     # update one or all packages
+lunex list                                 # list installed packages
 ```
 
-Packages are stored globally in `~/.luna/packages/` and resolved automatically
-when you use `@import("pkg-name")` in any `.lx` file.
+Packages are stored in `~/.lunex/cache/` and resolved automatically when you use `@import("pkg-name")` in any `.lx` file.
 
 ---
 

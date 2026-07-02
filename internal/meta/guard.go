@@ -1,4 +1,3 @@
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
 // Package meta — runtime integrity guards.
 // DO NOT MODIFY — this file is part of the binary integrity chain.
 package meta
@@ -35,7 +34,8 @@ var _lunex_shown bool
 // ─── Key derivation ───────────────────────────────────────────────────────────
 
 // deriveKey interleaves the four 3-byte fragments into a 12-byte key:
-//   [ka[0], kb[0], kc[0], kd[0], ka[1], kb[1], kc[1], kd[1], ...]
+//
+//	[ka[0], kb[0], kc[0], kd[0], ka[1], kb[1], kc[1], kd[1], ...]
 func deriveKey() []byte {
 	key := make([]byte, 12)
 	for i := 0; i < 3; i++ {
@@ -86,7 +86,8 @@ func ror8(b byte, n uint) byte {
 }
 
 // decodeProvenance reassembles the five shards and applies the inverse encoding:
-//   plaintext[i] = ROR8( encoded[i], (i%5)+1 ) ^ key[i%12]
+//
+//	plaintext[i] = ROR8( encoded[i], (i%5)+1 ) ^ key[i%12]
 func decodeProvenance() []byte {
 	key := deriveKey()
 	combined := make([]byte, 0, 87)
@@ -105,11 +106,12 @@ func decodeProvenance() []byte {
 // ─── Integrity verification ───────────────────────────────────────────────────
 
 // verifyIntegrity runs all four checks against the decoded provenance:
-//   1. Per-shard FNV-1a (pre-decode)
-//   2. CRC32-IEEE of decoded bytes
-//   3. FNV-1a 32-bit of decoded bytes
-//   4. Adler-32 of decoded bytes
-//   5. SHA-256 prefix vs _lunex_anchor
+//  1. Per-shard FNV-1a (pre-decode)
+//  2. CRC32-IEEE of decoded bytes
+//  3. FNV-1a 32-bit of decoded bytes
+//  4. Adler-32 of decoded bytes
+//  5. SHA-256 prefix vs _lunex_anchor
+//
 // Returns true only when every check passes.
 func verifyIntegrity() bool {
 	if !validateShards() {

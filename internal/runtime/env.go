@@ -1,8 +1,4 @@
-// Lunex lang
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
 // (c) David Dev 2026. Licensed under the Mozilla Public License, Version 2.0.
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
-// (c) David Dev 2026. License.
 
 package runtime
 

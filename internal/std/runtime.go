@@ -1,5 +1,3 @@
-
-
 package std
 
 import (
@@ -14,8 +12,7 @@ func RuntimeModule(interp interface {
 	GetAllGlobalNames() []string
 }) *runtime.Value {
 	return runtime.ObjectVal(map[string]*runtime.Value{
-		
-		
+
 		"setGlobal": runtime.FuncVal(&runtime.Function{
 			Name: "setGlobal",
 			Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
@@ -27,9 +24,6 @@ func RuntimeModule(interp interface {
 			},
 		}),
 
-		
-		
-		
 		"getGlobal": runtime.FuncVal(&runtime.Function{
 			Name: "getGlobal",
 			Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
@@ -46,7 +40,6 @@ func RuntimeModule(interp interface {
 			},
 		}),
 
-		
 		"hasGlobal": runtime.FuncVal(&runtime.Function{
 			Name: "hasGlobal",
 			Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
@@ -59,7 +52,6 @@ func RuntimeModule(interp interface {
 			},
 		}),
 
-		
 		"globals": runtime.FuncVal(&runtime.Function{
 			Name: "globals",
 			Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
@@ -74,7 +66,6 @@ func RuntimeModule(interp interface {
 			},
 		}),
 
-		
 		"version": runtime.FuncVal(&runtime.Function{
 			Name: "version",
 			Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {

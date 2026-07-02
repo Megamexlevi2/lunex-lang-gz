@@ -1,5 +1,3 @@
-// Lunex lang
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
 // (c) David Dev 2026. Licensed under the Mozilla Public License, Version 2.0.
 
 // Package native provides pure-Go fast-path implementations of common numeric
@@ -11,15 +9,16 @@
 //   - Zero allocations — all functions operate on scalars.
 //
 // Pattern catalogue:
-//   RunCount         i from start to limit (empty body)               → O(1)
-//   RunCountSum      sum of integers start..limit                      → O(1) Gauss
-//   RunCountMul      product start..limit (factorial-style)            → O(n) loop
-//   RunFib           advance Fibonacci by N steps                      → O(n) loop
-//   RunCountAccum    loop with constant delta per step                 → O(1)
-//   RunCountAccumMul loop with multiplicative factor per step          → O(1) geometric
-//   RunSumSquares    sum of squares start..limit                       → O(1)
-//   RunCountStep     loop with step != 1                               → O(1)
-//   RunStepAccum     step loop + constant delta accumulator            → O(1)
+//
+//	RunCount         i from start to limit (empty body)               → O(1)
+//	RunCountSum      sum of integers start..limit                      → O(1) Gauss
+//	RunCountMul      product start..limit (factorial-style)            → O(n) loop
+//	RunFib           advance Fibonacci by N steps                      → O(n) loop
+//	RunCountAccum    loop with constant delta per step                 → O(1)
+//	RunCountAccumMul loop with multiplicative factor per step          → O(1) geometric
+//	RunSumSquares    sum of squares start..limit                       → O(1)
+//	RunCountStep     loop with step != 1                               → O(1)
+//	RunStepAccum     step loop + constant delta accumulator            → O(1)
 package native
 
 import "runtime"
@@ -32,11 +31,11 @@ func SupportsNative() bool { return false }
 func Arch() string { return runtime.GOARCH }
 
 // MmapExec / MunmapExec / CallNativeI64 / EmitCountSum / EmitCount are stubs.
-func MmapExec(_ int) []byte       { return nil }
-func MunmapExec(_ []byte)         {}
+func MmapExec(_ int) []byte                               { return nil }
+func MunmapExec(_ []byte)                                 {}
 func CallNativeI64(_ []byte, _ *int64, _ *int64, _ int64) {}
-func EmitCountSum() []byte        { return nil }
-func EmitCount() []byte           { return nil }
+func EmitCountSum() []byte                                { return nil }
+func EmitCount() []byte                                   { return nil }
 
 // ─── O(1) closed-form paths ───────────────────────────────────────────────────
 
@@ -100,7 +99,8 @@ func RunSumSquares(start, limit int64) (int64, int64) {
 // delta to accum each iteration.  Returns (finalCounter, finalAccum).
 //
 // n = limit − start + 1 (inclusive) iterations, so:
-//   finalAccum = accumStart + n * delta.  O(1).
+//
+//	finalAccum = accumStart + n * delta.  O(1).
 func RunCountAccum(start, limit, step, accumStart, delta int64) (int64, int64) {
 	if step <= 0 {
 		step = 1

@@ -1,4 +1,3 @@
-
 package std
 
 import (
@@ -146,14 +145,13 @@ func jwtSign(payload map[string]*runtime.Value, secret string, expiresIn int64) 
 }
 
 func jwtVerify(token, secret string) (*runtime.Value, error) {
-	
+
 	parts := strings.Split(token, ".")
 
 	if len(parts) != 3 {
 		return nil, fmt.Errorf("invalid JWT format")
 	}
 
-	
 	sigInput := parts[0] + "." + parts[1]
 	rawSig := hmacBytes("sha256", []byte(secret), []byte(sigInput))
 
@@ -163,7 +161,6 @@ func jwtVerify(token, secret string) (*runtime.Value, error) {
 		return nil, fmt.Errorf("invalid signature")
 	}
 
-	
 	payloadBytes, err := base64.RawURLEncoding.DecodeString(parts[1])
 
 	if err != nil {
@@ -176,7 +173,6 @@ func jwtVerify(token, secret string) (*runtime.Value, error) {
 		return nil, fmt.Errorf("invalid payload JSON")
 	}
 
-	
 	if exp, ok := payload.ObjVal["exp"]; ok && exp != nil {
 		if time.Now().Unix() > int64(exp.ToNumber()) {
 			return nil, fmt.Errorf("token expired")
@@ -410,7 +406,6 @@ func (st *blowfishState) expandKey(key, data []byte) {
 func eksblowfishSetup(cost int, salt, key []byte) *blowfishState {
 	st := newBlowfishState()
 
-	
 	klen := len(key)
 	slen := len(salt)
 	j := 0
@@ -424,7 +419,7 @@ func eksblowfishSetup(cost int, salt, key []byte) *blowfishState {
 	}
 
 	var xl, xr uint32
-		sj := 0
+	sj := 0
 	for i := 0; i < 18; i += 2 {
 		for k := 0; k < 4; k++ {
 			xl = xl<<8 | uint32(salt[sj%slen])
@@ -452,7 +447,6 @@ func eksblowfishSetup(cost int, salt, key []byte) *blowfishState {
 		}
 	}
 
-	
 	rounds := 1 << cost
 	for r := 0; r < rounds; r++ {
 		st.expandKey(key, nil)
@@ -675,14 +669,14 @@ func bcryptVerify(password, stored string) bool {
 func CryptoModule() *runtime.Value {
 	return runtime.ObjectVal(map[string]*runtime.Value{
 
-				"hash": runtime.FuncVal(&runtime.Function{Name: "hash", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+		"hash": runtime.FuncVal(&runtime.Function{Name: "hash", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			if len(args) < 2 {
 				return runtime.StringVal(""), nil
 			}
 			return runtime.StringVal(hashString(args[0].ToString(), args[1].ToString())), nil
 		}}),
 
-				"hmac": runtime.FuncVal(&runtime.Function{Name: "hmac", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+		"hmac": runtime.FuncVal(&runtime.Function{Name: "hmac", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			if len(args) < 3 {
 				return runtime.StringVal(""), nil
 			}
@@ -717,7 +711,7 @@ func CryptoModule() *runtime.Value {
 			return runtime.StringVal(hashString("sha512", args[0].ToString())), nil
 		}}),
 
-				"randomBytes": runtime.FuncVal(&runtime.Function{Name: "randomBytes", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+		"randomBytes": runtime.FuncVal(&runtime.Function{Name: "randomBytes", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			n := 16
 			if len(args) > 0 {
 				n = int(args[0].ToNumber())
@@ -751,7 +745,7 @@ func CryptoModule() *runtime.Value {
 			return runtime.StringVal(hex.EncodeToString(b)), nil
 		}}),
 
-				"encrypt": runtime.FuncVal(&runtime.Function{Name: "encrypt", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+		"encrypt": runtime.FuncVal(&runtime.Function{Name: "encrypt", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			if len(args) < 2 {
 				return runtime.StringVal(""), nil
 			}
@@ -798,7 +792,7 @@ func CryptoModule() *runtime.Value {
 			return runtime.StringVal(base64.StdEncoding.EncodeToString([]byte(args[0].ToString()))), nil
 		}}),
 
-				"base64Decode": runtime.FuncVal(&runtime.Function{Name: "base64Decode", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+		"base64Decode": runtime.FuncVal(&runtime.Function{Name: "base64Decode", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			if len(args) == 0 {
 				return runtime.StringVal(""), nil
 			}
@@ -830,7 +824,6 @@ func CryptoModule() *runtime.Value {
 			return runtime.StringVal(string(b)), nil
 		}}),
 
-		
 		"pbkdf2": runtime.FuncVal(&runtime.Function{Name: "pbkdf2", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			if len(args) < 2 {
 				return runtime.StringVal(""), nil
@@ -849,7 +842,6 @@ func CryptoModule() *runtime.Value {
 			return runtime.StringVal(hex.EncodeToString(key)), nil
 		}}),
 
-		
 		"hashPassword": runtime.FuncVal(&runtime.Function{Name: "hashPassword", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			if len(args) == 0 {
 				return runtime.StringVal(""), nil
@@ -868,14 +860,14 @@ func CryptoModule() *runtime.Value {
 			return runtime.StringVal(h), nil
 		}}),
 
-				"verifyPassword": runtime.FuncVal(&runtime.Function{Name: "verifyPassword", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+		"verifyPassword": runtime.FuncVal(&runtime.Function{Name: "verifyPassword", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			if len(args) < 2 {
 				return runtime.False, nil
 			}
 			return runtime.BoolVal(bcryptVerify(args[0].ToString(), args[1].ToString())), nil
 		}}),
 
-				"jwt": runtime.ObjectVal(map[string]*runtime.Value{
+		"jwt": runtime.ObjectVal(map[string]*runtime.Value{
 			"sign": runtime.FuncVal(&runtime.Function{Name: "sign", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 				if len(args) < 2 {
 					return runtime.StringVal(""), fmt.Errorf("jwt.sign: payload and secret required")
@@ -910,7 +902,7 @@ func CryptoModule() *runtime.Value {
 				return payload, nil
 			}}),
 
-						"decode": runtime.FuncVal(&runtime.Function{Name: "decode", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+			"decode": runtime.FuncVal(&runtime.Function{Name: "decode", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 				if len(args) == 0 {
 					return runtime.Null, nil
 				}
@@ -926,7 +918,7 @@ func CryptoModule() *runtime.Value {
 			}}),
 		}),
 
-				"compare": runtime.FuncVal(&runtime.Function{Name: "compare", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
+		"compare": runtime.FuncVal(&runtime.Function{Name: "compare", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
 			if len(args) < 2 {
 				return runtime.False, nil
 			}

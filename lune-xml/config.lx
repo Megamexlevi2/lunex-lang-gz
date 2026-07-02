@@ -4,7 +4,7 @@ val project = {
   description: "A Lunex project"
   author:      "David Dev"
   license:     "Apache-2.0"
-  github:      "https://github.com/Megamexlevi2/lunex-lang-gz"
+  github:      "https://github.com/Megamexlevi2/lunex-language"
   url:         ""
 
   main:        "main.lx"

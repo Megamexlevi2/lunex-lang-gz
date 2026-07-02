@@ -1,5 +1,3 @@
-// Lunex lang
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
 // (c) David Dev 2026. Licensed under the Mozilla Public License, Version 2.0.
 
 // Package jit provides the Go-side profiler and pure-Go fast-path
@@ -62,7 +60,7 @@ func (p *FnProfile) Record(durationNs int64, _ string) bool {
 	return p.RecordAndCheck(durationNs)
 }
 
-func (p *FnProfile) TotalCalls() int64  { return p.calls.Load() }
+func (p *FnProfile) TotalCalls() int64 { return p.calls.Load() }
 func (p *FnProfile) AvgNs() float64 {
 	c := p.calls.Load()
 	if c == 0 {
@@ -81,8 +79,8 @@ func (p *FnProfile) promoteToTier(newTier uint32) bool {
 	return false
 }
 
-func (p *FnProfile) PromoteToFastGo() bool    { return p.promoteToTier(TierFastGo) }
-func (p *FnProfile) ShouldSample() bool        { return p.calls.Load()&31 == 0 }
+func (p *FnProfile) PromoteToFastGo() bool              { return p.promoteToTier(TierFastGo) }
+func (p *FnProfile) ShouldSample() bool                 { return p.calls.Load()&31 == 0 }
 func (p *FnProfile) TryLoadFromDiskCache(_ string) bool { return false }
 
 // Profiler tracks per-function call statistics.

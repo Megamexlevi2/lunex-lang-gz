@@ -1,4 +1,3 @@
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
 // Package meta provides runtime integrity and build metadata utilities.
 // All version information is sourced exclusively from the embedded version.json.
 package meta

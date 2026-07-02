@@ -1,4 +1,3 @@
-
 package std
 
 import (
@@ -54,4 +53,3 @@ func NativeModule() *runtime.Value {
 		}}),
 	})
 }
-

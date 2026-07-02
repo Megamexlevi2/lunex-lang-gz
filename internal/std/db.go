@@ -1,5 +1,3 @@
-
-
 package std
 
 import (
@@ -99,21 +97,21 @@ type dbRow struct {
 }
 
 type fieldDef struct {
-	Type       string         
-	Required   bool           
-	Unique     bool           
-	DefaultVal *runtime.Value 
-	DefaultFn  string         
-	Min        float64        
-	Max        float64        
-	MinLen     int            
-	MaxLen     int            
-	MaxLenSet  bool           
-	Enum       []string       
-	Index      bool           
-	Primary    bool           
-	OnUpdate   string         
-	Ref        string         
+	Type       string
+	Required   bool
+	Unique     bool
+	DefaultVal *runtime.Value
+	DefaultFn  string
+	Min        float64
+	Max        float64
+	MinLen     int
+	MaxLen     int
+	MaxLenSet  bool
+	Enum       []string
+	Index      bool
+	Primary    bool
+	OnUpdate   string
+	Ref        string
 }
 
 type tableIndex struct {
@@ -289,7 +287,7 @@ func matchFilter(doc map[string]*runtime.Value, filter *runtime.Value) bool {
 			if fieldVal == nil {
 				fieldVal = runtime.Undefined
 			}
-			
+
 			if cond != nil && cond.Tag == runtime.TypeObject {
 				for op, opVal := range cond.ObjVal {
 					if !matchOp(fieldVal, op, opVal) {

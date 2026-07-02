@@ -1,6 +1,4 @@
 // Lunex lang — AST-based source formatter
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
-// (c) David Dev 2026. License.
 
 // Package formatter walks the Lunex AST produced by the parser and emits
 // canonically-formatted Lunex source code. This is the engine behind

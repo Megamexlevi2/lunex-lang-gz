@@ -1,4 +1,3 @@
-
 package std
 
 import (
@@ -146,7 +145,7 @@ func FsModule() *runtime.Value {
 				return runtime.False, nil
 			}
 			defer src.Close()
-			
+
 			srcInfo, err := src.Stat()
 			if err != nil {
 				return runtime.False, nil

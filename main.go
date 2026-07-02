@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"lunex/internal/adaptor"
 	"lunex/internal/ast"
-	"lunex/internal/bootstrap"
 	"lunex/internal/buildfile"
 	"lunex/internal/bytecode"
 	"lunex/internal/compiler"
@@ -15,7 +14,6 @@ import (
 	"lunex/internal/errfmt"
 	"lunex/internal/firstrun"
 	"lunex/internal/jit"
-	"lunex/internal/lunaresolver"
 	"lunex/internal/meta"
 	"lunex/internal/pkg"
 	"lunex/internal/runtime"
@@ -88,7 +86,6 @@ func main() {
 		for _, a := range args {
 			switch a {
 			case "--debug", "-d":
-				// Proper public debug flag — equivalent to NTL_DEBUG=1.
 				os.Setenv("NTL_DEBUG", "1")
 				dbg.Enable()
 			case "--verbose", "-V":
@@ -162,14 +159,12 @@ func main() {
 			}
 		}
 
-		// Create src/ directory.
 		srcDir := filepath.Join(projectDir, "src")
 		if err := os.MkdirAll(srcDir, 0755); err != nil {
 			fmt.Fprintln(os.Stderr, "error:", err)
 			os.Exit(1)
 		}
 
-		// Write main.lx with a useful hello-world that shows imports and fimport.
 		mainPath := filepath.Join(projectDir, "main.lx")
 		if _, err := os.Stat(mainPath); os.IsNotExist(err) {
 			mainCode := `val io = @import("std.io")
@@ -186,7 +181,6 @@ fn main() {
 			}
 		}
 
-		// Write src/math.lx as an example local module.
 		mathPath := filepath.Join(srcDir, "math.lx")
 		if _, err := os.Stat(mathPath); os.IsNotExist(err) {
 			mathCode := `// Local module example — import with: @fimport("./src/math.lx")
@@ -209,7 +203,6 @@ fn mul(a, b) {
 			}
 		}
 
-		// Write .gitignore.
 		gitignorePath := filepath.Join(projectDir, ".gitignore")
 		if _, err := os.Stat(gitignorePath); os.IsNotExist(err) {
 			gitignoreContent := "dist/\n.lunex/\n*.nc\n"
@@ -230,65 +223,93 @@ fn mul(a, b) {
 		fmt.Printf("    @fimport(\"./lib/mod.nax\")   local compiled archive\n")
 		fmt.Printf("    @fimport(\"./lib/mod.nc\")    local bytecode file\n")
 		fmt.Printf("    @import(\"std.io\")            standard library module\n")
-		fmt.Printf("    @import(\"my-pkg\")            installed package (luna install <pkg>)\n\n")
-		fmt.Printf("  Package management is handled by Luna:\n")
-		fmt.Printf("    luna install <pkg>           install a package\n\n")
+		fmt.Printf("    @import(\"my-pkg\")            installed package (lunex install <pkg>)\n\n")
+		fmt.Printf("  Package management is handled by the Go package manager:\n")
+		fmt.Printf("    lunex install <pkg>         install a package\n\n")
 
 	case "install", "i", "add":
-		// Special case: `lunex install luna` bootstraps the Luna package manager.
-		if len(args) >= 2 && (args[1] == "luna" || args[1] == "luna-pm") {
-			if err := bootstrap.InstallLuna(); err != nil {
-				fmt.Fprintf(os.Stderr, "\033[1;31merror:\033[0m Luna installation failed: %v\n", err)
+		if len(args) == 1 {
+			fmt.Fprintln(os.Stderr, "usage: lunex install <github.com/owner/repo[@ref]> [more specs...]")
+			fmt.Fprintln(os.Stderr, "       install one or more packages into the local Lunex cache")
+			os.Exit(1)
+		}
+		cwd, err := os.Getwd()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "error:", err)
+			os.Exit(1)
+		}
+		manifestPath := filepath.Join(cwd, "config.lx")
+		for _, spec := range args[1:] {
+			mod, err := pkg.Install(spec)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "error installing %s: %v\n", spec, err)
 				os.Exit(1)
 			}
-			os.Exit(0)
+			if _, statErr := os.Stat(manifestPath); statErr == nil {
+				_ = pkg.AddToManifest(manifestPath, spec, mod)
+			}
+			fmt.Printf("installed %s@%s\n", mod.Name, mod.Version)
 		}
-		fmt.Fprintln(os.Stderr, "\033[1;33mlunex\033[0m no longer manages packages.")
-		fmt.Fprintln(os.Stderr, "Use \033[1;36mLuna\033[0m — the Lunex package manager:")
-		fmt.Fprintln(os.Stderr, "")
-		if len(args) >= 2 {
-			fmt.Fprintf(os.Stderr, "  luna install %s\n", strings.Join(args[1:], " "))
-		} else {
-			fmt.Fprintln(os.Stderr, "  luna install              # install all deps from config.lx")
-			fmt.Fprintln(os.Stderr, "  luna install user/repo    # install a specific package")
-		}
-		fmt.Fprintln(os.Stderr, "")
-		fmt.Fprintln(os.Stderr, "Install Luna:  lunex install luna")
-		os.Exit(1)
+		os.Exit(0)
 
 	case "remove", "uninstall", "rm":
-		fmt.Fprintln(os.Stderr, "\033[1;33mlunex\033[0m no longer manages packages.")
-		fmt.Fprintln(os.Stderr, "Use \033[1;36mLuna\033[0m — the Lunex package manager:")
-		fmt.Fprintln(os.Stderr, "")
-		if len(args) >= 2 {
-			fmt.Fprintf(os.Stderr, "  luna remove %s\n", strings.Join(args[1:], " "))
-		} else {
-			fmt.Fprintln(os.Stderr, "  luna remove <package>")
+		if len(args) == 1 {
+			fmt.Fprintln(os.Stderr, "usage: lunex remove <package> [more packages...]")
+			os.Exit(1)
 		}
-		fmt.Fprintln(os.Stderr, "")
-		os.Exit(1)
+		for _, name := range args[1:] {
+			if err := pkg.Remove(name); err != nil {
+				fmt.Fprintf(os.Stderr, "error removing %s: %v\n", name, err)
+				os.Exit(1)
+			}
+			fmt.Printf("removed %s\n", name)
+		}
+		os.Exit(0)
 
 	case "update", "upgrade":
-		fmt.Fprintln(os.Stderr, "\033[1;33mlunex\033[0m no longer manages packages.")
-		fmt.Fprintln(os.Stderr, "Use \033[1;36mLuna\033[0m — the Lunex package manager:")
-		fmt.Fprintln(os.Stderr, "")
-		if len(args) >= 2 {
-			fmt.Fprintf(os.Stderr, "  luna update %s\n", strings.Join(args[1:], " "))
-		} else {
-			fmt.Fprintln(os.Stderr, "  luna update               # update all packages")
-			fmt.Fprintln(os.Stderr, "  luna update <package>     # update one package")
+		mods := pkg.List()
+		if len(args) > 1 {
+			mods = nil
+			for _, name := range args[1:] {
+				for _, mod := range pkg.List() {
+					if mod.Name == name {
+						mods = append(mods, mod)
+						break
+					}
+				}
+			}
 		}
-		fmt.Fprintln(os.Stderr, "")
-		os.Exit(1)
+		if len(mods) == 0 {
+			fmt.Fprintln(os.Stderr, "no installed packages found")
+			os.Exit(1)
+		}
+		for _, mod := range mods {
+			source := mod.Source
+			if source == "" {
+				source = mod.Name
+			}
+			if _, err := pkg.Install(source); err != nil {
+				fmt.Fprintf(os.Stderr, "error updating %s: %v\n", mod.Name, err)
+				os.Exit(1)
+			}
+			fmt.Printf("updated %s\n", mod.Name)
+		}
+		os.Exit(0)
 
 	case "list", "ls":
-		fmt.Fprintln(os.Stderr, "\033[1;33mlunex\033[0m no longer manages packages.")
-		fmt.Fprintln(os.Stderr, "Use \033[1;36mLuna\033[0m — the Lunex package manager:")
-		fmt.Fprintln(os.Stderr, "")
-		fmt.Fprintln(os.Stderr, "  luna list                 # list installed packages")
-		fmt.Fprintln(os.Stderr, "")
-		os.Exit(1)
-
+		mods := pkg.List()
+		if len(mods) == 0 {
+			fmt.Println("no packages installed")
+			os.Exit(0)
+		}
+		for _, mod := range mods {
+			if mod.Version != "" {
+				fmt.Printf("%s@%s\n", mod.Name, mod.Version)
+			} else {
+				fmt.Println(mod.Name)
+			}
+		}
+		os.Exit(0)
 	case "build":
 		if len(args) == 1 {
 			runBuildFile()
@@ -398,7 +419,7 @@ fn mul(a, b) {
 func newCompiler() *compiler.Compiler {
 	c := compiler.New(compiler.DefaultOptions)
 	std.RegisterAll(c)
-	c.Interpreter().SetNTLLoader(pkgLoader)
+	c.Interpreter().SetNTLFileLoader(pkgFileLoader)
 	return c
 }
 
@@ -446,27 +467,26 @@ func moduleSourceFromPath(resolvedPath string) (string, bool) {
 	}
 }
 
+func pkgFileLoader(name string) (src, realPath string, ok bool) {
+	resolvedPath, found := pkg.Resolve(name)
+	if found {
+		if s, ok2 := moduleSourceFromPath(resolvedPath); ok2 {
+			return s, resolvedPath, true
+		}
+	}
+
+	if !strings.HasPrefix(name, "./") && !strings.HasPrefix(name, "../") && !strings.HasPrefix(name, "/") {
+		fmt.Fprintf(os.Stderr,
+			"[33mhint:[0m package %q not found — install it with:[0m\n  lunex install %s\n\n",
+			name, name,
+		)
+	}
+	return "", "", false
+}
+
 func pkgLoader(name string) (string, bool) {
-	// 1. Try Luna's global package store (~/.luna/packages) — managed by `luna install`.
-	resolvedPath, ok := lunaresolver.Resolve(name)
-	if ok {
-		return moduleSourceFromPath(resolvedPath)
-	}
-
-	// 2. Legacy fall-through: also check the old Lunex-local .lunex/cache in case
-	//    any packages were installed there before this migration.
-	resolvedPath, ok = pkg.Resolve(name)
-	if ok {
-		return moduleSourceFromPath(resolvedPath)
-	}
-
-	// Package not found — print a helpful hint to stderr (the caller will emit
-	// the actual E0009 "module not found" error through the normal error path).
-	fmt.Fprintf(os.Stderr,
-		"\033[33mhint:\033[0m package %q not found — install it with:\033[0m\n  luna install %s\n\n",
-		name, name,
-	)
-	return "", false
+	src, _, ok := pkgFileLoader(name)
+	return src, ok
 }
 
 func runString(source string) {
@@ -1211,7 +1231,6 @@ func semanticCheck(root *ast.Node, source string) []semanticIssue {
 			}
 		}
 
-		// Recurse into all child nodes.
 		walk(n.Body)
 		walk(n.Init)
 		walk(n.Test)
@@ -1309,7 +1328,6 @@ func showCacheInfo() {
 	dir := bytecode.CacheDir()
 	fmt.Printf("cache dir    : %s\n", dir)
 
-	// Count .nc files on disk.
 	entries, err := os.ReadDir(dir)
 	if err == nil {
 		count := 0
@@ -1325,7 +1343,6 @@ func showCacheInfo() {
 		fmt.Printf("disk entries : %d  (%d KB)\n", count, total/1024)
 	}
 
-	// In-memory stats.
 	mc, mb := adaptor.MemCacheStats()
 	fmt.Printf("mem entries  : %d  (%d bytes)\n", mc, mb)
 }
@@ -1511,20 +1528,18 @@ func printHelp() {
 
 Module system:
   @import("std.io")                  standard library module (always available)
-  @import("pkg-name")                external package installed by Luna
+  @import("pkg-name")                external package installed by Lunex
   @fimport("./mylib.nax")            local .nax archive file
   @fimport("./src/utils.lx")         local .lx source file
 
-Package management (handled by Luna):
-  luna install user/repo             install a package from GitHub
-  luna install user/repo@v1.2.0      install a specific version
-  luna install                       install all deps from config.lx
-  luna remove <pkg>                  remove a package
-  luna update [pkg]                  update one or all packages
-  luna list                          list installed packages
-  luna search <query>                search GitHub for packages
+Package management (handled by the Go package manager):
+  lunex install <github.com/owner/repo[@ref]>  install a package from GitHub
+  lunex install <github.com/owner/repo@v1.2.3>  install a specific version
+  lunex remove <package>                        remove a package
+  lunex update [package]                        update one or all packages
+  lunex list                                    list installed packages
 
-  Packages are stored in ~/.luna/packages/ and resolved automatically
+  Packages are stored in ~/.lunex/cache/ and resolved automatically
   when you use @import("pkg-name") in any .lx file.
 
 Global flags (place before the command or file):
@@ -1661,21 +1676,18 @@ func runREPL() {
 			continue
 		}
 
-		// Handle .load <file>
 		if strings.HasPrefix(trimmed, ".load ") {
 			filePath := strings.TrimSpace(strings.TrimPrefix(trimmed, ".load "))
 			replLoadFile(state, filePath)
 			continue
 		}
 
-		// Handle .type <expr>
 		if strings.HasPrefix(trimmed, ".type ") {
 			expr := strings.TrimSpace(strings.TrimPrefix(trimmed, ".type "))
 			replShowType(state, expr)
 			continue
 		}
 
-		// Accumulate input
 		if buf.Len() > 0 {
 			buf.WriteString("\n")
 		}
@@ -1688,7 +1700,6 @@ func runREPL() {
 			continue
 		}
 
-		// Complete input: evaluate it
 		buf.Reset()
 		src = strings.TrimSpace(src)
 		if src == "" {
@@ -1742,7 +1753,6 @@ func replExec(state *replState, result *compiler.CompileResult, src string, wasW
 			printReplError(err, src)
 			return
 		}
-		// Print any names that were just defined.
 		return
 	}
 

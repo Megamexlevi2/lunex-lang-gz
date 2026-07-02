@@ -1,7 +1,3 @@
-// Lunex lang
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
-// (c) David Dev 2026. License.
-
 package pkg
 
 import (
@@ -53,8 +49,6 @@ type Manifest struct {
 const moduleCacheRoot = ".lunex/cache"
 const moduleMetaFile = ".lunex-module.json"
 
-// CacheDir returns the project-local module cache root.
-// Each working directory gets its own isolated cache under .lunex/cache.
 func CacheDir() string {
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -160,7 +154,7 @@ func writeGlobalLauncher(name, target string) error {
 	if err != nil || home == "" {
 		return fmt.Errorf("could not determine home directory")
 	}
-	binDir := filepath.Join(home, ".luna", "bin")
+	binDir := filepath.Join(home, ".lunex", "bin")
 	if err := os.MkdirAll(binDir, 0755); err != nil {
 		return err
 	}
@@ -289,7 +283,7 @@ func packModuleArchive(dir, outputFile, mainEntry string) error {
 			ncIndex := len(entries) - 1
 			if mainIndex < 0 {
 				if mainEntry == "" {
-					// Use the first compilable module file as main.
+
 					mainIndex = ncIndex
 				} else {
 					markMain(rel, sourceIndex, ncIndex)
@@ -493,11 +487,10 @@ func Resolve(name string) (string, bool) {
 		return "", false
 	}
 
-	// Direct file paths (.lx, .nax, .nc) — used when resolving local @imports.
 	if info, err := os.Stat(name); err == nil && !info.IsDir() {
 		return name, true
 	}
-	// Try appending known extensions if the caller omitted them.
+
 	for _, ext := range []string{".lx", ".nax", ".nc"} {
 		if !strings.HasSuffix(strings.ToLower(name), ext) {
 			if info, err := os.Stat(name + ext); err == nil && !info.IsDir() {
@@ -506,17 +499,12 @@ func Resolve(name string) (string, bool) {
 		}
 	}
 
-	// Search the installed package cache. Priority order:
-	//   1. .lunex-entry marker written by the installer (most reliable)
-	//   2. index.lx / main.lx — source entry points
-	//   3. index.nax / main.nax — pre-compiled archives (legacy)
 	cache := CacheDir()
 	entries, err := os.ReadDir(cache)
 	if err != nil {
 		return "", false
 	}
 
-	// Entry files to look for, in priority order.
 	entryFiles := []string{
 		"index.lx", "main.lx",
 		"index.nax", "main.nax",
@@ -525,8 +513,7 @@ func Resolve(name string) (string, bool) {
 
 	var candidate string
 	prefix := strings.ReplaceAll(name, "/", "__") + "@"
-	// Suffix match: handles packages installed under a repo subpath,
-	// e.g. "lune-xml" matches cache dir "lunex-lang-gz__lune-xml@main".
+
 	suffix := "__" + strings.ReplaceAll(name, "/", "__") + "@"
 	for _, e := range entries {
 		if !e.IsDir() {
@@ -538,7 +525,6 @@ func Resolve(name string) (string, bool) {
 		}
 		p := filepath.Join(cache, dirName)
 
-		// 1. .lunex-entry marker — most reliable.
 		if data, err := os.ReadFile(filepath.Join(p, ".lunex-entry")); err == nil {
 			entryName := strings.TrimSpace(string(data))
 			fp := filepath.Join(p, entryName)
@@ -547,7 +533,6 @@ func Resolve(name string) (string, bool) {
 			}
 		}
 
-		// 2. Well-known entry file names.
 		for _, file := range entryFiles {
 			fp := filepath.Join(p, file)
 			if st, err := os.Stat(fp); err == nil && !st.IsDir() {
@@ -555,7 +540,6 @@ func Resolve(name string) (string, bool) {
 			}
 		}
 
-		// 3. Any .lx file in the directory (last resort).
 		if files, err := os.ReadDir(p); err == nil {
 			for _, f := range files {
 				if !f.IsDir() && strings.HasSuffix(f.Name(), ".lx") {
@@ -734,7 +718,6 @@ func SaveManifest(p string, m *Manifest) error {
 
 	var sb strings.Builder
 
-	// File-level comment header (mirrors Lunex source file conventions).
 	sb.WriteString("// config.lx — project manifest\n")
 	sb.WriteString(fmt.Sprintf("// %s\n", description))
 	sb.WriteString(fmt.Sprintf("// Author : %s\n", author))
@@ -747,10 +730,8 @@ func SaveManifest(p string, m *Manifest) error {
 	sb.WriteString(fmt.Sprintf("// License: %s\n", license))
 	sb.WriteString("\n")
 
-	// Project block.
 	sb.WriteString("val project = {\n")
 
-	// Identity.
 	sb.WriteString("  // --- identity ---\n")
 	sb.WriteString(fmt.Sprintf("  name:        %q\n", m.Name))
 	sb.WriteString(fmt.Sprintf("  version:     %q\n", m.Version))
@@ -768,7 +749,6 @@ func SaveManifest(p string, m *Manifest) error {
 		sb.WriteString("  url:         \"\"  // project homepage or docs URL\n")
 	}
 
-	// Build.
 	sb.WriteString("\n  // --- build ---\n")
 	sb.WriteString(fmt.Sprintf("  main:        %q\n", m.Main))
 	sb.WriteString(fmt.Sprintf("  entry:       %q\n", m.Entry))
@@ -779,7 +759,6 @@ func SaveManifest(p string, m *Manifest) error {
 		sb.WriteString("  optimize:    false\n")
 	}
 
-	// Dependencies.
 	sb.WriteString("\n  // --- dependencies: \"pkg-name\": \"version\" ---\n")
 	sb.WriteString("  dependencies: {\n")
 	for name, ver := range m.Dependencies {
@@ -788,7 +767,6 @@ func SaveManifest(p string, m *Manifest) error {
 	sb.WriteString("  }\n")
 	sb.WriteString("}\n\n")
 
-	// build() is called by `lunex build`. Must return the project object.
 	sb.WriteString("// build() is called by `lunex build`. Must return the project object.\n")
 	sb.WriteString("fn build() {\n")
 	sb.WriteString("  project\n")
@@ -849,7 +827,7 @@ func List() []Module {
 		}
 		parts := strings.Split(e.Name(), "@")
 		if len(parts) == 2 {
-			// Prefer .lx source entry; fall back to .nax for legacy installs.
+
 			entryPath := filepath.Join(dir, "index.lx")
 			if _, err := os.Stat(entryPath); err != nil {
 				entryPath = filepath.Join(dir, "index.nax")
@@ -898,34 +876,28 @@ func resolveSource(spec string) (owner, repo, ref, subpath string) {
 	return
 }
 
-// githubEntry represents a single file or directory entry from the GitHub Contents API.
 type githubEntry struct {
 	Name        string `json:"name"`
 	Path        string `json:"path"`
 	DownloadURL string `json:"download_url"`
-	Type        string `json:"type"` // "file" or "dir"
+	Type        string `json:"type"`
 	Size        int    `json:"size"`
 	HTMLURL     string `json:"html_url"`
 }
 
-// githubClient is a thin HTTP client for GitHub API calls with retry and timeout.
-// API base: https://api.github.com  (REST API v3, latest version: 2022-11-28)
-// Raw file downloads: https://raw.githubusercontent.com/{owner}/{repo}/{ref}/{path}
 type githubClient struct {
 	http *http.Client
 }
 
 func newGitHubClient() *githubClient {
-	// Some environments (Termux, restricted Linux VMs) block UDP port 53,
-	// causing Go's default DNS resolver to time out. Force TCP DNS via 8.8.8.8
-	// as primary, with a fallback to the system-provided address.
+
 	resolver := &net.Resolver{
 		PreferGo: true,
 		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
 			d := net.Dialer{Timeout: 10 * time.Second}
 			conn, err := d.DialContext(ctx, "tcp", "8.8.8.8:53")
 			if err != nil {
-				// Fall back to system resolver address (e.g. /etc/resolv.conf entry).
+
 				return d.DialContext(ctx, "tcp", address)
 			}
 			return conn, nil
@@ -933,14 +905,13 @@ func newGitHubClient() *githubClient {
 	}
 
 	dialer := &net.Dialer{
-		Timeout:   20 * time.Second, // TCP connect timeout per attempt
+		Timeout:   20 * time.Second,
 		KeepAlive: 30 * time.Second,
 		Resolver:  resolver,
 	}
 
 	transport := &http.Transport{
-		// Respect HTTP_PROXY / HTTPS_PROXY / NO_PROXY environment variables.
-		// Allows routing GitHub traffic through a proxy if needed.
+
 		Proxy:                 http.ProxyFromEnvironment,
 		DialContext:           dialer.DialContext,
 		TLSHandshakeTimeout:   15 * time.Second,
@@ -956,23 +927,12 @@ func newGitHubClient() *githubClient {
 	}
 }
 
-// githubAPIRequest performs a GET to a GitHub REST API endpoint.
-// It sets the required Accept and X-GitHub-Api-Version headers so the server
-// returns the current v3 JSON response format.
-//
-// Endpoints used by this package:
-//
-//	Contents API : GET /repos/{owner}/{repo}/contents/{path}?ref={ref}
-//	Git Trees API: GET /repos/{owner}/{repo}/git/trees/{ref}?recursive=1
-//
-// Reference: https://docs.github.com/en/rest/repos/contents
 func (c *githubClient) githubAPIRequest(url string) (*http.Response, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
-	// Accept: application/vnd.github+json  — current recommended media type.
-	// X-GitHub-Api-Version: 2022-11-28     — pin to the latest stable version.
+
 	req.Header.Set("Accept", "application/vnd.github+json")
 	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
 	return c.http.Do(req)
@@ -1008,18 +968,12 @@ func (c *githubClient) getJSON(url string, v interface{}) error {
 	return fmt.Errorf("GitHub API request failed after 3 attempts: %w", lastErr)
 }
 
-// downloadFile fetches a raw file via its direct download URL.
-// For public repos the URL is: https://raw.githubusercontent.com/{owner}/{repo}/{ref}/{path}
-// ── Progress display ─────────────────────────────────────────────────────────
-
-// installProgress tracks overall install progress and renders the live
-// progress bar that the user sees while packages are being downloaded.
 type installProgress struct {
-	pkg       string    // package name shown in the header
-	total     int64     // total files to download (may be 0 when unknown)
-	done      int64     // files completed so far (atomic)
-	bytes     int64     // bytes received so far (atomic)
-	startTime time.Time // when the install began
+	pkg       string
+	total     int64
+	done      int64
+	bytes     int64
+	startTime time.Time
 }
 
 func newInstallProgress(pkg string, total int) *installProgress {
@@ -1028,7 +982,7 @@ func newInstallProgress(pkg string, total int) *installProgress {
 		total:     int64(total),
 		startTime: time.Now(),
 	}
-	// Print the install header once.
+
 	fmt.Printf("\n  Installing \033[1;36m%s\033[0m\n", pkg)
 	if total > 0 {
 		fmt.Printf("  %d file(s) to download\n\n", total)
@@ -1038,7 +992,6 @@ func newInstallProgress(pkg string, total int) *installProgress {
 	return p
 }
 
-// formatBytes formats a byte count as a human-readable string (B / KB / MB).
 func formatBytes(n int64) string {
 	switch {
 	case n >= 1024*1024:
@@ -1050,7 +1003,6 @@ func formatBytes(n int64) string {
 	}
 }
 
-// formatSpeed formats bytes/second as a human-readable speed string.
 func formatSpeed(bytesPerSec float64) string {
 	switch {
 	case bytesPerSec >= 1024*1024:
@@ -1062,12 +1014,6 @@ func formatSpeed(bytesPerSec float64) string {
 	}
 }
 
-// renderBar renders a single progress bar line.
-// It moves the cursor up one line and rewrites it so the bar animates in place.
-//
-// Example output:
-//
-//	[████████████░░░░░░░░]  60%  3/5 files  12.4 KB  45.2 KB/s
 func (p *installProgress) renderBar(filename string) {
 	done := atomic.LoadInt64(&p.done)
 	total := atomic.LoadInt64(&p.total)
@@ -1096,7 +1042,6 @@ func (p *installProgress) renderBar(filename string) {
 		}
 	}
 
-	// Colour codes: cyan bar, bold white percentage, dim file counter.
 	var line string
 	if total > 0 {
 		line = fmt.Sprintf(
@@ -1116,25 +1061,21 @@ func (p *installProgress) renderBar(filename string) {
 		)
 	}
 
-	// \r moves to start of line; the trailing spaces overwrite stale characters.
 	fmt.Printf("\r%-100s", line)
 }
 
-// finish prints the completion summary and moves to a new line.
 func (p *installProgress) finish() {
 	done := atomic.LoadInt64(&p.done)
 	rx := atomic.LoadInt64(&p.bytes)
 	elapsed := time.Since(p.startTime)
 
-	// Overwrite the progress bar line with the final summary.
-	fmt.Printf("\r\033[K") // clear line
+	fmt.Printf("\r\033[K")
 	fmt.Printf(
 		"  \033[1;32m✓\033[0m  \033[1m%s\033[0m — %d file(s), %s in %s\n\n",
 		p.pkg, done, formatBytes(rx), elapsed.Round(time.Millisecond),
 	)
 }
 
-// truncateFilename shortens a filename to maxLen characters for display.
 func truncateFilename(name string, maxLen int) string {
 	base := filepath.Base(name)
 	if len(base) <= maxLen {
@@ -1143,7 +1084,6 @@ func truncateFilename(name string, maxLen int) string {
 	return "…" + base[len(base)-maxLen+1:]
 }
 
-// progressReader wraps an io.Reader and reports bytes read to the progress tracker.
 type progressReader struct {
 	r    io.Reader
 	prog *installProgress
@@ -1159,16 +1099,10 @@ func (pr *progressReader) Read(p []byte) (int, error) {
 	return n, err
 }
 
-// ── File download ─────────────────────────────────────────────────────────────
-
-// downloadFile fetches a single raw file from GitHub.
-// Pass a non-nil prog to show live download progress in the terminal.
 func (c *githubClient) downloadFile(url string) ([]byte, error) {
 	return c.downloadFileProgress(url, "", nil)
 }
 
-// downloadFileProgress fetches a raw file and streams bytes through the
-// progress tracker so the terminal bar updates in real time.
 func (c *githubClient) downloadFileProgress(url, filename string, prog *installProgress) ([]byte, error) {
 	var lastErr error
 	for attempt := 0; attempt < 3; attempt++ {
@@ -1203,21 +1137,12 @@ func (c *githubClient) downloadFileProgress(url, filename string, prog *installP
 	return nil, fmt.Errorf("download failed after 3 attempts: %w", lastErr)
 }
 
-// fetchDirRecursive downloads all files under a GitHub repo path into localDir.
-// It walks subdirectories using the GitHub Contents API.
-//
-// API endpoint: GET /repos/{owner}/{repo}/contents/{path}?ref={ref}
-// Returns a JSON array for directories and a JSON object for single files.
 func (c *githubClient) fetchDirRecursive(owner, repo, ref, remotePath, localDir string) error {
 	return c.fetchDirRecursiveProgress(owner, repo, ref, remotePath, localDir, nil)
 }
 
-// fetchDirRecursiveProgress is the internal recursive implementation that
-// threads an installProgress tracker through every file download so the
-// terminal progress bar stays live throughout the full recursive walk.
 func (c *githubClient) fetchDirRecursiveProgress(owner, repo, ref, remotePath, localDir string, prog *installProgress) error {
-	// Build the Contents API URL.
-	// Format: https://api.github.com/repos/{owner}/{repo}/contents/{path}?ref={ref}
+
 	apiURL := fmt.Sprintf(
 		"https://api.github.com/repos/%s/%s/contents/%s?ref=%s",
 		owner, repo, remotePath, ref)
@@ -1292,20 +1217,10 @@ func (c *githubClient) fetchDirRecursiveProgress(owner, repo, ref, remotePath, l
 	return nil
 }
 
-// fetchViaTreeAPI downloads all .lx files under subpath using the Git Trees API.
-// Unlike the Contents API, it returns the full recursive tree in a single
-// request (no pagination, no per-directory calls) and works without a token
-// for public repositories even when the Contents API is rate-limited.
-//
-// API endpoint: GET /repos/{owner}/{repo}/git/trees/{ref}?recursive=1
-// Raw download:  https://raw.githubusercontent.com/{owner}/{repo}/{ref}/{path}
 func (c *githubClient) fetchViaTreeAPI(owner, repo, ref, subpath, localDir string) error {
 	return c.fetchViaTreeAPIProgress(owner, repo, ref, subpath, localDir, nil)
 }
 
-// fetchViaTreeAPIProgress is the progress-aware implementation of fetchViaTreeAPI.
-// It first scans the full tree to get a file count (so the progress bar shows
-// accurate percentages), then downloads each file while updating the bar.
 func (c *githubClient) fetchViaTreeAPIProgress(owner, repo, ref, subpath, localDir string, prog *installProgress) error {
 	apiURL := fmt.Sprintf(
 		"https://api.github.com/repos/%s/%s/git/trees/%s?recursive=1",
@@ -1348,7 +1263,6 @@ func (c *githubClient) fetchViaTreeAPIProgress(owner, repo, ref, subpath, localD
 	prefix := strings.Trim(subpath, "/")
 	rawBase := fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/%s", owner, repo, ref)
 
-	// Pre-scan to count qualifying files so the progress bar is accurate.
 	type blobEntry struct {
 		nodePath string
 		relPath  string
@@ -1375,7 +1289,6 @@ func (c *githubClient) fetchViaTreeAPIProgress(owner, repo, ref, subpath, localD
 		return fmt.Errorf("no .lx files found under %q in %s/%s@%s", prefix, owner, repo, ref)
 	}
 
-	// Update the progress tracker with the exact file count.
 	if prog != nil {
 		atomic.StoreInt64(&prog.total, int64(len(blobs)))
 	}
@@ -1400,23 +1313,8 @@ func (c *githubClient) fetchViaTreeAPIProgress(owner, repo, ref, subpath, localD
 	return nil
 }
 
-// fetchViaCodeload downloads the repository as a ZIP archive from
-// codeload.github.com and extracts only the files that belong to subpath.
-//
-// URL format: https://codeload.github.com/{owner}/{repo}/zip/refs/heads/{branch}
-//
-// This endpoint is a pure CDN — no API token, no rate limit, no JSON parsing.
-// It works even when api.github.com and raw.githubusercontent.com are
-// unreachable, making it the most robust final fallback.
-//
-// The ZIP root entry is always "{repo}-{branch}/", so a subpath of "lune-xml"
-// inside repo "lunex-lang-gz" branch "main" lives at:
-//
-//	lunex-lang-gz-main/lune-xml/…
 func (c *githubClient) fetchViaCodeload(owner, repo, ref, subpath, localDir string, prog *installProgress) error {
-	// codeload uses "refs/heads/{branch}" for branches.
-	// Tags are under "refs/tags/{tag}" — we try the branch path first and
-	// fall back to the tag path on 404 so both work transparently.
+
 	branchURL := fmt.Sprintf(
 		"https://codeload.github.com/%s/%s/zip/refs/heads/%s",
 		owner, repo, ref)
@@ -1434,28 +1332,24 @@ func (c *githubClient) fetchViaCodeload(owner, repo, ref, subpath, localDir stri
 		if dlErr == nil {
 			break
 		}
-		// 404 on the branch URL is expected when ref is a tag — try next.
+
 		if strings.Contains(dlErr.Error(), "404") {
 			continue
 		}
-		// Any other error (timeout, network) — no point trying the tag URL.
+
 		break
 	}
 	if dlErr != nil {
 		return fmt.Errorf("codeload download failed: %w", dlErr)
 	}
 
-	// Parse the in-memory ZIP.
 	zr, err := zip.NewReader(bytes.NewReader(zipData), int64(len(zipData)))
 	if err != nil {
 		return fmt.Errorf("reading ZIP archive: %w", err)
 	}
 
-	// The ZIP root prefix is always "{repo}-{ref}/" (GitHub convention).
-	// Strip it so paths are relative to the repo root.
 	rootPrefix := repo + "-" + ref + "/"
 
-	// Normalise the subpath filter (no leading/trailing slashes).
 	prefix := strings.Trim(subpath, "/")
 	var filePrefix string
 	if prefix != "" {
@@ -1464,7 +1358,6 @@ func (c *githubClient) fetchViaCodeload(owner, repo, ref, subpath, localDir stri
 		filePrefix = rootPrefix
 	}
 
-	// First pass: count qualifying files so the progress bar is accurate.
 	var qualifying []*zip.File
 	for _, f := range zr.File {
 		if f.FileInfo().IsDir() {
@@ -1487,13 +1380,11 @@ func (c *githubClient) fetchViaCodeload(owner, repo, ref, subpath, localDir stri
 		return fmt.Errorf("no .lx files found under %q in %s/%s@%s (ZIP)", prefix, owner, repo, ref)
 	}
 
-	// Update the progress bar with the exact file count.
 	if prog != nil {
 		atomic.StoreInt64(&prog.total, int64(len(qualifying)))
 		atomic.StoreInt64(&prog.done, 0)
 	}
 
-	// Second pass: extract each qualifying file.
 	for _, f := range qualifying {
 		relPath := strings.TrimPrefix(f.Name, filePrefix)
 		localPath := filepath.Join(localDir, filepath.FromSlash(relPath))
@@ -1528,9 +1419,6 @@ func (c *githubClient) fetchViaCodeload(owner, repo, ref, subpath, localDir stri
 	return nil
 }
 
-// downloadZipProgress fetches a ZIP archive with a live progress bar.
-// Unlike downloadFileProgress, it streams through a counting reader so the
-// bar shows download progress even before the ZIP is parsed.
 func (c *githubClient) downloadZipProgress(url, label string, prog *installProgress) ([]byte, error) {
 	var lastErr error
 	for attempt := 0; attempt < 3; attempt++ {
@@ -1551,12 +1439,9 @@ func (c *githubClient) downloadZipProgress(url, label string, prog *installProgr
 			continue
 		}
 
-		// Show the ZIP size in the bar if Content-Length is present.
 		if cl := resp.ContentLength; cl > 0 && prog != nil {
-			// Temporarily raise the total to reflect ZIP size in bytes so
-			// the bar shows a rough "bytes downloaded" progress.
-			// We will overwrite total again after extraction begins.
-			_ = cl // used only for renderBar side-effect via progressReader
+
+			_ = cl
 		}
 
 		var reader io.Reader = resp.Body
@@ -1573,16 +1458,6 @@ func (c *githubClient) downloadZipProgress(url, label string, prog *installProgr
 	return nil, fmt.Errorf("ZIP download failed after 3 attempts: %w", lastErr)
 }
 
-// InstallFromGitHub downloads a Lunex package from a GitHub repository.
-// It uses two strategies in order:
-//
-//  1. GitHub Contents API (fetchDirRecursive) — recursive directory walk,
-//     works for most public repos without authentication.
-//  2. GitHub Git Trees API (fetchViaTreeAPI) — fetches the full tree in one
-//     request; used as fallback when Contents API fails or is rate-limited.
-//
-// Both strategies use the correct GitHub REST API v3 endpoints and require no
-// token for public repositories.
 func InstallFromGitHub(name, owner, repo, ref, subpath string) (*Module, error) {
 	if owner == "" || repo == "" {
 		return nil, fmt.Errorf("invalid GitHub source: owner and repo are required")
@@ -1598,31 +1473,22 @@ func InstallFromGitHub(name, owner, repo, ref, subpath string) (*Module, error) 
 
 	client := newGitHubClient()
 
-	// Create the live progress display.
-	// File count is 0 here; fetchViaTreeAPIProgress will update it once the
-	// tree is fetched and the exact count is known.
 	prog := newInstallProgress(name, 0)
 
-	// Strategy 1: Contents API (recursive directory walk).
 	err := client.fetchDirRecursiveProgress(owner, repo, ref, subpath, dir, prog)
 	if err != nil {
-		// Strategy 2: Git Trees API — full tree in a single request.
-		// Handles rate-limited or unusual path shapes gracefully.
-		// Reset counters so the bar starts fresh for the second attempt.
+
 		atomic.StoreInt64(&prog.done, 0)
 		atomic.StoreInt64(&prog.bytes, 0)
 		treeErr := client.fetchViaTreeAPIProgress(owner, repo, ref, subpath, dir, prog)
 		if treeErr != nil {
-			// Strategy 3: codeload.github.com ZIP fallback.
-			// Downloads the full repo ZIP from GitHub's CDN — no API token
-			// needed, not rate-limited, works when api.github.com is blocked.
-			// URL: https://codeload.github.com/{owner}/{repo}/zip/refs/heads/{ref}
+
 			atomic.StoreInt64(&prog.done, 0)
 			atomic.StoreInt64(&prog.bytes, 0)
 			atomic.StoreInt64(&prog.total, 0)
 			zipErr := client.fetchViaCodeload(owner, repo, ref, subpath, dir, prog)
 			if zipErr != nil {
-				fmt.Println() // leave progress line before printing the error
+				fmt.Println()
 				return nil, fmt.Errorf(
 					"could not install %s/%s@%s\n"+
 						"  contents API : %v\n"+
@@ -1634,17 +1500,10 @@ func InstallFromGitHub(name, owner, repo, ref, subpath string) (*Module, error) 
 		}
 	}
 
-	// Print the final summary line.
 	prog.finish()
 
-	// Locate the package entry point.
-	// Priority:
-	//   1. config.lx — read main/entry field (most authoritative).
-	//   2. Well-known names: index.lx, main.lx, index.nax, main.nax.
-	//   3. First .lx file found in the directory.
 	entry := ""
 
-	// 1. Read config.lx if present.
 	if configData, err := os.ReadFile(filepath.Join(dir, "config.lx")); err == nil {
 		configStr := string(configData)
 		for _, field := range []string{"entry", "main"} {
@@ -1669,7 +1528,6 @@ func InstallFromGitHub(name, owner, repo, ref, subpath string) (*Module, error) 
 		}
 	}
 
-	// 2. Well-known names.
 	if entry == "" {
 		for _, candidate := range []string{"index.lx", "main.lx", "index.nax", "main.nax"} {
 			if _, err := os.Stat(filepath.Join(dir, candidate)); err == nil {
@@ -1679,7 +1537,6 @@ func InstallFromGitHub(name, owner, repo, ref, subpath string) (*Module, error) 
 		}
 	}
 
-	// 3. Any .lx file in the directory.
 	if entry == "" {
 		if files, err := os.ReadDir(dir); err == nil {
 			for _, f := range files {
@@ -1695,7 +1552,6 @@ func InstallFromGitHub(name, owner, repo, ref, subpath string) (*Module, error) 
 		entry = "index.lx"
 	}
 
-	// Write the entry marker so Resolve() finds the .lx entry point directly.
 	_ = os.WriteFile(filepath.Join(dir, ".lunex-entry"), []byte(entry), 0644)
 
 	mod := &Module{
@@ -1706,9 +1562,7 @@ func InstallFromGitHub(name, owner, repo, ref, subpath string) (*Module, error) 
 	}
 	_ = writeModuleMeta(dir, mod)
 	_ = writeGlobalLauncher(name, mod.Path)
-	if name == "luna" {
-		_ = writeLocalLauncher("luna", mod.Path)
-	}
+
 	return mod, nil
 }
 
@@ -1718,11 +1572,6 @@ func Install(spec string) (*Module, error) {
 		return nil, fmt.Errorf("empty package spec")
 	}
 
-	if spec == "luna" {
-		return InstallFromGitHub("luna", "Megamexlevi2", "luna", "main", "luna-pm")
-	}
-
-	// GitHub URL or owner/repo path.
 	if strings.Contains(spec, "/") {
 		owner, repo, ref, subpath := resolveSource(spec)
 		if owner == "" || repo == "" {
@@ -1730,9 +1579,7 @@ func Install(spec string) (*Module, error) {
 		}
 		pkgName := repo
 		if subpath != "" {
-			// Use only the last path segment as the package name so that
-			// @import("lune-xml") resolves a package installed from
-			// github.com/user/repo/lune-xml without requiring the full path.
+
 			pkgName = path.Base(subpath)
 		}
 		return InstallFromGitHub(pkgName, owner, repo, ref, subpath)

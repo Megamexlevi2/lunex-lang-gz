@@ -1,7 +1,3 @@
-// Lunex lang
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
-// (c) David Dev 2026. License.
-
 package parser
 
 import (
@@ -27,6 +23,44 @@ func New(tokens []lexer.Token, filename string) *Parser {
 
 func NewWithLines(tokens []lexer.Token, filename string, lines []string) *Parser {
 	return &Parser{tokens: tokens, filename: filename, lines: lines}
+}
+
+// isAllowedKeywordAsName returns true for keywords that are contextually valid
+// as identifiers (e.g. "get", "set", "from", "as", "of", "in", "static",
+// "get", "module") — these appear in common patterns and the lexer emits them
+// as KEYWORD but the parser allows them in name positions.
+func isAllowedKeywordAsName(name string) bool {
+	switch name {
+	case "get", "set", "from", "as", "of", "in", "static",
+		"module", "namespace", "is", "not", "have",
+		"override", "abstract", "readonly", "private",
+		"public", "protected", "implements", "trait",
+		"interface", "satisfies", "infer", "keyof",
+		"alias", "enum", "component", "default",
+		"async", "await", "yield", "type":
+		return true
+	}
+	return false
+}
+
+// isHardReservedKeyword returns true for keywords that must NEVER be used as
+// identifiers in any context — using them produces E0073.
+func isHardReservedKeyword(name string) bool {
+	switch name {
+	case "val", "var", "let", "const", "fn", "if", "else", "elif",
+		"while", "for", "break", "continue", "do", "each",
+		"match", "case", "try", "catch", "finally", "raise", "throw",
+		"return", "true", "false", "null", "void", "undefined",
+		"new", "this", "super", "extends", "typeof", "instanceof",
+		"import", "export", "require", "spawn", "select", "channel",
+		"macro", "immutable", "freeze", "with", "using", "assert",
+		"delete", "use", "struct", "defer", "guard", "loop",
+		"repeat", "when", "nax", "lunex", "sleep", "range",
+		"ifhave", "ifset", "between", "matches", "startsWith",
+		"endsWith", "unless":
+		return true
+	}
+	return false
 }
 
 func (p *Parser) peek(offset int) lexer.Token {
@@ -117,6 +151,15 @@ func (p *Parser) errorf(t lexer.Token, format string, args ...interface{}) error
 // contextualCode returns an error code based on the token and message context.
 func (p *Parser) contextualCode(t lexer.Token, msg string) string {
 	lower := strings.ToLower(msg)
+	if strings.Contains(lower, "reserved keyword") {
+		if strings.Contains(lower, "parameter") {
+			return errfmt.ErrKeywordAsArg
+		}
+		if strings.Contains(lower, "field") {
+			return errfmt.ErrKeywordAsField
+		}
+		return errfmt.ErrReservedKeyword
+	}
 	if strings.Contains(lower, "unexpected token") {
 		switch t.StrVal() {
 		case ",":
@@ -232,11 +275,11 @@ func (p *Parser) Parse() (*ast.Node, error) {
 }
 
 func (p *Parser) parseBlock() (*ast.Node, error) {
-	t, err := p.eat(lexer.PUNCTUATION, "{")
+	openTok, err := p.eat(lexer.PUNCTUATION, "{")
 	if err != nil {
 		return nil, err
 	}
-	block := &ast.Node{Type: ast.Block, Line: t.Line, Col: t.Col}
+	block := &ast.Node{Type: ast.Block, Line: openTok.Line, Col: openTok.Col}
 	for !p.check(lexer.PUNCTUATION, "}") && !p.check(lexer.EOF, "") {
 		p.eatSemi()
 		if p.check(lexer.PUNCTUATION, "}") {
@@ -248,6 +291,19 @@ func (p *Parser) parseBlock() (*ast.Node, error) {
 		}
 		if stmt != nil {
 			block.Body_ = append(block.Body_, stmt)
+		}
+	}
+	if p.check(lexer.EOF, "") {
+		// Report at the OPENING brace so the user sees which block was never closed.
+		return nil, &errfmt.LunexError{
+			Message:    fmt.Sprintf("unclosed block — '{' on line %d was never closed with '}'", openTok.Line),
+			File:       p.filename,
+			Line:       openTok.Line,
+			Col:        openTok.Col,
+			Kind:       errfmt.KindParse,
+			Code:       "E0052",
+			Suggestion: "add a closing '}' to match the '{' on this line",
+			Lines:      p.lines,
 		}
 	}
 	if _, err := p.eat(lexer.PUNCTUATION, "}"); err != nil {
@@ -400,6 +456,18 @@ func (p *Parser) parseVarDecl() (*ast.Node, error) {
 
 	nameTok, err := p.eat(lexer.IDENTIFIER, "")
 	if err != nil {
+		// If the current token is a hard-reserved keyword, give a much better error
+		cur := p.current()
+		if cur.Type == lexer.KEYWORD && isHardReservedKeyword(cur.StrVal()) {
+			kw := cur.StrVal()
+			p.advance()
+			return nil, p.errorf(cur,
+				"reserved keyword '%s' cannot be used as a variable name — "+
+					"'%s' is reserved by Lunex and has special meaning. "+
+					"Choose a different name (e.g. '%s_val', 'my_%s').",
+				kw, kw, kw, kw,
+			)
+		}
 		return nil, err
 	}
 	node.Name = nameTok.StrVal()
@@ -497,7 +565,16 @@ func (p *Parser) parseFnDecl() (*ast.Node, error) {
 	node := &ast.Node{Type: ast.FnDecl, Line: t.Line, Col: t.Col}
 
 	if p.checkTok(lexer.IDENTIFIER) || p.checkTok(lexer.KEYWORD) {
-		node.Name = p.advance().StrVal()
+		nameTok := p.advance()
+		name := nameTok.StrVal()
+		// Detect reserved keywords used as function names
+		if nameTok.Type == lexer.KEYWORD && !isAllowedKeywordAsName(name) {
+			return nil, p.errorf(nameTok,
+				"reserved keyword '%s' cannot be used as a function name — choose a different name (e.g. '%s_fn' or 'my_%s')",
+				name, name, name,
+			)
+		}
+		node.Name = name
 	}
 
 	if p.eatIf(lexer.OPERATOR, ":") {
@@ -555,6 +632,14 @@ func (p *Parser) parseFnParams() ([]*ast.Param, error) {
 			var err error
 			if p.checkTok(lexer.KEYWORD) {
 				nameTok = p.advance()
+				// Hard-reserved keywords cannot be parameter names
+				if isHardReservedKeyword(nameTok.StrVal()) {
+					return nil, p.errorf(nameTok,
+						"reserved keyword '%s' cannot be used as a parameter name — "+
+							"'%s' is a reserved keyword in Lunex. Use a descriptive name instead.",
+						nameTok.StrVal(), nameTok.StrVal(),
+					)
+				}
 			} else {
 				nameTok, err = p.eat(lexer.IDENTIFIER, "")
 				if err != nil {

@@ -30,7 +30,7 @@ Open an issue with the `enhancement` label. Describe:
 ### 1. Fork and clone
 
 ```bash
-git clone https://github.com/Megamexlevi2/lunex-lang-gz
+git clone https://github.com/Megamexlevi2/lunex-language
 cd lunex-lang-gz
 ```
 

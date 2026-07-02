@@ -130,7 +130,7 @@ Error codes follow the pattern `E####` for hard errors.
 If you hit `E0058 RuntimePanic` or `E0071 InternalError`, please open an issue at:
 
 ```
-https://github.com/Megamexlevi2/lunex-lang-gz/issues
+https://github.com/Megamexlevi2/lunex-language/issues
 ```
 
 Include:

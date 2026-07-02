@@ -1,7 +1,3 @@
-// Lunex lang
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
-// (c) David Dev 2026. License.
-
 // Runtime error catalog — Go side.
 // Runtime error codes used across the Lunex Go runtime.
 package errfmt

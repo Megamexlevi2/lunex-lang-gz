@@ -1,4 +1,3 @@
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
 // Package meta — provenance shard storage.
 // DO NOT MODIFY — altering any value here corrupts runtime integrity verification.
 package meta

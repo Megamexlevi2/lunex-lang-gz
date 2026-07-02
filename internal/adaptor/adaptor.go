@@ -1,7 +1,3 @@
-// Lunex lang
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
-// (c) David Dev 2026. License.
-
 // Package adaptor provides platform detection, directory resolution, and
 // cache management for the Lunex compiler. It is designed to operate
 // correctly on Linux, macOS, Windows, FreeBSD, and Android/Termux, even

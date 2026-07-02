@@ -5,13 +5,6 @@ val _query     = @fimport("./src/query.lx")
 val _transform = @fimport("./src/transform.lx")
 val _validate  = @fimport("./src/validate.lx")
 
-// ─────────────────────────────────────────────────────────────
-// BEGINNER API  —  simple helpers for common tasks
-// ─────────────────────────────────────────────────────────────
-
-// Create a tag with optional text.
-//   xml.tag("title")              → <title />
-//   xml.tag("title", "Hello")     → <title>Hello</title>
 fn tag(name, text) {
   if text {
     _builder.createTextElement(name, text)
@@ -20,8 +13,6 @@ fn tag(name, text) {
   }
 }
 
-// Add one or more children to a parent and return the parent.
-//   xml.add(root, child1, child2)
 fn add(parent, a, b, c, d, e) {
   if a { parent.appendChild(a) }
   if b { parent.appendChild(b) }
@@ -31,15 +22,11 @@ fn add(parent, a, b, c, d, e) {
   parent
 }
 
-// Set one attribute on a node and return the node.
-//   xml.set(node, "id", "1")
 fn set(node, key, value) {
   node.setAttribute(key, value)
   node
 }
 
-// Set multiple attributes from an object and return the node.
-//   xml.setAll(node, { id: "1", class: "box" })
 fn setAll(node, attrs) {
   var keys = Object.keys(attrs)
   keys = keys.sort()
@@ -49,14 +36,11 @@ fn setAll(node, attrs) {
   node
 }
 
-// Get the text content of a node.
-//   xml.get(node)  →  "Hello"
+
 fn get(node) {
   _query.text(node)
 }
 
-// Get an attribute value.
-//   xml.attr(node, "id")  →  "1"
 fn attr(node, name) {
   _query.attr(node, name)
 }

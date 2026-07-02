@@ -8,7 +8,7 @@ val json = @import("std.json")
 fn main() {
   val path = fs.tempFile("lunex-json-")
   val data = {
-    name: "Luna",
+    name: "Lunex",
     active: true,
     tags: ["fast", "simple"]
   }

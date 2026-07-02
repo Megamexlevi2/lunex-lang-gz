@@ -1,4 +1,3 @@
-
 package std
 
 import (
@@ -42,7 +41,7 @@ var ansiRegex = regexp.MustCompile(`\x1b\[[0-9;]*m`)
 var isTTY bool
 
 func init() {
-	
+
 	fi, err := os.Stdout.Stat()
 	if err == nil && (fi.Mode()&os.ModeCharDevice) != 0 {
 		isTTY = true
@@ -50,7 +49,7 @@ func init() {
 }
 
 func colorize(color, text string) string {
-	
+
 	if !isTTY {
 		return text
 	}
@@ -183,7 +182,7 @@ func IoModule() *runtime.Value {
 			return runtime.NumberVal(n), nil
 		}}),
 		"clear": runtime.FuncVal(&runtime.Function{Name: "clear", Native: func(args []*runtime.Value, _ *runtime.Value) (*runtime.Value, error) {
-			
+
 			fmt.Print("\033[2J\033[H")
 			return runtime.Undefined, nil
 		}}),
@@ -242,9 +241,9 @@ func IoModule() *runtime.Value {
 			tmpl := args[0].ToString()
 			for i, arg := range args[1:] {
 				placeholder := fmt.Sprintf("{%d}", i)
-				
+
 				tmpl = strings.ReplaceAll(tmpl, placeholder, arg.ToString())
-				
+
 				tmpl = strings.Replace(tmpl, "{}", arg.ToString(), 1)
 			}
 			return runtime.StringVal(tmpl), nil
@@ -275,7 +274,7 @@ func IoModule() *runtime.Value {
 				return runtime.StringVal(""), nil
 			}
 			s := args[0].ToString()
-			
+
 			s = ansiRegex.ReplaceAllString(s, "")
 			return runtime.StringVal(s), nil
 		}}),

@@ -1,16 +1,15 @@
-# Lunex
+Lunex
 
-**A fast, expressive scripting language for the backend.**
+A fast, expressive scripting language for the backend.
 
-Lunex is a statically-scoped scripting language built in Go. It combines
-clean, readable syntax with a practical built-in standard library — HTTP,
-file system, cryptography, databases, WebSockets, and more.
+Lunex is a statically scoped scripting language built in Go.
+It is designed to be simple to read, easy to use, and practical for everyday development without giving up important features. It also includes a useful built-in standard library with support for HTTP, file system access, cryptography, databases, WebSockets, and more.
 
-Runs on **Linux**, **macOS**, **Windows**, and **Android (Termux)**.
+It runs on Linux, macOS, Windows, and Android (Termux).
 
-> Lunex is actively evolving — things may change between versions.
+> Lunex is still evolving, so some things may change between versions
 
-Two ready-made modules written in Lunex are included: `lune-xml` and `lunex-cli`.
+Two ready-made modules written in Lunex are already included: lune-xml and lunex-cli.
 
 ---
 
@@ -19,14 +18,14 @@ Two ready-made modules written in Lunex are included: `lune-xml` and `lunex-cli`
 ### Pre-built binary
 
 Download the binary for your platform from the
-[releases page](https://github.com/Megamexlevi2/lunex-lang-gz/releases).
+[releases page](https://github.com/Megamexlevi2/lunex-language/releases).
 
 ### Build from source
 
 Requires Go 1.23 or later.
 
 ```bash
-git clone https://github.com/Megamexlevi2/lunex-lang-gz
+git clone https://github.com/Megamexlevi2/lunex-language
 cd lunex-lang-gz
 ./build.sh
 ```
@@ -227,33 +226,23 @@ lunex version                      print version
 lunex help                         show full usage
 ```
 
-> Package management is handled entirely by **Luna** — see below.
+> Package management is built into Lunex and implemented in Go.
 
 ---
 
-## Package Management (Luna)
+## Package Management
 
-Luna is the official package manager for Lunex. It manages all external
-packages independently of the Lunex runtime.
-
-```bash
-luna install user/repo             # install from GitHub
-luna install user/repo@v1.2.0      # install a specific version
-luna install                       # install all deps from config.lx
-luna remove  <pkg>                 # remove a package
-luna update  [pkg]                 # update one or all packages
-luna list                          # list installed packages
-luna search  <query>               # search GitHub for packages
-```
-
-Packages are stored globally in `~/.luna/packages/` and resolved
-automatically when you use `@import("pkg-name")` in any `.lx` file.
-
-**Install Luna** (self-bootstraps via Lunex):
+Lunex includes a Go-based package manager in the CLI.
 
 ```bash
-lunex run lunex-pac-man/luna-pm/luna-pm.lx -- help
+lunex install github.com/user/repo         # install from GitHub
+lunex install github.com/user/repo@v1.2.0  # install a specific version
+lunex remove <package>                     # remove a package
+lunex update [package]                     # update one or all packages
+lunex list                                 # list installed packages
 ```
+
+Packages are stored in `~/.lunex/cache/` and resolved automatically when you use `@import("pkg-name")` in any `.lx` file.
 
 ---
 
@@ -272,10 +261,10 @@ val lib = @fimport("./src/utils.lx")
 val pkg = @fimport("./dist/math.nax")
 ```
 
-Import an external package installed by Luna:
+Import an external package installed by Lunex:
 
 ```lx
-val xml = @import("lune-xml")   // after: luna install Megamexlevi2/lune-xml
+val xml = @import("lune-xml")   // after: lunex install https://github.com/Megamexlevi2/lunex-language/lune-xml
 ```
 
 ---
@@ -302,10 +291,10 @@ val xml = @import("lune-xml")   // after: luna install Megamexlevi2/lune-xml
 
 ## Examples
 
-See the [`examples/`](examples/) directory for runnable programs covering:
+Check out [`examples/`](examples/) for runnable code covering everything from the basics to the more advanced stuff:
 
 - Hello World and basic I/O
-- Variables, destructuring, and template strings
+- Variables, destructuring, template strings
 - Structs and factory functions
 - Control flow: `if`, `while`, `each`, `guard`, `unless`, `match`, `defer`
 - Standard library: math, crypto, fs, datetime, regex, os, http

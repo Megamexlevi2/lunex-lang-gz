@@ -1,10 +1,6 @@
-// Lunex lang
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
-// (c) David Dev 2026. License.
-
 // Package manifest handles reading and writing Lunex project manifests (config.lx).
 // This is a minimal package that only deals with project configuration —
-// package installation is handled by the external Luna package manager.
+// package installation is handled by the external Lunex package manager.
 package manifest
 
 import (
@@ -50,30 +46,30 @@ type ManifestMetadata struct {
 
 // Manifest holds the parsed contents of a Lunex project's config.lx file.
 type Manifest struct {
-	Name          string               `json:"name"`
-	Version       string               `json:"version"`
-	Description   string               `json:"description"`
-	Author        string               `json:"author"`
-	License       string               `json:"license"`
-	GitHub        string               `json:"github"`
-	URL           string               `json:"url"`
-	Homepage      string               `json:"homepage"`
-	Documentation string               `json:"documentation"`
-	Issues        string               `json:"issues"`
-	Main          string               `json:"main"`
-	Entry         string               `json:"entry"`
-	Output        string               `json:"output"`
-	Optimize      bool                 `json:"optimize"`
-	Minify        bool                 `json:"minify"`
-	Sourcemap     bool                 `json:"sourcemap"`
-	Environment   string               `json:"environment"`
-	Repository    ManifestRepository   `json:"repository"`
-	Scripts       ManifestScripts      `json:"scripts"`
-	Engines       ManifestEngines      `json:"engines"`
-	Metadata      ManifestMetadata     `json:"metadata"`
-	Targets       []string             `json:"targets"`
-	Dependencies  map[string]string    `json:"dependencies"`
-	Bin           map[string]string    `json:"bin"`
+	Name          string             `json:"name"`
+	Version       string             `json:"version"`
+	Description   string             `json:"description"`
+	Author        string             `json:"author"`
+	License       string             `json:"license"`
+	GitHub        string             `json:"github"`
+	URL           string             `json:"url"`
+	Homepage      string             `json:"homepage"`
+	Documentation string             `json:"documentation"`
+	Issues        string             `json:"issues"`
+	Main          string             `json:"main"`
+	Entry         string             `json:"entry"`
+	Output        string             `json:"output"`
+	Optimize      bool               `json:"optimize"`
+	Minify        bool               `json:"minify"`
+	Sourcemap     bool               `json:"sourcemap"`
+	Environment   string             `json:"environment"`
+	Repository    ManifestRepository `json:"repository"`
+	Scripts       ManifestScripts    `json:"scripts"`
+	Engines       ManifestEngines    `json:"engines"`
+	Metadata      ManifestMetadata   `json:"metadata"`
+	Targets       []string           `json:"targets"`
+	Dependencies  map[string]string  `json:"dependencies"`
+	Bin           map[string]string  `json:"bin"`
 }
 
 // resolveConfigPath resolves a directory path to its config.lx file, or
@@ -242,25 +238,25 @@ func manifestFromValue(v *runtime.Value) (*Manifest, bool) {
 		return result
 	}
 
-	m.Name          = getString("name")
-	m.Version       = getString("version")
-	m.Description   = getString("description")
-	m.Author        = getString("author")
-	m.License       = getString("license")
-	m.GitHub        = getString("github")
-	m.URL           = getString("url")
-	m.Homepage      = getString("homepage")
+	m.Name = getString("name")
+	m.Version = getString("version")
+	m.Description = getString("description")
+	m.Author = getString("author")
+	m.License = getString("license")
+	m.GitHub = getString("github")
+	m.URL = getString("url")
+	m.Homepage = getString("homepage")
 	m.Documentation = getString("documentation")
-	m.Issues        = getString("issues")
-	m.Main          = getString("main")
-	m.Entry         = getString("entry")
-	m.Output        = getString("output", "out")
-	m.Environment   = getString("environment")
-	m.Optimize      = getBool("optimize")
-	m.Minify        = getBool("minify")
-	m.Sourcemap     = getBool("sourcemap")
-	m.Dependencies  = getStrMap("dependencies")
-	m.Bin           = getStrMap("bin")
+	m.Issues = getString("issues")
+	m.Main = getString("main")
+	m.Entry = getString("entry")
+	m.Output = getString("output", "out")
+	m.Environment = getString("environment")
+	m.Optimize = getBool("optimize")
+	m.Minify = getBool("minify")
+	m.Sourcemap = getBool("sourcemap")
+	m.Dependencies = getStrMap("dependencies")
+	m.Bin = getStrMap("bin")
 
 	// Repository block
 	repoFields := getStrObj("repository", "type", "url", "branch")

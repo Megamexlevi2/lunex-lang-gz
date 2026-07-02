@@ -1,6 +1,4 @@
 // Lunex lang — Suspicious Pattern Detector
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
-// (c) David Dev 2026. License.
 //
 // suspect.go detects runtime patterns that are legal Lunex but almost certainly
 // wrong: for-of on a non-iterable, match with no arm matched, arithmetic that
@@ -16,10 +14,9 @@ package runtime
 
 import (
 	"fmt"
-	"math"
-
 	"lunex/internal/ast"
 	"lunex/internal/errfmt"
+	"math"
 )
 
 // ── helpers ──────────────────────────────────────────────────────────────────

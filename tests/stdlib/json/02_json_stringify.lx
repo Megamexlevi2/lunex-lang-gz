@@ -6,7 +6,7 @@ val json = @import("std.json")
 
 fn main() {
   val user = {
-    name: "Luna",
+    name: "Lunex",
     age: 7,
     active: true,
     roles: ["admin", "writer"]

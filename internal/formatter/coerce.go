@@ -1,6 +1,4 @@
 // Lunex lang — AST coercion fixer
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
-// (c) David Dev 2026. License.
 
 // Package formatter — coerce.go
 //

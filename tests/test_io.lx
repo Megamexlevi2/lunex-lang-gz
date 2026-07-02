@@ -1,6 +1,5 @@
 // Lunex lang — io module test
 // Tests: io.log, io.warn, io.err
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
 
 val io = @import("std.io")
 

@@ -202,12 +202,12 @@ func StepFail(label, detail string) {
 
 func BridgeSend(_ string, _ uint16, _ int)          {}
 func BridgeRecv(_ string, _ uint16, _ uint8, _ int) {}
-func BridgeError(_ string)                           {}
-func BridgeJITRequest(_ int)                         {}
-func BridgeJITResult(_ int)                          {}
-func BridgeRuntimeStarted(_ string)                  {}
-func BridgeRuntimeFallback(_ string)                 {}
-func BridgeRuntimeSuccess(_ int, _ time.Duration)    {}
+func BridgeError(_ string)                          {}
+func BridgeJITRequest(_ int)                        {}
+func BridgeJITResult(_ int)                         {}
+func BridgeRuntimeStarted(_ string)                 {}
+func BridgeRuntimeFallback(_ string)                {}
+func BridgeRuntimeSuccess(_ int, _ time.Duration)   {}
 
 // BytecodeSection logs details about the bytecode container Go produced.
 func BytecodeSection(totalBytes, ntzBytes int, hasNTZ bool) {

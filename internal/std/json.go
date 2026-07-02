@@ -1,4 +1,3 @@
-
 package std
 
 import (
@@ -132,4 +131,3 @@ func JsonModule() *runtime.Value {
 		}}),
 	})
 }
-

@@ -1,5 +1,4 @@
 // Lunex lang — utils module test
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
 
 val io    = @import("std.io")
 val utils = @import("std.utils")

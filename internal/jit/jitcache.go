@@ -1,10 +1,7 @@
-// Lunex lang
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
 // (c) David Dev 2026. Licensed under the Mozilla Public License, Version 2.0.
 
 // This file provides on-disk JIT cache management for the Go side.
 // Machine-code stub cache helpers — retained for API compatibility.
-
 
 package jit
 

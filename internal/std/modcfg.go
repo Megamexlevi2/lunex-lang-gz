@@ -1,5 +1,3 @@
-
-
 package std
 
 type Info struct {

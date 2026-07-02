@@ -1,7 +1,3 @@
-// Lunex lang
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
-// (c) David Dev 2026. License.
-
 package compiler
 
 import (
@@ -90,11 +86,9 @@ func (c *Compiler) CompileSource(source, filename string) *CompileResult {
 	lines := strings.Split(source, "\n")
 	result := &CompileResult{}
 
-	// Parse top-level directives (lunex.types = on, lunex.lowlevel = on)
-	// before tokenization so they affect the compile pipeline immediately.
 	flags := parseFileFlags(source)
 	typesEnabled := flags.typesEnabled || c.opts.TypeCheck
-	_ = flags.lowLevelEnabled || c.opts.LowLevel // reserved for future low-level checks
+	_ = flags.lowLevelEnabled || c.opts.LowLevel
 
 	tokens, err := lexer.Tokenize(source, filename)
 	if err != nil {
@@ -134,8 +128,6 @@ func (c *Compiler) CompileSource(source, filename string) *CompileResult {
 		return result
 	}
 
-	// Type checking is reserved for a future Go-native implementation.
-	// lunex.types = on is accepted as a directive but currently a no-op.
 	_ = typesEnabled
 
 	result.AST = tree
@@ -169,9 +161,6 @@ func (c *Compiler) RunSource(source, filename string) error {
 	return c.RunAST(result.AST, filename, source)
 }
 
-// RunSourceAsModule compiles and executes a Lunex source string as a module,
-// returning the exported Value object. Used by the NAX loader so binary archives
-// can be imported via @fimport without running main() or blocking on KeepAliveWait.
 func (c *Compiler) RunSourceAsModule(source, filename string) (*runtime.Value, error) {
 	return c.interp.ExecAsModule(source, filename)
 }
@@ -190,11 +179,7 @@ func (c *Compiler) RunAST(tree *ast.Node, filename, source string) error {
 		c.printRuntimeError(mainErr, filename, source)
 		return mainErr
 	}
-	// Block until all long-running background tasks (HTTP server, WebSocket server,
-	// RabbitMQ consumers, Redis subscribers, etc.) have finished.
-	// Without this, the process exits immediately after main() returns,
-	// killing all goroutines that were still serving requests.
-	runtime.KeepAliveWait()
+	c.interp.ProvideKeepAliveWait()
 	return nil
 }
 
@@ -303,7 +288,6 @@ func formatLegacy(source string) string {
 	}
 	return strings.Join(out, "\n")
 }
-
 
 func countBracesOutsideStrings(line string) (opens, closes int) {
 	inStr := false

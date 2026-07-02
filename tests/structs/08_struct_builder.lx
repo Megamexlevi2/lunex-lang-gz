@@ -1,6 +1,6 @@
 // Lunex — builder pattern
 // Fluent query builder using closure state and method chaining
-// Lunex v0.8.1 · github.com/Megamexlerei2/lunex-lang-gz
+// Lunex v0.8.1 · github.com/Megamexlevi2/lunex-lang-gz
 
 val io = @import("std.io")
 
@@ -16,7 +16,7 @@ fn QueryBuilder() {
       this
     }
 
-    fn select(c) {
+    fn select_fn(c) {
       cols = c
       this
     }
@@ -49,7 +49,7 @@ fn main() {
 
   io.log(
     q.from("users")
-     .select(["id", "name", "email"])
+     .select_fn(["id", "name", "email"])
      .where("active = true")
      .where("age > 18")
      .limit(10)

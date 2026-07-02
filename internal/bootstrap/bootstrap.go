@@ -1,15 +1,12 @@
-// Lunex lang
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
-// (c) David Dev 2026. License.
-
 package bootstrap
 
 import (
+	"archive/zip"
+	"bytes"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -31,8 +28,6 @@ const (
 	colorDim    = "\033[2m"
 )
 
-// InstallLuna downloads and installs the Luna package manager from GitHub.
-// It places the scripts in ~/.luna/bin/ and creates a `luna` shim in PATH.
 func InstallLuna() error {
 	fmt.Printf("%s%s Luna Package Manager — Installer%s\n\n", colorBold, colorCyan, colorReset)
 
@@ -42,9 +37,8 @@ func InstallLuna() error {
 	}
 
 	lunaHome := filepath.Join(home, ".luna")
-	lunaBin  := filepath.Join(lunaHome, "bin")
+	lunaBin := filepath.Join(lunaHome, "bin")
 
-	// ── Step 1: create directory structure ───────────────────────────────────
 	step("Creating Luna directory structure")
 	for _, dir := range []string{
 		lunaHome,
@@ -58,21 +52,16 @@ func InstallLuna() error {
 	}
 	ok()
 
-	// ── Step 2: download luna-pm from GitHub (full directory via zip) ──────────
 	step("Downloading luna-pm from GitHub (%s/%s/%s)", lunaOwner, lunaRepo, lunaSubdir)
 	pmDest := filepath.Join(lunaBin, "luna-pm.lx")
-
-	// Always use the zip approach so we get luna-pm.lx AND its src/ directory.
 	if err := downloadViaZip(lunaHome, lunaBin); err != nil {
 		return fmt.Errorf("download failed: %w", err)
 	}
 	ok()
 
-	// ── Step 3: write version file ─────────────────────────────────────────────
 	vFile := filepath.Join(lunaHome, "VERSION")
 	_ = os.WriteFile(vFile, []byte(time.Now().Format("2006-01-02")), 0644)
 
-	// ── Step 4: write the `luna` shim ─────────────────────────────────────────
 	step("Writing luna shim")
 	shimPath, err := writeLunaShim(lunaBin, pmDest)
 	if err != nil {
@@ -80,7 +69,6 @@ func InstallLuna() error {
 	}
 	ok()
 
-	// ── Step 5: detect PATH ────────────────────────────────────────────────────
 	fmt.Println()
 	printSuccess("Luna installed successfully!")
 	fmt.Printf("  Scripts : %s%s%s\n", colorDim, lunaBin, colorReset)
@@ -97,8 +85,6 @@ func InstallLuna() error {
 	return nil
 }
 
-// ── helpers ───────────────────────────────────────────────────────────────────
-
 func step(format string, args ...interface{}) {
 	msg := fmt.Sprintf(format, args...)
 	fmt.Printf("  %s•%s %s… ", colorCyan, colorReset, msg)
@@ -108,131 +94,96 @@ func ok() {
 	fmt.Printf("%s✔%s\n", colorGreen, colorReset)
 }
 
-func warn(msg string) {
-	fmt.Printf("\n  %s!%s %s\n  ", colorYellow, colorReset, msg)
-}
-
 func printSuccess(msg string) {
 	fmt.Printf("%s%s✔ %s%s\n", colorBold, colorGreen, msg, colorReset)
 }
 
-// downloadFile downloads url into destPath, following redirects.
-func downloadFile(url, destPath string) error {
-	client := &http.Client{Timeout: 30 * time.Second}
+func downloadBytes(url string) ([]byte, error) {
+	client := &http.Client{Timeout: 60 * time.Second}
 	resp, err := client.Get(url)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("HTTP %d from %s", resp.StatusCode, url)
+		return nil, fmt.Errorf("HTTP %d from %s", resp.StatusCode, url)
 	}
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	return os.WriteFile(destPath, data, 0644)
+	return io.ReadAll(resp.Body)
 }
 
-// downloadViaZip downloads the entire luna repo as a zip and extracts luna-pm/
-// with its full directory structure (luna-pm.lx + src/ subdirectory).
+// downloadViaZip downloads the GitHub repo zip and extracts luna-pm/ into lunaBin.
+// Uses Go's archive/zip so it works on any platform including Termux/BusyBox.
 func downloadViaZip(lunaHome, lunaBin string) error {
 	zipURL := fmt.Sprintf(
 		"https://github.com/%s/%s/archive/refs/heads/%s.zip",
 		lunaOwner, lunaRepo, lunaRef,
 	)
-	tmpZip := filepath.Join(lunaHome, "luna-download.zip")
-	if err := downloadFile(zipURL, tmpZip); err != nil {
-		return err
-	}
-	defer os.Remove(tmpZip)
 
-	// Extract luna-pm/ from the zip, preserving directory structure.
-	return extractLunaPMFromZip(tmpZip, lunaSubdir, lunaBin)
-}
-
-// extractLunaPMFromZip extracts files from subdir inside the zip into destDir,
-// preserving the relative directory structure (e.g. src/commands/*.lx).
-func extractLunaPMFromZip(zipPath, subdir, destDir string) error {
-	if _, err := exec.LookPath("unzip"); err == nil {
-		// Extract with directory structure. The zip contains a top-level
-		// directory like "luna-main/luna-pm/..." so we strip the first
-		// two components (repo root + subdir) and write the rest into destDir.
-		//
-		// unzip -o <zip> "*/luna-pm/*" -d <tmpDir>, then move contents up.
-		tmpDir := destDir + "_tmp_extract"
-		_ = os.RemoveAll(tmpDir)
-		if err := os.MkdirAll(tmpDir, 0755); err != nil {
-			return fmt.Errorf("cannot create temp dir: %w", err)
-		}
-		defer os.RemoveAll(tmpDir)
-
-		pattern := fmt.Sprintf("*/%s/*", subdir)
-		cmd := exec.Command("unzip", "-o", zipPath, pattern, "-d", tmpDir)
-		out, err := cmd.CombinedOutput()
-		if err != nil {
-			return fmt.Errorf("unzip failed: %v — %s", err, string(out))
-		}
-
-		// Walk tmpDir to find the extracted luna-pm directory and move its
-		// contents into destDir.
-		return moveExtractedFiles(tmpDir, subdir, destDir)
-	}
-	return fmt.Errorf("unzip not found; please install unzip and retry")
-}
-
-// moveExtractedFiles walks srcRoot to find a directory named subdir and copies
-// its contents (recursively) into destDir.
-func moveExtractedFiles(srcRoot, subdir, destDir string) error {
-	// The extracted structure looks like: srcRoot/<repo>-main/<subdir>/...
-	// Find the first occurrence of subdir.
-	var subdirPath string
-	err := filepath.Walk(srcRoot, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if info.IsDir() && info.Name() == subdir && subdirPath == "" {
-			subdirPath = path
-		}
-		return nil
-	})
+	data, err := downloadBytes(zipURL)
 	if err != nil {
-		return err
-	}
-	if subdirPath == "" {
-		return fmt.Errorf("could not find %q directory inside zip", subdir)
+		return fmt.Errorf("download error: %w", err)
 	}
 
-	// Copy everything from subdirPath into destDir.
-	return filepath.Walk(subdirPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		rel, err := filepath.Rel(subdirPath, path)
-		if err != nil {
-			return err
-		}
-		dest := filepath.Join(destDir, rel)
-		if info.IsDir() {
-			return os.MkdirAll(dest, 0755)
-		}
-		return copyFile(path, dest)
-	})
-}
-
-// copyFile copies a single file from src to dst.
-func copyFile(src, dst string) error {
-	data, err := os.ReadFile(src)
+	zr, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
 	if err != nil {
-		return err
+		return fmt.Errorf("cannot read zip: %w", err)
 	}
-	return os.WriteFile(dst, data, 0644)
+
+	// Zip entries look like: "luna-main/luna-pm/luna-pm.lx"
+	//                        "luna-main/luna-pm/src/commands/install.lx"
+	// We find the prefix "luna-main/luna-pm/" and strip it, writing
+	// the rest into lunaBin.
+	// The prefix varies by branch name so we detect it dynamically.
+	subdirSuffix := "/" + lunaSubdir + "/"
+	extracted := 0
+
+	for _, f := range zr.File {
+		// Find the index of "/luna-pm/" in the path.
+		idx := strings.Index(f.Name, subdirSuffix)
+		if idx < 0 {
+			continue
+		}
+		// rel is the path inside luna-pm/, e.g. "luna-pm.lx" or "src/commands/install.lx"
+		rel := f.Name[idx+len(subdirSuffix):]
+		if rel == "" {
+			continue // the luna-pm/ directory entry itself
+		}
+
+		dest := filepath.Join(lunaBin, filepath.FromSlash(rel))
+
+		if f.FileInfo().IsDir() {
+			if err := os.MkdirAll(dest, 0755); err != nil {
+				return err
+			}
+			continue
+		}
+
+		if err := os.MkdirAll(filepath.Dir(dest), 0755); err != nil {
+			return err
+		}
+
+		rc, err := f.Open()
+		if err != nil {
+			return fmt.Errorf("cannot open zip entry %s: %w", f.Name, err)
+		}
+		buf, err := io.ReadAll(rc)
+		rc.Close()
+		if err != nil {
+			return fmt.Errorf("cannot read zip entry %s: %w", f.Name, err)
+		}
+		if err := os.WriteFile(dest, buf, 0644); err != nil {
+			return fmt.Errorf("cannot write %s: %w", dest, err)
+		}
+		extracted++
+	}
+
+	if extracted == 0 {
+		return fmt.Errorf("no files found under %q in the GitHub archive", lunaSubdir)
+	}
+	return nil
 }
 
-// writeLunaShim creates the `luna` shim script and marks it executable.
-// Returns the path of the shim that was written.
 func writeLunaShim(lunaBin, pmScript string) (string, error) {
-	// Prefer to place the shim alongside the lunex binary so it's already in PATH.
 	shimDir := shimInstallDir()
 	shimName := "luna"
 	if runtime.GOOS == "windows" {
@@ -268,8 +219,6 @@ func writeLunaShim(lunaBin, pmScript string) (string, error) {
 			pmScript)
 	} else {
 		shimContent = fmt.Sprintf(`#!/bin/sh
-# Luna Package Manager shim — generated by: lunex run luna-pm/luna-pm.lx
-# Do not edit by hand. Re-run the bootstrap to regenerate.
 LUNA_PM=%q
 
 case "$1" in
@@ -289,11 +238,6 @@ esac
 	return shimPath, nil
 }
 
-// shimInstallDir returns the preferred directory for the luna shim.
-// Priority:
-//  1. Same directory as the running lunex binary
-//  2. ~/.local/bin  (XDG standard, works on Linux / Termux)
-//  3. ~/bin
 func shimInstallDir() string {
 	if exe, err := os.Executable(); err == nil {
 		dir := filepath.Dir(exe)
@@ -324,7 +268,6 @@ func canWrite(dir string) bool {
 	return true
 }
 
-// isInPATH returns true if the directory of shimPath is in the current PATH.
 func isInPATH(shimPath string) bool {
 	shimDir := filepath.Dir(shimPath)
 	pathEnv := os.Getenv("PATH")
@@ -337,7 +280,6 @@ func isInPATH(shimPath string) bool {
 	return false
 }
 
-// printPathHint prints shell-specific instructions for adding luna to PATH.
 func printPathHint(shimPath string) {
 	shimDir := filepath.Dir(shimPath)
 	shell := os.Getenv("SHELL")
@@ -346,14 +288,16 @@ func printPathHint(shimPath string) {
 
 	switch {
 	case strings.Contains(shell, "zsh"):
-		fmt.Printf("  echo 'export PATH=\"%s:$PATH\"' >> ~/.zshrc\n", shimDir)
+		fmt.Printf("  echo 'export PATH=\"%s:$PATH\"'  >> ~/.zshrc\n", shimDir)
 		fmt.Printf("  source ~/.zshrc\n")
 	case strings.Contains(shell, "fish"):
 		fmt.Printf("  fish_add_path %s\n", shimDir)
-	default: // bash, sh, Termux default
-		fmt.Printf("  echo 'export PATH=\"%s:$PATH\"' >> ~/.bashrc\n", shimDir)
+	default:
+		fmt.Printf("  echo 'export PATH=\"%s:$PATH\"'  >> ~/.bashrc\n", shimDir)
 		fmt.Printf("  source ~/.bashrc\n")
 	}
 
 	fmt.Printf("\nThen run %sluna --version%s to verify.\n", colorCyan, colorReset)
 }
+
+

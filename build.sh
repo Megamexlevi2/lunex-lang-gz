@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Created by David Dev · GitHub: https://github.com/Megamexlevi2
 
 set -euo pipefail
 

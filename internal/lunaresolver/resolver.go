@@ -1,6 +1,3 @@
-// Lunex lang
-// Created by David Dev · GitHub: https://github.com/Megamexlevi2
-// (c) David Dev 2026. License.
 
 // Package lunaresolver resolves @import("pkg") references to files installed
 // by the Luna package manager (~/.luna/packages/).
@@ -91,6 +88,21 @@ func Resolve(name string) (string, bool) {
 		"index.nax", "main.nax",
 	}
 
+	// Suffix scan: find any installed dir whose name ends with "__<safeName>".
+	// This lets @import("lunex-cli") find "Megamexlevi2__lunex-language__lunex-cli".
+	if entries, err := os.ReadDir(pkgsDir); err == nil {
+		suffix := "__" + safeName
+		for _, e := range entries {
+			if !e.IsDir() {
+				continue
+			}
+			d := e.Name()
+			if strings.HasSuffix(d, suffix) {
+				candidates = append(candidates, filepath.Join(pkgsDir, d))
+			}
+		}
+	}
+
 	for _, dir := range candidates {
 		if _, err := os.Stat(dir); err != nil {
 			continue
@@ -115,8 +127,6 @@ func Resolve(name string) (string, bool) {
 				return fp, true
 			}
 		}
-
-		// Last resort: any .lx file in the directory.
 		if files, err := os.ReadDir(dir); err == nil {
 			for _, f := range files {
 				if !f.IsDir() && strings.HasSuffix(f.Name(), ".lx") {

@@ -1,5 +1,3 @@
-
-
 package std
 
 import "lunex/internal/compiler"
@@ -25,7 +23,6 @@ func RegisterAll(c *compiler.Compiler) {
 	osMod := OsModule()
 	regexMod := RegexModule()
 
-	
 	native := NativeModule()
 	native.ObjVal["io"] = ioMod
 	native.ObjVal["fs"] = fsMod
@@ -43,8 +40,6 @@ func RegisterAll(c *compiler.Compiler) {
 	native.ObjVal["regex"] = regexMod
 	interp.RegisterModule("internal.native", native)
 
-	
-	
 	interp.RegisterModule("io", ioMod)
 	interp.RegisterModule("fs", fsMod)
 	interp.RegisterModule("http", httpMod)
